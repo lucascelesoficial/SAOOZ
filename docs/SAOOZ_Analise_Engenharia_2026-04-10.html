@@ -1,0 +1,298 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>SAOOZ - Analise Tecnica de Engenharia (2026-04-10)</title>
+  <style>
+    :root {
+      --bg: #0b1220;
+      --panel: #111b2e;
+      --text: #e8eefc;
+      --muted: #9cb0d9;
+      --line: #243250;
+      --accent: #47a3ff;
+      --good: #4ecb71;
+      --warn: #f4bf4f;
+      --bad: #ff6a6a;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Segoe UI", Roboto, Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.45;
+    }
+    .wrap {
+      max-width: 980px;
+      margin: 0 auto;
+      padding: 28px;
+    }
+    .hero {
+      padding: 24px;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: linear-gradient(150deg, #111c31 0%, #0f182a 100%);
+    }
+    h1, h2, h3 { margin: 0 0 10px 0; }
+    h1 { font-size: 30px; letter-spacing: 0.2px; }
+    h2 {
+      margin-top: 26px;
+      padding-top: 14px;
+      border-top: 1px solid var(--line);
+      font-size: 20px;
+      color: #d8e6ff;
+    }
+    h3 { margin-top: 16px; font-size: 16px; color: #d5e0ff; }
+    p { margin: 6px 0; color: var(--text); }
+    .muted { color: var(--muted); }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 10px;
+    }
+    .card {
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 10px 12px;
+      background: var(--panel);
+    }
+    ul { margin: 8px 0 10px 20px; }
+    li { margin: 3px 0; }
+    .tag {
+      display: inline-block;
+      margin-right: 8px;
+      margin-top: 8px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 2px 10px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+    .ok { color: var(--good); font-weight: 600; }
+    .warn { color: var(--warn); font-weight: 600; }
+    .bad { color: var(--bad); font-weight: 600; }
+    .code {
+      margin-top: 8px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 10px;
+      background: #0b1323;
+      color: #cfe0ff;
+      white-space: pre-wrap;
+      font-family: Consolas, "Courier New", monospace;
+      font-size: 12.8px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 8px;
+      font-size: 14px;
+    }
+    th, td {
+      border: 1px solid var(--line);
+      padding: 8px;
+      vertical-align: top;
+      text-align: left;
+    }
+    th { background: #15223a; color: #dce8ff; }
+    .footer {
+      margin-top: 24px;
+      font-size: 12px;
+      color: var(--muted);
+      border-top: 1px solid var(--line);
+      padding-top: 12px;
+    }
+    @media print {
+      body { background: #fff; color: #111; }
+      .wrap { max-width: 100%; padding: 10mm; }
+      .hero, .card, .code, table, th, td { border-color: #bbb; }
+      .hero, .card, .code { background: #fff; }
+      h2 { border-top-color: #bbb; color: #111; }
+      .muted, .footer { color: #444; }
+      .tag { border-color: #bbb; color: #333; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <section class="hero">
+      <h1>SAOOZ - Analise Tecnica de Engenharia</h1>
+      <p class="muted">Data de referencia: 2026-04-10 | Projeto: SaaS financeiro PF + PJ com assistente de IA</p>
+      <span class="tag">Next.js 14</span>
+      <span class="tag">Supabase</span>
+      <span class="tag">TypeScript</span>
+      <span class="tag">App Router</span>
+      <span class="tag">Monetizacao em base</span>
+    </section>
+
+    <h2>1) Resumo Executivo</h2>
+    <p>O produto SAOOZ esta funcional e evoluiu de forma relevante para um estado mais pronto para producao. A arquitetura foi reforcada em dados, seguranca de IA, base de monetizacao e coerencia de navegacao entre PF/PJ.</p>
+    <p class="ok">Status geral atual: operacional, com build/lint/typecheck estaveis.</p>
+    <p class="warn">Observacao: parte de billing funciona em modo resiliente quando a estrutura de tabelas ainda nao existe no Supabase.</p>
+
+    <div class="grid">
+      <div class="card">
+        <h3>Integridade de dados</h3>
+        <p>Separacao entre transacao real e planejamento (orcamento).</p>
+      </div>
+      <div class="card">
+        <h3>Seguranca de IA</h3>
+        <p>Fluxo de proposta -> confirmacao -> execucao validada.</p>
+      </div>
+      <div class="card">
+        <h3>Monetizacao</h3>
+        <p>Trial, planos, limites de uso, base gateway-agnostic.</p>
+      </div>
+    </div>
+
+    <h2>2) O que foi corrigido e implementado ate agora</h2>
+    <h3>2.1 Dados e modelagem (fase critica)</h3>
+    <ul>
+      <li>Remocao do comportamento destrutivo do modulo de perfil financeiro sobre despesas reais.</li>
+      <li>Criacao de estrutura de orcamento separada: <code>budgets</code> e <code>budget_categories</code>.</li>
+      <li>RPC segura para gravacao mensal de orcamento sem sobrescrever ledger financeiro real.</li>
+      <li>Suporte a multiplas empresas por usuario e empresa ativa no perfil.</li>
+    </ul>
+
+    <h3>2.2 Evolucao PF -> PJ sem lock-in</h3>
+    <ul>
+      <li>Usuario pode adicionar empresa a qualquer momento.</li>
+      <li>Fluxo de onboarding empresarial acessivel fora do onboarding inicial.</li>
+      <li>Modo de usuario ajustado para <code>both</code> quando aplicavel.</li>
+      <li>Troca de empresa ativa no topo com endpoint dedicado.</li>
+    </ul>
+
+    <h3>2.3 Estado global unificado</h3>
+    <ul>
+      <li>Seletor global de mes compartilhado entre contextos PF e PJ.</li>
+      <li>Topbar e navegacao corrigidos para coerencia de conta PF/PJ.</li>
+    </ul>
+
+    <h3>2.4 Inteligencia (antiga Analise)</h3>
+    <ul>
+      <li>Renomeacao de UX: Perfil Financeiro -> Orcamento, Analise -> Inteligencia.</li>
+      <li>Motor de inteligencia pessoal com burn rate, saldo projetado, alertas e recomendacoes.</li>
+      <li>Motor de inteligencia empresarial com projecao de margem, alertas operacionais e foco de custo/receita.</li>
+      <li>Escalonamento por plano: versao essencial e versao avancada.</li>
+    </ul>
+
+    <h3>2.5 IA hardening</h3>
+    <ul>
+      <li>Acoes permitidas em schema: <code>read_only</code>, <code>add_expense</code>, <code>add_income</code>.</li>
+      <li>Validacao de payload com Zod antes de qualquer gravacao no banco.</li>
+      <li>Bloqueio de operacoes destrutivas e bulk overwrite.</li>
+      <li>Execucao somente apos confirmacao do usuario na interface.</li>
+      <li>Trilha de auditoria em <code>audit_logs</code> quando credenciais admin estao disponiveis.</li>
+    </ul>
+
+    <h3>2.6 Billing foundation e limites</h3>
+    <ul>
+      <li>Tabelas base definidas: <code>subscriptions</code>, <code>payments</code>, <code>usage_limits</code>, <code>audit_logs</code>.</li>
+      <li>Planos definidos: PF 47, PJ 67, PRO 97; duracoes 3/6/12 meses.</li>
+      <li>Trial de 7 dias e limites free/trial de transacoes e IA.</li>
+      <li>Camada de acesso por plano aplicada em rotas e navegacao.</li>
+      <li>Arquitetura de pagamento gateway-agnostic com interface e adaptadores (stubs).</li>
+    </ul>
+
+    <h2>3) Status tecnico atual (engenharia)</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Area</th>
+          <th>Status</th>
+          <th>Observacao</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Build / Typecheck / Lint</td>
+          <td class="ok">OK</td>
+          <td>Projeto compilando de forma consistente.</td>
+        </tr>
+        <tr>
+          <td>Integridade de dados PF</td>
+          <td class="ok">OK</td>
+          <td>Orcamento separado de despesas reais.</td>
+        </tr>
+        <tr>
+          <td>Escalabilidade de modelo de negocio</td>
+          <td class="warn">Em evolucao</td>
+          <td>Base pronta, checkout/webhook real ainda pendente.</td>
+        </tr>
+        <tr>
+          <td>Resiliencia sem migration billing</td>
+          <td class="ok">OK</td>
+          <td>Fallback automatico evita crash da aplicacao.</td>
+        </tr>
+        <tr>
+          <td>Operacoes admin criticas</td>
+          <td class="warn">Dependente de env</td>
+          <td>Exclusao real de usuario exige service role key.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h2>4) Riscos e gaps ainda relevantes</h2>
+    <ul>
+      <li>Checkout real ainda nao integrado (Stripe/Kiwify/Cakto em stubs).</li>
+      <li>Webhooks de pagamento ainda nao implementados.</li>
+      <li>Ausencia de suite de testes automatizados end-to-end.</li>
+      <li>Textos legacy com encoding inconsistente ainda podem existir em telas antigas.</li>
+      <li>Observabilidade basica (logs estruturados e metricas de negocio) ainda precisa consolidacao.</li>
+    </ul>
+
+    <h2>5) Prioridades praticas recomendadas</h2>
+    <h3>Sprint de 7 dias (go-live realista)</h3>
+    <ul>
+      <li>Aplicar migration billing no Supabase de producao.</li>
+      <li>Integrar 1 gateway primeiro (Stripe ou Kiwify) com checkout + webhook + ativacao.</li>
+      <li>Fechar gating de features premium na UI com mensagens de upgrade padrao.</li>
+      <li>Executar checklist de QA manual focado em 10 fluxos criticos (auth, PF, PJ, IA, conta).</li>
+    </ul>
+
+    <h3>Proximo ciclo (15-30 dias)</h3>
+    <ul>
+      <li>Testes automatizados de regressao para fluxos centrais.</li>
+      <li>Hardening de observabilidade (request id, eventos de funil, erros de billing).</li>
+      <li>Polimento de UX (ortografia, consistencia visual final, estados vazios e erros).</li>
+    </ul>
+
+    <h2>6) Prompt base para usar no GPT (engenharia)</h2>
+    <p>Use este prompt como contexto inicial no GPT para continuidade tecnica do SAOOZ:</p>
+    <div class="code">Voce e um engenheiro de software senior atuando no SAOOZ, um SaaS financeiro PF/PJ em Next.js 14 + Supabase + TypeScript.
+
+Contexto tecnico atual:
+- Orcamento separado de transacoes reais (budgets e budget_categories).
+- Fluxo de IA hardening ativo: schema validado, confirmacao do usuario antes de executar.
+- Base de monetizacao criada: subscriptions, payments, usage_limits, audit_logs.
+- Acesso por plano aplicado no app (PF/PJ/PRO + trial + limites).
+- Billing roda com fallback resiliente quando schema billing ainda nao existe.
+
+Objetivo da sua resposta:
+1) Propor evolucao incremental sem reescrever o projeto.
+2) Priorizar integridade de dados, seguranca e monetizacao.
+3) Entregar plano tecnico com passos executaveis, risco, impacto e ordem.
+4) Sempre sugerir patches pequenos, verificaveis e com rollback simples.
+
+Formato esperado:
+- Diagnostico objetivo
+- Plano em fases (curto prazo e medio prazo)
+- Mudancas de schema/API/UI
+- Checklist de validacao e QA
+- Criterios de pronto para producao
+
+Nao simplifique em excesso e nao proponha refactor massivo sem justificativa de risco/ROI.</div>
+
+    <h2>7) Conclusao de engenharia</h2>
+    <p>O SAOOZ saiu de um estado funcional para um estado de plataforma com base seria para escalar. A direcao atual esta correta: corrigir integridade, endurecer IA e estruturar monetizacao antes de acelerar feature nova. O proximo maior ganho de negocio esta em fechar checkout+webhook e observabilidade de receita.</p>
+
+    <p class="footer">
+      Relatorio gerado para continuidade tecnica orientada por engenharia de software.
+      Arquivo base: SAOOZ_Analise_Engenharia_2026-04-10.html
+    </p>
+  </div>
+</body>
+</html>
