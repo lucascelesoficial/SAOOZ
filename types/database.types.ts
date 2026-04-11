@@ -72,7 +72,13 @@ export type BusinessExpCategory =
   | 'investimento_outros'
 
 export type SubscriptionPlanType = 'pf' | 'pj' | 'pro'
-export type SubscriptionStatus = 'trialing' | 'active' | 'past_due' | 'canceled'
+export type SubscriptionStatus =
+  | 'trialing'
+  | 'active'
+  | 'past_due'
+  | 'canceled'
+  | 'expired'
+  | 'inactive'
 export type PaymentMethod = 'card' | 'pix'
 export type SubscriptionPaymentMethod = PaymentMethod | 'none'
 export type BillingGateway = 'stripe' | 'kiwify' | 'cakto'
@@ -354,7 +360,15 @@ export interface Database {
           billing_duration_months: number
           payment_method: SubscriptionPaymentMethod
           gateway: BillingGateway | null
+          gateway_customer_id: string | null
+          gateway_event_id: string | null
           gateway_subscription_id: string | null
+          started_at: string | null
+          canceled_at: string | null
+          cancel_at_period_end: boolean
+          ended_at: string | null
+          last_billing_error: string | null
+          provider_reference: string | null
           created_at: string
           updated_at: string
         }
@@ -368,7 +382,15 @@ export interface Database {
           billing_duration_months?: number
           payment_method?: SubscriptionPaymentMethod
           gateway?: BillingGateway | null
+          gateway_customer_id?: string | null
+          gateway_event_id?: string | null
           gateway_subscription_id?: string | null
+          started_at?: string | null
+          canceled_at?: string | null
+          cancel_at_period_end?: boolean
+          ended_at?: string | null
+          last_billing_error?: string | null
+          provider_reference?: string | null
           created_at?: string
           updated_at?: string
         }
@@ -382,7 +404,15 @@ export interface Database {
           billing_duration_months?: number
           payment_method?: SubscriptionPaymentMethod
           gateway?: BillingGateway | null
+          gateway_customer_id?: string | null
+          gateway_event_id?: string | null
           gateway_subscription_id?: string | null
+          started_at?: string | null
+          canceled_at?: string | null
+          cancel_at_period_end?: boolean
+          ended_at?: string | null
+          last_billing_error?: string | null
+          provider_reference?: string | null
           created_at?: string
           updated_at?: string
         }
@@ -399,6 +429,12 @@ export interface Database {
           payment_method: PaymentMethod
           gateway: BillingGateway | null
           gateway_payment_id: string | null
+          currency: string
+          paid_at: string | null
+          failed_at: string | null
+          failure_reason: string | null
+          provider_event_id: string | null
+          raw_reference: string | null
           created_at: string
         }
         Insert: {
@@ -410,6 +446,12 @@ export interface Database {
           payment_method: PaymentMethod
           gateway?: BillingGateway | null
           gateway_payment_id?: string | null
+          currency?: string
+          paid_at?: string | null
+          failed_at?: string | null
+          failure_reason?: string | null
+          provider_event_id?: string | null
+          raw_reference?: string | null
           created_at?: string
         }
         Update: {
@@ -421,7 +463,56 @@ export interface Database {
           payment_method?: PaymentMethod
           gateway?: BillingGateway | null
           gateway_payment_id?: string | null
+          currency?: string
+          paid_at?: string | null
+          failed_at?: string | null
+          failure_reason?: string | null
+          provider_event_id?: string | null
+          raw_reference?: string | null
           created_at?: string
+        }
+        Relationships: []
+      }
+
+      billing_webhook_events: {
+        Row: {
+          id: string
+          provider: string
+          event_id: string | null
+          event_type: string | null
+          event_status: string
+          payload: Json
+          received_at: string
+          processed_at: string | null
+          error_message: string | null
+          related_user_id: string | null
+          related_subscription_id: string | null
+        }
+        Insert: {
+          id?: string
+          provider: string
+          event_id?: string | null
+          event_type?: string | null
+          event_status?: string
+          payload: Json
+          received_at?: string
+          processed_at?: string | null
+          error_message?: string | null
+          related_user_id?: string | null
+          related_subscription_id?: string | null
+        }
+        Update: {
+          id?: string
+          provider?: string
+          event_id?: string | null
+          event_type?: string | null
+          event_status?: string
+          payload?: Json
+          received_at?: string
+          processed_at?: string | null
+          error_message?: string | null
+          related_user_id?: string | null
+          related_subscription_id?: string | null
         }
         Relationships: []
       }

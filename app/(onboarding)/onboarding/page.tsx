@@ -69,7 +69,7 @@ export default function OnboardingPage() {
     if (selected === 'pj' || selected === 'both') {
       window.location.href = '/onboarding/empresa'
     } else {
-      window.location.href = '/dashboard'
+      window.location.href = '/central'
     }
   }
 

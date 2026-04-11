@@ -53,7 +53,7 @@ export default function RedefinirSenhaPage() {
 
     toast.success('Senha redefinida!', { description: 'Você já pode entrar com sua nova senha.' })
     router.refresh()
-    router.push('/dashboard')
+    router.push('/central')
   }
 
   return (

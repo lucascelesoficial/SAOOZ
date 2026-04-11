@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { aiActionSchema } from '@/lib/ai/schemas'
-import { getBillingAccess } from '@/lib/billing/access'
-import { getBillingSnapshot } from '@/lib/billing/server'
+import { canAccessScope, resolveUserAccessPolicy } from '@/lib/billing/policy'
 import { enforceRateLimit, requireUser } from '@/lib/server/request-guard'
 
 export const dynamic = 'force-dynamic'
@@ -98,8 +97,7 @@ export async function POST(request: NextRequest) {
       return auth.response
     }
 
-    const billing = await getBillingSnapshot(auth.user.id)
-    const access = getBillingAccess(billing)
+    const policy = await resolveUserAccessPolicy(auth.user.id)
 
     const rate = enforceRateLimit({
       scope: 'ai',
@@ -163,13 +161,13 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ text: action.message })
     }
 
-    if (action.scope === 'business' && !access.businessModule) {
+    if (action.scope === 'business' && !canAccessScope(policy, 'business')) {
       return NextResponse.json({
         text: 'Seu plano atual não libera ações empresariais. Vá em Planos para ativar o módulo PJ.',
       })
     }
 
-    if (action.scope === 'personal' && !access.personalModule) {
+    if (action.scope === 'personal' && !canAccessScope(policy, 'personal')) {
       return NextResponse.json({
         text: 'Seu plano atual não libera ações pessoais. Vá em Planos para ativar o módulo PF.',
       })

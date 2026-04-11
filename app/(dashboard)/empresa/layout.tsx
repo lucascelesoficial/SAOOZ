@@ -1,7 +1,6 @@
 import { redirect } from 'next/navigation'
 import { cookies } from 'next/headers'
-import { getBillingAccess, getUpgradeHref } from '@/lib/billing/access'
-import { getBillingSnapshot } from '@/lib/billing/server'
+import { getPolicyBlock, resolveUserAccessPolicy } from '@/lib/billing/policy'
 import {
   ACTIVE_BUSINESS_COOKIE,
   isMissingActiveBusinessColumnError,
@@ -23,11 +22,11 @@ export default async function EmpresaLayout({
     redirect('/login')
   }
 
-  const snapshot = await getBillingSnapshot(user.id)
-  const access = getBillingAccess(snapshot)
+  const policy = await resolveUserAccessPolicy(user.id)
+  const businessLock = getPolicyBlock(policy, 'business_module_locked')
 
-  if (!access.businessModule) {
-    redirect(getUpgradeHref('business'))
+  if (!policy.modules.business) {
+    redirect(businessLock?.upgradeHref ?? '/planos?feature=business')
   }
 
   const [{ data: profile }, { data: businesses }] = await Promise.all([

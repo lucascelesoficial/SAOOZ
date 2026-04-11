@@ -56,7 +56,15 @@ function formatStatus(status: BillingSnapshot['subscription']['status']) {
     return 'Pagamento pendente'
   }
 
-  return 'Cancelado'
+  if (status === 'canceled') {
+    return 'Cancelado'
+  }
+
+  if (status === 'expired') {
+    return 'Expirado'
+  }
+
+  return 'Inativo'
 }
 
 function businessCapacityLabel(plan: SubscriptionPlanType, duration: BillingDuration) {
@@ -305,7 +313,7 @@ export function PlanosClient({ snapshot }: PlanosClientProps) {
               <div className="mt-5 grid grid-cols-2 gap-2">
                 <button
                   onClick={() => handleCheckout(planCode, 'pix')}
-                  disabled={(isCurrentPlan && snapshot.subscription.status === 'active') || !!checkingOut}
+                  disabled={(isCurrentPlan && snapshot.paidAccess) || !!checkingOut}
                   className="flex h-11 items-center justify-center rounded-[10px] text-sm font-semibold transition-all disabled:opacity-60"
                   style={{
                     background: 'var(--panel-bg-soft)',
@@ -318,7 +326,7 @@ export function PlanosClient({ snapshot }: PlanosClientProps) {
                 </button>
                 <button
                   onClick={() => handleCheckout(planCode, 'card')}
-                  disabled={(isCurrentPlan && snapshot.subscription.status === 'active') || !!checkingOut}
+                  disabled={(isCurrentPlan && snapshot.paidAccess) || !!checkingOut}
                   className="flex h-11 items-center justify-center rounded-[10px] text-sm font-semibold text-white transition-all disabled:opacity-60"
                   style={{
                     background: plan.highlight
@@ -327,7 +335,7 @@ export function PlanosClient({ snapshot }: PlanosClientProps) {
                   }}
                 >
                   <CreditCard className="mr-1.5 h-4 w-4" />
-                  {isCurrentPlan && snapshot.subscription.status === 'active' ? 'Ativo' : 'Cartão'}
+                  {isCurrentPlan && snapshot.paidAccess ? 'Ativo' : 'Cartão'}
                 </button>
               </div>
             </article>

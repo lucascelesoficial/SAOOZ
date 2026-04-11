@@ -76,7 +76,7 @@ export function Topbar({
   const [isSwitchingBusiness, setIsSwitchingBusiness] = useState(false)
 
   const isBusinessPath = pathname.startsWith('/empresa')
-  const accountHref = isBusinessPath ? '/empresa/conta' : '/conta'
+  const accountHref = isBusinessPath ? '/empresa/configuracoes' : '/configuracoes'
   const activeBusinessId =
     businesses.find((business) => business.id === profile?.active_business_id)?.id ??
     businesses[0]?.id ??
@@ -85,8 +85,8 @@ export function Topbar({
   const shouldShowModeSwitch = isBusinessPath ? true : businesses.length > 0
 
   const modeSwitchHref = isBusinessPath
-    ? canAccessPersonalModule
-      ? '/dashboard'
+      ? canAccessPersonalModule
+      ? '/central'
       : '/planos?feature=personal'
     : canAccessBusinessModule
       ? '/empresa'

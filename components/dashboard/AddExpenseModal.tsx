@@ -59,6 +59,14 @@ function mapInsertError(message: string) {
     return 'Limite mensal de lancamentos atingido para seu plano.'
   }
 
+  if (normalized.includes('personal_scope_locked')) {
+    return 'Seu plano atual nao permite lancamentos no modulo pessoal.'
+  }
+
+  if (normalized.includes('business_scope_locked')) {
+    return 'Seu plano atual nao permite lancamentos no modulo empresarial.'
+  }
+
   if (normalized.includes('row-level security')) {
     return 'Sua sessao expirou. Entre novamente para continuar.'
   }

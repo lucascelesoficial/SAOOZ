@@ -34,7 +34,7 @@ export default function LoginPage() {
     }
 
     router.refresh()
-    router.push('/dashboard')
+    router.push('/central')
   }
 
   return (

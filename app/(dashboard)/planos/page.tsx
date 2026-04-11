@@ -1,5 +1,5 @@
 import { redirect } from 'next/navigation'
-import { getBillingSnapshot } from '@/lib/billing/server'
+import { resolveUserAccessPolicy } from '@/lib/billing/policy'
 import { createClient } from '@/lib/supabase/server'
 import { PlanosClient } from './PlanosClient'
 
@@ -13,7 +13,7 @@ export default async function PlanosPage() {
     redirect('/login')
   }
 
-  const snapshot = await getBillingSnapshot(user.id)
+  const policy = await resolveUserAccessPolicy(user.id)
 
-  return <PlanosClient snapshot={snapshot} />
+  return <PlanosClient snapshot={policy.snapshot} />
 }

@@ -241,7 +241,7 @@ export default function EmpresaPage() {
               <TrendingUp className="h-8 w-8 text-[#383838] mb-2" />
               <p className="text-sm text-[#6B6B6B]">Nenhum faturamento neste mês.</p>
               <p className="text-xs text-app-soft mt-1">
-                Acesse <strong className="text-[#0ea5e9]">Faturamento</strong> para registrar.
+                Acesse <strong className="text-[#0ea5e9]">Finanças</strong> para registrar.
               </p>
             </div>
           ) : (

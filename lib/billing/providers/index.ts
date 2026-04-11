@@ -1,9 +1,22 @@
 export { StripeProvider } from './stripe'
 export { KiwifyProvider } from './kiwify'
 export { CaktoProvider } from './cakto'
+export {
+  getBillingProvider,
+  getConfiguredBillingProviders,
+  resolveCheckoutProvider,
+  resolveWebhookProviderCandidates,
+} from './registry'
 export type {
+  BillingActivationDomainPayload,
+  BillingDomainEvent,
+  BillingDurationMonths,
   CheckoutInput,
   CheckoutResult,
+  ParsedProviderWebhookEvent,
   PaymentProvider,
-  WebhookPayload,
+  ProviderExternalEvent,
+  ProviderPaymentReferences,
+  ProviderWebhookInput,
+  ResolvePaymentReferencesInput,
 } from './types'

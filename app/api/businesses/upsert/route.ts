@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
-import { getBillingAccess, getUpgradeHref } from '@/lib/billing/access'
-import { getBillingSnapshot } from '@/lib/billing/server'
+import { getPolicyBlock, resolveUserAccessPolicy } from '@/lib/billing/policy'
 import {
   ACTIVE_BUSINESS_COOKIE,
   ACTIVE_BUSINESS_COOKIE_MAX_AGE_SECONDS,
@@ -54,16 +53,16 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Dados inválidos para empresa.' }, { status: 400 })
     }
 
-    const snapshot = await getBillingSnapshot(user.id)
-    const access = getBillingAccess(snapshot)
+    const policy = await resolveUserAccessPolicy(user.id)
+    const businessLock = getPolicyBlock(policy, 'business_module_locked')
 
-    if (!access.businessModule) {
+    if (!policy.modules.business) {
       return NextResponse.json(
         {
           error: 'Seu plano atual não libera o módulo empresarial.',
           code: 'business_locked',
           upgradeRequired: true,
-          upgradeHref: getUpgradeHref('business'),
+          upgradeHref: businessLock?.upgradeHref ?? '/planos?feature=business',
         },
         { status: 403 }
       )
@@ -118,13 +117,18 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: countError.message }, { status: 500 })
       }
 
-      if ((count ?? 0) >= access.maxBusinessAccounts) {
+      const policyWithCount = await resolveUserAccessPolicy(user.id, {
+        businessCount: count ?? 0,
+      })
+
+      if (!policyWithCount.canCreateBusiness) {
+        const limitBlock = getPolicyBlock(policyWithCount, 'business_limit_reached')
         return NextResponse.json(
           {
             error: 'Limite de contas empresariais atingido para o ciclo atual.',
             code: 'business_limit_reached',
             upgradeRequired: true,
-            upgradeHref: getUpgradeHref('business_limit'),
+            upgradeHref: limitBlock?.upgradeHref ?? '/planos?feature=business_limit',
           },
           { status: 403 }
         )

@@ -1,7 +1,4 @@
-import type {
-  SubscriptionPlanType,
-  SubscriptionStatus,
-} from '@/types/database.types'
+import type { SubscriptionPlanType } from '@/types/database.types'
 
 export type BillingDuration = 1 | 3 | 6 | 12
 
@@ -123,18 +120,3 @@ export function getDurationLabel(duration: BillingDuration) {
   return 'Anual'
 }
 
-export function isSubscriptionInGoodStanding(
-  status: SubscriptionStatus,
-  trialEndsAt: string | null,
-  now = new Date()
-) {
-  if (status === 'active') {
-    return true
-  }
-
-  if (status !== 'trialing' || !trialEndsAt) {
-    return false
-  }
-
-  return new Date(trialEndsAt).getTime() >= now.getTime()
-}

@@ -23,7 +23,7 @@ export default function NotFound() {
       </div>
 
       <Link
-        href="/dashboard"
+        href="/central"
         className="inline-flex h-10 items-center rounded-[10px] px-5 text-sm font-semibold text-white transition-opacity hover:opacity-90"
         style={{ background: 'linear-gradient(135deg, var(--accent-blue), var(--accent-cyan))' }}
       >

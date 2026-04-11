@@ -3,10 +3,10 @@ import { cookies } from 'next/headers'
 import { NextRequest, NextResponse } from 'next/server'
 
 function normalizeNextPath(nextParam: string | null) {
-  if (!nextParam) return '/dashboard'
-  if (!nextParam.startsWith('/')) return '/dashboard'
-  if (nextParam.startsWith('//')) return '/dashboard'
-  if (nextParam.includes('://')) return '/dashboard'
+  if (!nextParam) return '/central'
+  if (!nextParam.startsWith('/')) return '/central'
+  if (nextParam.startsWith('//')) return '/central'
+  if (nextParam.includes('://')) return '/central'
   return nextParam
 }
 

@@ -1,7 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
-import { getBillingAccess } from '@/lib/billing/access'
-import { getBillingSnapshot } from '@/lib/billing/server'
+import { resolveUserAccessPolicy } from '@/lib/billing/policy'
 import {
   isMissingActiveBusinessColumnError,
 } from '@/lib/business/active-business'
@@ -9,6 +8,33 @@ import { Sidebar } from '@/components/layout/Sidebar'
 import { BottomNav } from '@/components/layout/BottomNav'
 import { Topbar } from '@/components/layout/Topbar'
 import { FinancialDataProvider } from '@/lib/context/FinancialDataContext'
+
+function formatPlanStatusLabel(
+  lifecycleStatus: 'trialing' | 'active' | 'past_due' | 'canceled' | 'expired' | 'inactive',
+  trialDaysRemaining: number
+) {
+  if (lifecycleStatus === 'active') {
+    return 'Ativo'
+  }
+
+  if (lifecycleStatus === 'trialing') {
+    return `${trialDaysRemaining} dia(s)`
+  }
+
+  if (lifecycleStatus === 'past_due') {
+    return 'Pagamento pendente'
+  }
+
+  if (lifecycleStatus === 'canceled') {
+    return 'Cancelado'
+  }
+
+  if (lifecycleStatus === 'expired') {
+    return 'Expirado'
+  }
+
+  return 'Inativo'
+}
 
 export default async function DashboardLayout({
   children,
@@ -25,8 +51,7 @@ export default async function DashboardLayout({
     redirect('/login')
   }
 
-  const [snapshot, { data: profileData }, { data: businesses }] = await Promise.all([
-    getBillingSnapshot(user.id),
+  const [{ data: profileData }, { data: businesses }] = await Promise.all([
     supabase.from('profiles').select('*').eq('id', user.id).single(),
     supabase
       .from('business_profiles')
@@ -35,13 +60,11 @@ export default async function DashboardLayout({
       .order('created_at', { ascending: false }),
   ])
 
-  const billingAccess = getBillingAccess(snapshot)
   const businessCount = businesses?.length ?? 0
-  const businessLimitReached =
-    billingAccess.businessModule &&
-    billingAccess.maxBusinessAccounts > 0 &&
-    businessCount >= billingAccess.maxBusinessAccounts
-  const canCreateBusiness = billingAccess.canCreateBusiness && !businessLimitReached
+  const policy = await resolveUserAccessPolicy(user.id, { businessCount })
+  const snapshot = policy.snapshot
+  const businessLimitReached = policy.businessLimitReached
+  const canCreateBusiness = policy.canCreateBusiness
 
   let profile = profileData
 
@@ -87,28 +110,22 @@ export default async function DashboardLayout({
       <Sidebar
         profile={profile}
         planLabel={
-          snapshot.subscription.status === 'active'
+          snapshot.paidAccess
             ? snapshot.subscription.plan_type.toUpperCase()
             : snapshot.trialDaysRemaining > 0
               ? 'TRIAL'
               : 'GRATIS'
         }
-        planStatusLabel={
-          snapshot.subscription.status === 'active'
-            ? 'Ativo'
-            : snapshot.trialDaysRemaining > 0
-              ? `${snapshot.trialDaysRemaining} dia(s)`
-              : 'Sem assinatura'
-        }
-        canAccessPersonalModule={billingAccess.personalModule}
-        canAccessBusinessModule={billingAccess.businessModule}
+        planStatusLabel={formatPlanStatusLabel(snapshot.lifecycleStatus, snapshot.trialDaysRemaining)}
+        canAccessPersonalModule={policy.modules.personal}
+        canAccessBusinessModule={policy.modules.business}
       />
       <div className="flex min-w-0 flex-1 flex-col md:ml-[240px]">
         <Topbar
           profile={profile}
           businesses={businesses ?? []}
-          canAccessPersonalModule={billingAccess.personalModule}
-          canAccessBusinessModule={billingAccess.businessModule}
+          canAccessPersonalModule={policy.modules.personal}
+          canAccessBusinessModule={policy.modules.business}
           canCreateBusiness={canCreateBusiness}
           businessLimitReached={businessLimitReached}
         />

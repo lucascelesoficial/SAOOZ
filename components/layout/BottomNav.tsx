@@ -14,18 +14,18 @@ import {
 } from 'lucide-react'
 
 const PF_ITEMS = [
-  { href: '/dashboard', label: 'Central', icon: LayoutDashboard },
-  { href: '/negocios', label: 'Finanças', icon: Briefcase },
-  { href: '/perfil-financeiro', label: 'Despesas', icon: Receipt },
-  { href: '/analise', label: 'Inteligência', icon: BarChart2 },
+  { href: '/central', label: 'Central', icon: LayoutDashboard },
+  { href: '/financas', label: 'Finanças', icon: Briefcase },
+  { href: '/despesas', label: 'Despesas', icon: Receipt },
+  { href: '/inteligencia', label: 'Inteligência', icon: BarChart2 },
   { href: '/assistente', label: 'Assistente', icon: Bot },
 ]
 
 const PJ_ITEMS = [
   { href: '/empresa', label: 'Empresa', icon: Building2 },
-  { href: '/empresa/faturamento', label: 'Finanças', icon: TrendingUp },
+  { href: '/empresa/financas', label: 'Finanças', icon: TrendingUp },
   { href: '/empresa/despesas', label: 'Despesas', icon: TrendingDown },
-  { href: '/empresa/analise', label: 'Inteligência', icon: BarChart2 },
+  { href: '/empresa/inteligencia', label: 'Inteligência', icon: BarChart2 },
   { href: '/empresa/assistente', label: 'Assistente', icon: Bot },
 ]
 
@@ -42,7 +42,7 @@ export function BottomNav() {
     >
       {items.map(({ href, label, icon: Icon }) => {
         const isActive =
-          href === '/empresa' || href === '/dashboard'
+          href === '/empresa' || href === '/central'
             ? pathname === href
             : pathname === href || pathname.startsWith(`${href}/`)
 
@@ -61,4 +61,3 @@ export function BottomNav() {
     </nav>
   )
 }
-

@@ -5,8 +5,11 @@ import {
   FREE_LIMITS,
   TRIAL_DAYS,
   getPlanDefinition,
-  isSubscriptionInGoodStanding,
 } from './plans'
+import {
+  getSubscriptionLifecycleState,
+  reconcileSubscriptionLifecycle,
+} from './lifecycle'
 
 type SubscriptionRow = Database['public']['Tables']['subscriptions']['Row']
 type UsageRow = Database['public']['Tables']['usage_limits']['Row']
@@ -26,6 +29,9 @@ function isMissingBillingStructureError(message: string) {
 export interface BillingSnapshot {
   subscription: SubscriptionRow
   usage: UsageRow
+  lifecycleStatus: SubscriptionRow['status']
+  paidAccess: boolean
+  trialAccess: boolean
   premiumAccess: boolean
   aiActionsLimit: number | null
   transactionsLimit: number | null
@@ -66,7 +72,15 @@ function buildDefaultSubscription(userId: string, now = new Date()): Subscriptio
     billing_duration_months: 1,
     payment_method: 'none',
     gateway: null,
+    gateway_customer_id: null,
+    gateway_event_id: null,
     gateway_subscription_id: null,
+    started_at: now.toISOString(),
+    canceled_at: null,
+    cancel_at_period_end: false,
+    ended_at: null,
+    last_billing_error: null,
+    provider_reference: null,
     created_at: now.toISOString(),
     updated_at: now.toISOString(),
   }
@@ -189,6 +203,47 @@ async function ensureUsage(userId: string, now = new Date()) {
   return created
 }
 
+function applyDerivedLifecycleStatus(subscription: SubscriptionRow, now = new Date()) {
+  const lifecycle = getSubscriptionLifecycleState(subscription, now)
+  if (lifecycle.effectiveStatus === subscription.status) {
+    return subscription
+  }
+
+  const derived: SubscriptionRow = {
+    ...subscription,
+    status: lifecycle.effectiveStatus,
+  }
+
+  if (
+    (lifecycle.effectiveStatus === 'expired' || lifecycle.effectiveStatus === 'inactive') &&
+    !derived.ended_at
+  ) {
+    derived.ended_at = now.toISOString()
+  }
+
+  return derived
+}
+
+async function normalizeSubscriptionLifecycle(subscription: SubscriptionRow, now = new Date()) {
+  const lifecycle = getSubscriptionLifecycleState(subscription, now)
+  if (lifecycle.effectiveStatus === subscription.status) {
+    return subscription
+  }
+
+  const admin = createOptionalAdminClient()
+  if (!admin) {
+    return applyDerivedLifecycleStatus(subscription, now)
+  }
+
+  try {
+    return await reconcileSubscriptionLifecycle(admin, subscription, now)
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error)
+    console.warn('Billing lifecycle reconcile fallback:', message)
+    return applyDerivedLifecycleStatus(subscription, now)
+  }
+}
+
 async function normalizeUsageWindow(usage: UsageRow, now = new Date()) {
   const currentResetDate = toDateOnly(startOfCurrentMonth(now))
 
@@ -249,14 +304,13 @@ function computeTrialDaysRemaining(subscription: SubscriptionRow, now = new Date
 }
 
 function computeAiActionsLimit(subscription: SubscriptionRow, now = new Date()) {
-  if (
-    subscription.status === 'trialing' &&
-    isSubscriptionInGoodStanding(subscription.status, subscription.trial_ends_at, now)
-  ) {
+  const lifecycle = getSubscriptionLifecycleState(subscription, now)
+
+  if (lifecycle.trialAccess) {
     return FREE_LIMITS.aiActions
   }
 
-  if (subscription.status !== 'active') {
+  if (!lifecycle.paidAccess && !lifecycle.canceledGraceAccess) {
     return FREE_LIMITS.aiActions
   }
 
@@ -264,14 +318,13 @@ function computeAiActionsLimit(subscription: SubscriptionRow, now = new Date()) 
 }
 
 function computeTransactionsLimit(subscription: SubscriptionRow, now = new Date()) {
-  if (
-    subscription.status === 'trialing' &&
-    isSubscriptionInGoodStanding(subscription.status, subscription.trial_ends_at, now)
-  ) {
+  const lifecycle = getSubscriptionLifecycleState(subscription, now)
+
+  if (lifecycle.trialAccess) {
     return FREE_LIMITS.transactions
   }
 
-  if (subscription.status !== 'active') {
+  if (!lifecycle.paidAccess && !lifecycle.canceledGraceAccess) {
     return FREE_LIMITS.transactions
   }
 
@@ -283,22 +336,23 @@ export async function getBillingSnapshot(
   now = new Date()
 ): Promise<BillingSnapshot> {
   try {
-    const [subscription, usageSeed] = await Promise.all([
+    const [subscriptionSeed, usageSeed] = await Promise.all([
       ensureSubscription(userId, now),
       ensureUsage(userId, now),
     ])
 
+    const subscription = await normalizeSubscriptionLifecycle(subscriptionSeed, now)
+    const lifecycle = getSubscriptionLifecycleState(subscription, now)
     const usage = await normalizeUsageWindow(usageSeed, now)
-    const premiumAccess = isSubscriptionInGoodStanding(
-      subscription.status,
-      subscription.trial_ends_at,
-      now
-    )
+    const paidAccess = lifecycle.paidAccess || lifecycle.canceledGraceAccess
 
     return {
       subscription,
       usage,
-      premiumAccess,
+      lifecycleStatus: lifecycle.effectiveStatus,
+      paidAccess,
+      trialAccess: lifecycle.trialAccess,
+      premiumAccess: lifecycle.hasProductAccess,
       aiActionsLimit: computeAiActionsLimit(subscription, now),
       transactionsLimit: computeTransactionsLimit(subscription, now),
       trialDaysRemaining: computeTrialDaysRemaining(subscription, now),
@@ -313,6 +367,9 @@ export async function getBillingSnapshot(
     return {
       subscription,
       usage,
+      lifecycleStatus: 'trialing',
+      paidAccess: false,
+      trialAccess: true,
       premiumAccess: true,
       aiActionsLimit: FREE_LIMITS.aiActions,
       transactionsLimit: FREE_LIMITS.transactions,

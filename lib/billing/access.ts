@@ -1,5 +1,6 @@
 import type { BillingSnapshot } from './server'
 import { getBusinessAccountLimit, getPlanDefinition } from './plans'
+import { getSubscriptionLifecycleState } from './lifecycle'
 
 type BillingDurationMonths = 1 | 3 | 6 | 12
 
@@ -25,8 +26,11 @@ function inferDurationFromPeriod(snapshot: BillingSnapshot): BillingDurationMont
     return normalizeDuration(snapshot.subscription.billing_duration_months)
   }
 
+  // Use started_at as the billing period baseline. updated_at is wrong here:
+  // any status update (e.g. past_due) shifts it and produces bad inference.
+  // Fall back to created_at if started_at is not set (legacy rows).
   const referenceRaw =
-    snapshot.subscription.updated_at ?? snapshot.subscription.created_at ?? new Date().toISOString()
+    snapshot.subscription.started_at ?? snapshot.subscription.created_at ?? new Date().toISOString()
   const referenceDate = new Date(referenceRaw)
   const periodEndDate = new Date(periodEnd)
 
@@ -54,11 +58,13 @@ function resolveMaxBusinessAccounts(
   snapshot: BillingSnapshot,
   billingDurationMonths: BillingDurationMonths
 ) {
-  if (snapshot.subscription.status === 'trialing' && snapshot.trialDaysRemaining > 0) {
+  const lifecycle = getSubscriptionLifecycleState(snapshot.subscription)
+
+  if (lifecycle.trialAccess) {
     return 1
   }
 
-  if (snapshot.subscription.status !== 'active') {
+  if (!lifecycle.paidAccess && !lifecycle.canceledGraceAccess) {
     return 0
   }
 
@@ -66,11 +72,11 @@ function resolveMaxBusinessAccounts(
 }
 
 export function isTrialAccess(snapshot: BillingSnapshot) {
-  return snapshot.subscription.status === 'trialing' && snapshot.trialDaysRemaining > 0
+  return snapshot.trialAccess
 }
 
 export function isActivePaidAccess(snapshot: BillingSnapshot) {
-  return snapshot.subscription.status === 'active'
+  return snapshot.paidAccess
 }
 
 export function getBillingAccess(snapshot: BillingSnapshot): BillingAccess {

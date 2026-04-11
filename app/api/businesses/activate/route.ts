@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server'
-import { getBillingAccess, getUpgradeHref } from '@/lib/billing/access'
-import { getBillingSnapshot } from '@/lib/billing/server'
+import { getPolicyBlock, resolveUserAccessPolicy } from '@/lib/billing/policy'
 import {
   ACTIVE_BUSINESS_COOKIE,
   ACTIVE_BUSINESS_COOKIE_MAX_AGE_SECONDS,
@@ -22,16 +21,16 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Não autenticado.' }, { status: 401 })
     }
 
-    const snapshot = await getBillingSnapshot(user.id)
-    const access = getBillingAccess(snapshot)
+    const policy = await resolveUserAccessPolicy(user.id)
+    const businessLock = getPolicyBlock(policy, 'business_module_locked')
 
-    if (!access.businessModule) {
+    if (!policy.modules.business) {
       return NextResponse.json(
         {
           error: 'Seu plano atual não libera a operação empresarial.',
           code: 'business_locked',
           upgradeRequired: true,
-          upgradeHref: getUpgradeHref('business'),
+          upgradeHref: businessLock?.upgradeHref ?? '/planos?feature=business',
         },
         { status: 403 }
       )

@@ -65,6 +65,24 @@ interface FormValues {
   category: string
 }
 
+function mapMutationError(message: string) {
+  const normalized = message.toLowerCase()
+
+  if (normalized.includes('transaction_limit_reached')) {
+    return 'Limite mensal de lancamentos atingido para seu plano.'
+  }
+
+  if (normalized.includes('business_scope_locked')) {
+    return 'Seu plano atual nao permite lancamentos no modulo empresarial.'
+  }
+
+  if (normalized.includes('personal_scope_locked')) {
+    return 'Seu plano atual nao permite lancamentos no modulo pessoal.'
+  }
+
+  return message
+}
+
 function ExpenseForm({
   onClose,
   businessId,
@@ -120,7 +138,7 @@ function ExpenseForm({
         })
         .eq('id', editing.id)
       if (error) {
-        toast.error('Erro ao atualizar', { description: error.message })
+        toast.error('Erro ao atualizar', { description: mapMutationError(error.message) })
         setLoading(false)
         return
       }
@@ -134,7 +152,7 @@ function ExpenseForm({
         month: monthStr,
       })
       if (error) {
-        toast.error('Erro ao adicionar', { description: error.message })
+        toast.error('Erro ao adicionar', { description: mapMutationError(error.message) })
         setLoading(false)
         return
       }
@@ -257,7 +275,7 @@ export default function DespesasEmpresaPage() {
     const { error } = await createClient().from('business_expenses').delete().eq('id', id)
     if (error) {
       setDeleting(null)
-      toast.error('Erro ao remover', { description: error.message })
+      toast.error('Erro ao remover', { description: mapMutationError(error.message) })
       return
     }
     await refresh()

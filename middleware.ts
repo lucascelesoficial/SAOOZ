@@ -36,10 +36,14 @@ export async function middleware(request: NextRequest) {
   const isDemoRoute = pathname.startsWith('/demo')
 
   const isProtectedRoute =
+    pathname.startsWith('/central') ||
     pathname.startsWith('/dashboard') ||
-    pathname.startsWith('/perfil-financeiro') ||
+    pathname.startsWith('/despesas') ||
+    pathname.startsWith('/financas') ||
     pathname.startsWith('/negocios') ||
+    pathname.startsWith('/inteligencia') ||
     pathname.startsWith('/analise') ||
+    pathname.startsWith('/configuracoes') ||
     pathname.startsWith('/conta') ||
     pathname.startsWith('/planos') ||
     pathname.startsWith('/empresa')
@@ -53,7 +57,7 @@ export async function middleware(request: NextRequest) {
   }
 
   if (user && isAuthRoute) {
-    return NextResponse.redirect(new URL('/dashboard', request.url))
+    return NextResponse.redirect(new URL('/central', request.url))
   }
 
   return supabaseResponse

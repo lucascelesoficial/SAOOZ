@@ -31,25 +31,25 @@ interface SidebarProps {
 }
 
 const PF_NAV = [
-  { href: '/dashboard', label: 'Central', icon: LayoutDashboard },
-  { href: '/negocios', label: 'Finanças', icon: Briefcase },
-  { href: '/perfil-financeiro', label: 'Despesas', icon: Receipt },
-  { href: '/analise', label: 'Inteligência', icon: BarChart2 },
+  { href: '/central', label: 'Central', icon: LayoutDashboard },
+  { href: '/financas', label: 'Finanças', icon: Briefcase },
+  { href: '/despesas', label: 'Despesas', icon: Receipt },
+  { href: '/inteligencia', label: 'Inteligência', icon: BarChart2 },
   { href: '/assistente', label: 'Assistente', icon: Bot },
   { href: '/planos', label: 'Planos', icon: CreditCard },
-  { href: '/conta', label: 'Configurações', icon: Settings },
+  { href: '/configuracoes', label: 'Configurações', icon: Settings },
 ]
 
 const PJ_NAV = [
   { href: '/empresa', label: 'Empresa', icon: Building2 },
-  { href: '/empresa/faturamento', label: 'Finanças', icon: TrendingUp },
+  { href: '/empresa/financas', label: 'Finanças', icon: TrendingUp },
   { href: '/empresa/despesas', label: 'Despesas', icon: TrendingDown },
   { href: '/empresa/impostos', label: 'Impostos', icon: Receipt },
   { href: '/empresa/pro-labore', label: 'Pró-labore', icon: ArrowUpRight },
-  { href: '/empresa/analise', label: 'Inteligência', icon: BarChart2 },
+  { href: '/empresa/inteligencia', label: 'Inteligência', icon: BarChart2 },
   { href: '/empresa/assistente', label: 'Assistente', icon: Bot },
   { href: '/planos', label: 'Planos', icon: CreditCard },
-  { href: '/empresa/conta', label: 'Configurações', icon: Settings },
+  { href: '/empresa/configuracoes', label: 'Configurações', icon: Settings },
 ]
 
 export function Sidebar({
@@ -88,7 +88,7 @@ export function Sidebar({
             style={{ background: 'var(--panel-bg)', border: '1px solid var(--panel-border)' }}
           >
             <Link
-              href="/dashboard"
+              href="/central"
               className="flex-1 rounded-[6px] py-1.5 text-center text-xs font-bold transition-all"
               style={
                 !isPJPath
@@ -122,8 +122,8 @@ export function Sidebar({
       <nav className="flex-1 space-y-0.5 overflow-y-auto px-3 py-3">
         {navItems.map(({ href, label, icon: Icon }) => {
           const isActive =
-            href === '/dashboard'
-              ? pathname === '/dashboard'
+            href === '/central'
+              ? pathname === '/central'
               : href === '/empresa'
                 ? pathname === '/empresa'
                 : pathname === href || pathname.startsWith(`${href}/`)

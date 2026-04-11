@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { cookies } from 'next/headers'
 import { aiActionExecutionSchema } from '@/lib/ai/schemas'
-import { getBillingAccess, getUpgradeHref } from '@/lib/billing/access'
-import { consumeAiAction, getBillingSnapshot, BillingLimitError } from '@/lib/billing/server'
+import { canAccessScope, resolveUserAccessPolicy } from '@/lib/billing/policy'
+import { consumeAiAction, BillingLimitError } from '@/lib/billing/server'
 import {
   ACTIVE_BUSINESS_COOKIE,
   isMissingActiveBusinessColumnError,
@@ -42,6 +42,10 @@ async function writeAuditLog(input: {
 
 function isTransactionLimitError(message: string) {
   return message.includes('transaction_limit_reached')
+}
+
+function isScopeLockedError(message: string) {
+  return message.includes('personal_scope_locked') || message.includes('business_scope_locked')
 }
 
 async function resolveActiveBusinessId(input: {
@@ -107,11 +111,10 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Proposta de ação inválida.' }, { status: 400 })
     }
 
-    const billing = await getBillingSnapshot(auth.user.id)
-    const access = getBillingAccess(billing)
-    const aiLimit = billing.aiActionsLimit
+    const policy = await resolveUserAccessPolicy(auth.user.id)
+    const aiLimit = policy.limits.aiActions
 
-    if (aiLimit !== null && billing.usage.ai_actions_used >= aiLimit) {
+    if (aiLimit !== null && policy.usage.aiActionsUsed >= aiLimit) {
       throw new BillingLimitError(
         'Você atingiu o limite mensal de ações de IA do seu plano atual.',
         'ai_limit_reached',
@@ -132,25 +135,25 @@ export async function POST(request: NextRequest) {
 
     const { proposal, month } = parsed.data
 
-    if (proposal.scope === 'business' && !access.businessModule) {
+    if (proposal.scope === 'business' && !canAccessScope(policy, 'business')) {
       return NextResponse.json(
         {
           error: 'Seu plano atual não libera ações empresariais por IA.',
           code: 'business_scope_locked',
           upgradeRequired: true,
-          upgradeHref: getUpgradeHref('business'),
+          upgradeHref: '/planos?feature=business',
         },
         { status: 403 }
       )
     }
 
-    if (proposal.scope === 'personal' && !access.personalModule) {
+    if (proposal.scope === 'personal' && !canAccessScope(policy, 'personal')) {
       return NextResponse.json(
         {
           error: 'Seu plano atual não libera ações pessoais por IA.',
           code: 'personal_scope_locked',
           upgradeRequired: true,
-          upgradeHref: getUpgradeHref('personal'),
+          upgradeHref: '/planos?feature=personal',
         },
         { status: 403 }
       )
@@ -327,6 +330,21 @@ export async function POST(request: NextRequest) {
           error: 'Seu limite atual de lançamentos foi atingido. Faça upgrade para continuar registrando.',
           code: 'transaction_limit_reached',
           upgradeRequired: true,
+        },
+        { status: 403 }
+      )
+    }
+
+    if (isScopeLockedError(message)) {
+      const isBusinessLock = message.includes('business_scope_locked')
+      return NextResponse.json(
+        {
+          error: isBusinessLock
+            ? 'Seu plano atual nao permite lancamentos empresariais.'
+            : 'Seu plano atual nao permite lancamentos pessoais.',
+          code: isBusinessLock ? 'business_scope_locked' : 'personal_scope_locked',
+          upgradeRequired: true,
+          upgradeHref: isBusinessLock ? '/planos?feature=business' : '/planos?feature=personal',
         },
         { status: 403 }
       )
