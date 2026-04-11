@@ -246,6 +246,10 @@ export class StripeProvider implements PaymentProvider {
 
     const StripeModule = await import('stripe')
     const StripeClient = StripeModule.default
-    return new StripeClient(this.secretKey, { apiVersion: STRIPE_API_VERSION })
+    // Force Node.js native http client to avoid Next.js fetch polyfill interference
+    return new StripeClient(this.secretKey, {
+      apiVersion: STRIPE_API_VERSION,
+      httpClient: StripeClient.createNodeHttpClient(),
+    })
   }
 }
