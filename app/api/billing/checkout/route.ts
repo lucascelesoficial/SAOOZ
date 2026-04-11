@@ -36,7 +36,7 @@ export async function POST(request: NextRequest) {
     if (process.env.STRIPE_SECRET_KEY && paymentMethod === 'card') {
       try {
         const Stripe = (await import('stripe')).default
-        const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, { apiVersion: '2024-12-18.acacia' })
+        const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, { apiVersion: '2026-03-25.dahlia' })
 
         const session = await stripe.checkout.sessions.create({
           payment_method_types: ['card'],
