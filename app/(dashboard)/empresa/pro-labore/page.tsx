@@ -1,6 +1,7 @@
 'use client'
 
 import { ArrowUpRight, ShieldCheck, Scale, Zap, Info } from 'lucide-react'
+import { ExportPDFButton } from '@/components/pdf/ExportPDFButton'
 import { useBusinessData } from '@/lib/context/BusinessDataContext'
 import { formatCurrency, formatMonth } from '@/lib/utils/formatters'
 import { suggestProLabore } from '@/lib/utils/taxes'
@@ -28,9 +29,46 @@ export default function ProLaborePage() {
   return (
     <div className="max-w-2xl mx-auto space-y-6">
       {/* Header */}
-      <div>
-        <h1 className="text-xl font-bold text-white">Pró-labore</h1>
-        <p className="text-sm text-[#B3B3B3] mt-1">{formatMonth(currentMonth)} · {business?.name}</p>
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <h1 className="text-xl font-bold text-white">Pró-labore</h1>
+          <p className="text-sm text-[#B3B3B3] mt-1">{formatMonth(currentMonth)} · {business?.name}</p>
+        </div>
+        <ExportPDFButton
+          data={{
+            title: 'Relatório de Pró-labore',
+            subtitle: business?.name ?? 'Módulo Empresarial',
+            month: formatMonth(currentMonth),
+            totalIncome: totals.totalRevenue,
+            totalExpenses: totals.totalExpenses,
+            balance: operationalProfit,
+            taxAmount: totals.taxAmount,
+            netProfit: operationalProfit,
+            businessName: business?.name,
+            taxRegime: business?.tax_regime,
+            sections: [
+              {
+                title: 'Base de Cálculo',
+                rows: [
+                  { label: 'Faturamento bruto', value: formatCurrency(totals.totalRevenue), color: 'green' },
+                  { label: 'Despesas operacionais', value: formatCurrency(totals.totalExpenses), color: 'red' },
+                  { label: 'Imposto estimado', value: formatCurrency(totals.taxAmount), color: 'yellow' },
+                  { label: 'Lucro disponível', value: formatCurrency(operationalProfit), color: operationalProfit >= 0 ? 'blue' : 'red', bold: true, divider: true },
+                  { label: 'Reserva operacional (30%)', value: formatCurrency(operationalProfit * 0.3), color: 'gray', note: 'Mantida antes da retirada' },
+                ],
+              },
+            ],
+            proLabore: proLabore.balanced > 0 ? {
+              conservative: proLabore.conservative,
+              balanced: proLabore.balanced,
+              aggressive: proLabore.aggressive,
+              operationalProfit,
+              operationalReserve: operationalProfit * 0.3,
+              reason: proLabore.reason,
+            } : undefined,
+          }}
+          fileName={`saooz-prolabore-${currentMonth.toISOString().slice(0, 7)}.pdf`}
+        />
       </div>
 
       {/* Summary card */}

@@ -369,15 +369,51 @@ export function EmpresaInteligenciaClient({
                 profitMargin: `${(totals.profitMargin * 100).toFixed(1)}%`,
                 businessName: business?.name,
                 taxRegime: business?.tax_regime,
-                incomes: revenueCategories.map((r) => ({
-                  name: r.label,
-                  type: r.label,
-                  amount: r.amount,
-                })),
-                expenses: expenseCategories.map((e) => ({
-                  category: e.label,
-                  amount: e.amount,
-                })),
+                sections: [
+                  {
+                    title: 'Resumo Inteligente',
+                    rows: [
+                      { label: 'Análise do período', value: intelligence.summary, bold: true },
+                      { label: 'Faturamento médio (6 meses)', value: `R$ ${intelligence.averageRevenue.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`, color: 'green' },
+                      { label: 'Despesas médias (6 meses)', value: `R$ ${intelligence.averageExpenses.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`, color: 'red' },
+                      { label: 'Lucro projetado', value: `R$ ${intelligence.projectedNetProfit.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`, color: intelligence.projectedNetProfit >= 0 ? 'blue' : 'red', bold: true, divider: true },
+                    ],
+                  },
+                  ...(intelligence.alerts.length > 0 ? [{
+                    title: 'Alertas',
+                    rows: intelligence.alerts.map((a) => ({
+                      label: a.title,
+                      value: '',
+                      note: a.description,
+                      color: 'red' as const,
+                    })),
+                  }] : []),
+                  ...(intelligence.recommendations.length > 0 ? [{
+                    title: 'Recomendações',
+                    rows: intelligence.recommendations.map((r) => ({
+                      label: r.title,
+                      value: '',
+                      note: r.description,
+                      color: 'blue' as const,
+                    })),
+                  }] : []),
+                  ...(revenueCategories.length > 0 ? [{
+                    title: 'Composição do Faturamento',
+                    rows: revenueCategories.map((r) => ({
+                      label: r.label,
+                      value: `R$ ${r.amount.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`,
+                      color: 'green' as const,
+                    })),
+                  }] : []),
+                  ...(expenseCategories.length > 0 ? [{
+                    title: 'Composição das Despesas',
+                    rows: expenseCategories.map((e) => ({
+                      label: e.label,
+                      value: `R$ ${e.amount.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`,
+                      color: 'red' as const,
+                    })),
+                  }] : []),
+                ],
               }}
               fileName={`saooz-inteligencia-empresa-${currentMonth.toISOString().slice(0, 7)}.pdf`}
             />

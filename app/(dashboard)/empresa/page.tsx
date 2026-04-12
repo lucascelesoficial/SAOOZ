@@ -10,6 +10,7 @@ import { formatCurrency, formatMonth } from '@/lib/utils/formatters'
 import { regimeLabel, activityLabel } from '@/lib/utils/taxes'
 import { Building2, TrendingUp, ShieldCheck, Scale, Zap, Receipt, ArrowUpRight } from 'lucide-react'
 import { suggestProLabore } from '@/lib/utils/taxes'
+import { ExportPDFButton } from '@/components/pdf/ExportPDFButton'
 
 // ── Business health insights ──────────────────────────────────────────────────
 interface Insight { label: string; value: string; status: 'good' | 'warn' | 'bad' | 'neutral' }
@@ -136,21 +137,57 @@ export default function EmpresaPage() {
           <p className="text-sm text-[#6B6B6B] mt-0.5">{formatMonth(currentMonth)}</p>
         </div>
 
-        {/* Business Health Score */}
-        {totals.totalRevenue > 0 && (
-          <div className="flex items-center gap-3 px-4 py-2.5 rounded-[10px] card-premium"
-            style={{ border: `1px solid ${scoreColor}25` }}>
-            <div className="text-right">
-              <p className="text-[10px] text-[#6B6B6B] uppercase tracking-wider">Business Score</p>
-              <p className="text-2xl font-extrabold tabular-nums leading-tight"
-                style={{ color: scoreColor, textShadow: `0 0 12px ${scoreColor}66` }}>
-                {score}
-              </p>
+        {/* Right side: Export + Business Health Score */}
+        <div className="flex items-center gap-3">
+          <ExportPDFButton
+            data={{
+              title: 'Painel Empresarial',
+              subtitle: business?.name ?? 'Módulo Empresarial',
+              month: formatMonth(currentMonth),
+              totalIncome: totals.totalRevenue,
+              totalExpenses: totals.totalExpenses,
+              balance: totals.netProfit,
+              taxAmount: totals.taxAmount,
+              netProfit: totals.netProfit,
+              profitMargin: `${(totals.profitMargin * 100).toFixed(1)}%`,
+              businessName: business?.name,
+              taxRegime: business?.tax_regime,
+              sections: [
+                {
+                  title: 'Saúde Empresarial',
+                  rows: [
+                    ...insights.map((ins) => ({
+                      label: ins.label,
+                      value: ins.value,
+                      color: ins.status === 'good' ? 'green' as const
+                           : ins.status === 'warn' ? 'yellow' as const
+                           : ins.status === 'bad'  ? 'red' as const
+                           : 'gray' as const,
+                    })),
+                    ...(totals.totalRevenue > 0 ? [
+                      { label: 'Business Score', value: `${score} — ${scoreLabel}`, bold: true },
+                    ] : []),
+                  ],
+                },
+              ],
+            }}
+            fileName={`saooz-central-pj-${currentMonth.toISOString().slice(0, 7)}.pdf`}
+          />
+          {totals.totalRevenue > 0 && (
+            <div className="flex items-center gap-3 px-4 py-2.5 rounded-[10px] card-premium"
+              style={{ border: `1px solid ${scoreColor}25` }}>
+              <div className="text-right">
+                <p className="text-[10px] text-[#6B6B6B] uppercase tracking-wider">Business Score</p>
+                <p className="text-2xl font-extrabold tabular-nums leading-tight"
+                  style={{ color: scoreColor, textShadow: `0 0 12px ${scoreColor}66` }}>
+                  {score}
+                </p>
+              </div>
+              <div className="h-8 w-px bg-[#2A2A2A]" />
+              <p className="text-sm font-bold" style={{ color: scoreColor }}>{scoreLabel}</p>
             </div>
-            <div className="h-8 w-px bg-[#2A2A2A]" />
-            <p className="text-sm font-bold" style={{ color: scoreColor }}>{scoreLabel}</p>
-          </div>
-        )}
+          )}
+        </div>
       </div>
 
       {/* Metric cards — same component as PF */}

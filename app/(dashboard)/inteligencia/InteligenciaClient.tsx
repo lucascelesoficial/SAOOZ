@@ -467,10 +467,43 @@ export function InteligenciaClient({
                 totalIncome: totals.totalIncome,
                 totalExpenses: totals.totalExpenses,
                 balance: totals.balance,
-                expenses: categoryData.map((c) => ({
-                  category: c.label,
-                  amount: c.total,
-                })),
+                sections: [
+                  {
+                    title: 'Resumo Inteligente',
+                    rows: [
+                      { label: 'Análise do período', value: intelligence.summary, bold: true },
+                      { label: 'Renda média (6 meses)', value: `R$ ${intelligence.averageIncome.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`, color: 'green' },
+                      { label: 'Comprometimento atual', value: `${Math.round(totals.consumptionRate)}%`, color: totals.consumptionRate >= 85 ? 'red' : totals.consumptionRate >= 70 ? 'yellow' : 'green' },
+                      { label: 'Saldo projetado', value: `R$ ${intelligence.projectedBalance.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`, color: intelligence.projectedBalance >= 0 ? 'blue' : 'red', bold: true, divider: true },
+                    ],
+                  },
+                  ...(intelligence.alerts.length > 0 ? [{
+                    title: 'Alertas',
+                    rows: intelligence.alerts.map((a) => ({
+                      label: a.title,
+                      value: '',
+                      note: a.description,
+                      color: 'red' as const,
+                    })),
+                  }] : []),
+                  ...(intelligence.recommendations.length > 0 ? [{
+                    title: 'Recomendações',
+                    rows: intelligence.recommendations.map((r) => ({
+                      label: r.title,
+                      value: '',
+                      note: r.description,
+                      color: 'blue' as const,
+                    })),
+                  }] : []),
+                  ...(categoryData.length > 0 ? [{
+                    title: 'Gastos por Categoria',
+                    rows: categoryData.map((c) => ({
+                      label: c.label,
+                      value: `R$ ${c.total.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} (${c.percentage}%)`,
+                      color: 'red' as const,
+                    })),
+                  }] : []),
+                ],
               }}
               fileName={`saooz-inteligencia-${currentMonth.toISOString().slice(0, 7)}.pdf`}
             />

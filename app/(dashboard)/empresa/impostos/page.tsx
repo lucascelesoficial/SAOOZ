@@ -1,6 +1,7 @@
 'use client'
 
 import { Receipt, Info, TrendingUp } from 'lucide-react'
+import { ExportPDFButton } from '@/components/pdf/ExportPDFButton'
 import { useBusinessData } from '@/lib/context/BusinessDataContext'
 import { formatCurrency, formatMonth } from '@/lib/utils/formatters'
 import { regimeLabel } from '@/lib/utils/taxes'
@@ -49,9 +50,56 @@ export default function ImpostosPage() {
   return (
     <div className="max-w-2xl mx-auto space-y-6">
       {/* Header */}
-      <div>
-        <h1 className="text-xl font-bold text-white">Impostos</h1>
-        <p className="text-sm text-[#B3B3B3] mt-1">{formatMonth(currentMonth)} · {business?.name}</p>
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <h1 className="text-xl font-bold text-white">Impostos</h1>
+          <p className="text-sm text-[#B3B3B3] mt-1">{formatMonth(currentMonth)} · {business?.name}</p>
+        </div>
+        <ExportPDFButton
+          data={{
+            title: 'Relatório de Impostos',
+            subtitle: business?.name ?? 'Módulo Empresarial',
+            month: formatMonth(currentMonth),
+            totalIncome: totals.totalRevenue,
+            totalExpenses: 0,
+            balance: totals.totalRevenue - totals.taxAmount,
+            taxAmount: totals.taxAmount,
+            businessName: business?.name,
+            taxRegime: regimeLabel(regime),
+            sections: [
+              {
+                title: 'Resumo Tributário',
+                rows: [
+                  { label: 'Regime tributário', value: regimeLabel(regime), bold: true },
+                  { label: 'Atividade', value: business?.activity === 'comercio' ? 'Comércio' : 'Serviço' },
+                  { label: 'Faturamento do mês', value: formatCurrency(totals.totalRevenue), color: 'green' },
+                  { label: 'Imposto estimado', value: formatCurrency(totals.taxAmount), color: 'yellow', bold: true },
+                  { label: 'Alíquota efetiva', value: taxEstimate?.ratePct ?? '—', color: 'yellow' },
+                  { label: 'Projeção anual (× 12)', value: formatCurrency(annualProjection), color: 'red', bold: true, divider: true },
+                  { label: 'Restante após imposto', value: formatCurrency(totals.totalRevenue - totals.taxAmount), color: 'blue' },
+                ],
+              },
+              ...(tips.length > 0 ? [{
+                title: `Sobre o ${regimeLabel(regime)}`,
+                rows: tips.map((tip) => ({ label: '•', value: tip, note: '' })),
+              }] : []),
+            ],
+            taxBreakdown: taxEstimate && taxEstimate.breakdown.length > 0 && totals.totalRevenue > 0
+              ? {
+                  regime: taxEstimate.regime,
+                  ratePct: taxEstimate.ratePct,
+                  totalAmount: totals.taxAmount,
+                  annualProjection,
+                  items: taxEstimate.breakdown.map((b) => ({
+                    label: b.label,
+                    ratePct: `${(b.rate * 100).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}%`,
+                    amount: b.amount,
+                  })),
+                }
+              : undefined,
+          }}
+          fileName={`saooz-impostos-${currentMonth.toISOString().slice(0, 7)}.pdf`}
+        />
       </div>
 
       {/* Regime badge */}
