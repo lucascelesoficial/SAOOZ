@@ -35,8 +35,8 @@ export async function GET() {
       apiVersion: '2026-03-25.dahlia' as const,
       httpClient: Stripe.createNodeHttpClient(),
     })
-    const account = await stripe.accounts.retrieve()
-    sdkResult = `OK — account: ${account.id}`
+    const balance = await stripe.balance.retrieve()
+    sdkResult = `OK — available: ${JSON.stringify(balance.available)}`
   } catch (e) {
     sdkResult = `SDK ERROR: ${e instanceof Error ? e.message : String(e)}`
   }
