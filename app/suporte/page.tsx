@@ -23,9 +23,9 @@ const SUPPORT_TOPICS = [
 ]
 
 const QUICK_GUIDES = [
-  'Confirme se seu plano esta ativo em Planos.',
-  'Verifique o mes selecionado no topo antes de registrar dados.',
-  'Se o webhook de pagamento atrasar, confira a tela /admin/billing (uso interno).',
+  'Confirme se seu plano está ativo em Configurações → Planos.',
+  'Verifique o mês selecionado no topo da tela antes de registrar dados.',
+  'Se o pagamento foi confirmado mas o plano não ativou, aguarde alguns minutos e recarregue a página.',
 ]
 
 export default function SuportePage() {

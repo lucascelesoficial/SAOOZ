@@ -21,7 +21,8 @@ export function ExportPDFButton({ data, fileName, className }: ExportPDFButtonPr
       const { FinancialReportPDF } = await import('./FinancialReportPDF')
       const React = (await import('react')).default
 
-      const blob = await pdf(React.createElement(FinancialReportPDF, { data })).toBlob()
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const blob = await pdf(React.createElement(FinancialReportPDF, { data }) as any).toBlob()
       const url = URL.createObjectURL(blob)
       const a = document.createElement('a')
       a.href = url

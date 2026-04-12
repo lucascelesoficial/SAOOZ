@@ -96,6 +96,7 @@ export interface Database {
           mode: UserMode | null
           active_business_id: string | null
           created_at: string
+          cpf: string | null
         }
         Insert: {
           id: string
@@ -105,6 +106,7 @@ export interface Database {
           mode?: UserMode | null
           active_business_id?: string | null
           created_at?: string
+          cpf?: string | null
         }
         Update: {
           id?: string
@@ -114,6 +116,7 @@ export interface Database {
           mode?: UserMode | null
           active_business_id?: string | null
           created_at?: string
+          cpf?: string | null
         }
         Relationships: []
       }

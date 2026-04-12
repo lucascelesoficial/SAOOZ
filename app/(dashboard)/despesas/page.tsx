@@ -324,7 +324,7 @@ export default function DespesasPFPage() {
                 description: e.description ?? e.category,
                 category: CATEGORY_LABELS[e.category] ?? e.category,
                 amount: e.amount,
-                date: e.date ? new Date(e.date).toLocaleDateString('pt-BR') : undefined,
+                date: e.created_at ? new Date(e.created_at).toLocaleDateString('pt-BR') : undefined,
               })),
             }}
             fileName={`saooz-despesas-${currentMonth}.pdf`}

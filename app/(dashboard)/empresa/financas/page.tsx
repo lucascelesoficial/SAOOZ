@@ -278,7 +278,7 @@ export default function EmpresaFinancasPage() {
                 name: r.description ?? r.category,
                 type: catLabel[r.category] ?? r.category,
                 amount: r.amount,
-                date: r.date ? new Date(r.date).toLocaleDateString('pt-BR') : undefined,
+                date: r.created_at ? new Date(r.created_at).toLocaleDateString('pt-BR') : undefined,
               })),
             }}
             fileName={`saooz-receitas-${currentMonth}.pdf`}

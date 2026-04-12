@@ -186,7 +186,7 @@ export async function POST(request: NextRequest) {
     let prompt: string
     if (policy.planType === 'pro') {
       prompt = buildPROPrompt(userMessage, enrichedContext)
-    } else if (enrichedContext.mode === 'pj') {
+    } else if ((context as Record<string, unknown>).mode === 'pj') {
       prompt = buildPJPrompt(userMessage, enrichedContext)
     } else {
       prompt = buildPFPrompt(userMessage, enrichedContext)
