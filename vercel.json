@@ -1,10 +1,1 @@
-{
-  "redirects": [
-    {
-      "source": "/(.*)",
-      "has": [{ "type": "host", "value": "saooz.com" }],
-      "destination": "https://www.saooz.com/$1",
-      "permanent": true
-    }
-  ]
-}
+{}
