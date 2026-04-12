@@ -10,8 +10,11 @@ import { InsightsPanel } from '@/components/dashboard/InsightsPanel'
 import { MetricCard } from '@/components/dashboard/MetricCard'
 import { SaoozAI } from '@/components/dashboard/SaoozAI'
 import { WaveCashflowChart } from '@/components/dashboard/WaveCashflowChart'
+import { ExportPDFButton } from '@/components/pdf/ExportPDFButton'
 import { useFinancialData } from '@/lib/hooks/useFinancialData'
 import { generateInsights } from '@/lib/utils/calculations'
+import { formatMonth } from '@/lib/utils/formatters'
+import { CATEGORY_LABELS, INCOME_TYPE_LABELS } from '@/types/financial.types'
 
 interface DashboardClientProps {
   userId: string
@@ -25,7 +28,7 @@ export function DashboardClient({
   businessLimitReached,
 }: DashboardClientProps) {
   const [modalOpen, setModalOpen] = useState(false)
-  const { totals, categoryData, incomes, expenses, isLoading } = useFinancialData()
+  const { totals, categoryData, incomes, expenses, isLoading, currentMonth } = useFinancialData()
   const insights = useMemo(() => generateInsights(totals, categoryData), [categoryData, totals])
   // Show the header CTA only when user has PJ access (can create or hit limit)
   const showHeaderCta = canCreateBusiness || businessLimitReached
@@ -43,19 +46,44 @@ export function DashboardClient({
             Seu cockpit financeiro pessoal com visão rápida, execução e expansão para PJ.
           </p>
         </div>
-        {showHeaderCta && (
-          <Link
-            href={businessCtaHref}
-            className="inline-flex h-10 items-center justify-center gap-2 rounded-[10px] border px-4 text-sm font-medium text-app transition-colors hover:opacity-90"
-            style={{
-              background: 'var(--panel-bg-soft)',
-              borderColor: 'var(--panel-border)',
+        <div className="flex items-center gap-2">
+          <ExportPDFButton
+            data={{
+              title: 'Relatório Central',
+              subtitle: 'Módulo Pessoal',
+              month: formatMonth(currentMonth),
+              totalIncome: totals.totalIncome,
+              totalExpenses: totals.totalExpenses,
+              balance: totals.balance,
+              incomes: incomes.map((i) => ({
+                name: i.name,
+                type: INCOME_TYPE_LABELS[i.type] ?? i.type,
+                amount: i.amount,
+                date: i.created_at ? new Date(i.created_at).toLocaleDateString('pt-BR') : undefined,
+              })),
+              expenses: expenses.map((e) => ({
+                category: CATEGORY_LABELS[e.category] ?? e.category,
+                description: e.description ?? undefined,
+                amount: e.amount,
+                date: e.created_at ? new Date(e.created_at).toLocaleDateString('pt-BR') : undefined,
+              })),
             }}
-          >
-            <Building2 className="h-4 w-4" />
-            {businessCtaLabel}
-          </Link>
-        )}
+            fileName={`saooz-central-${currentMonth.toISOString().slice(0, 7)}.pdf`}
+          />
+          {showHeaderCta && (
+            <Link
+              href={businessCtaHref}
+              className="inline-flex h-10 items-center justify-center gap-2 rounded-[10px] border px-4 text-sm font-medium text-app transition-colors hover:opacity-90"
+              style={{
+                background: 'var(--panel-bg-soft)',
+                borderColor: 'var(--panel-border)',
+              }}
+            >
+              <Building2 className="h-4 w-4" />
+              {businessCtaLabel}
+            </Link>
+          )}
+        </div>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">

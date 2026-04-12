@@ -25,8 +25,9 @@ import {
   buildPersonalIntelligence,
   type PersonalTrendPoint,
 } from '@/lib/intelligence/personal'
+import { ExportPDFButton } from '@/components/pdf/ExportPDFButton'
 import { createClient } from '@/lib/supabase/client'
-import { formatCurrency, formatMonthShort, toMonthISO } from '@/lib/utils/formatters'
+import { formatCurrency, formatMonth, formatMonthShort, toMonthISO } from '@/lib/utils/formatters'
 import { CATEGORY_LABELS } from '@/types/financial.types'
 import type { ExpenseCategory } from '@/types/database.types'
 
@@ -457,14 +458,31 @@ export function InteligenciaClient({
               Leitura automática do mês com alertas, projeção e próximos movimentos.
             </p>
           </div>
-          <div
-            className="rounded-[12px] border px-4 py-3 text-sm text-app"
-            style={{
-              borderColor: 'color-mix(in oklab, var(--accent-blue) 22%, transparent)',
-              background: 'color-mix(in oklab, var(--accent-blue) 8%, transparent)',
-            }}
-          >
-            {intelligence.summary}
+          <div className="flex flex-col items-start gap-2 sm:flex-row sm:items-center">
+            <ExportPDFButton
+              data={{
+                title: 'Relatório de Inteligência',
+                subtitle: 'Módulo Pessoal',
+                month: formatMonth(currentMonth),
+                totalIncome: totals.totalIncome,
+                totalExpenses: totals.totalExpenses,
+                balance: totals.balance,
+                expenses: categoryData.map((c) => ({
+                  category: c.label,
+                  amount: c.total,
+                })),
+              }}
+              fileName={`saooz-inteligencia-${currentMonth.toISOString().slice(0, 7)}.pdf`}
+            />
+            <div
+              className="rounded-[12px] border px-4 py-3 text-sm text-app"
+              style={{
+                borderColor: 'color-mix(in oklab, var(--accent-blue) 22%, transparent)',
+                background: 'color-mix(in oklab, var(--accent-blue) 8%, transparent)',
+              }}
+            >
+              {intelligence.summary}
+            </div>
           </div>
         </div>
       </div>

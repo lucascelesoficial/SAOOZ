@@ -12,6 +12,7 @@ import { Modal } from '@/components/ui/Modal'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { createClient } from '@/lib/supabase/client'
 import { useFinancialData } from '@/lib/hooks/useFinancialData'
+import { ExportPDFButton } from '@/components/pdf/ExportPDFButton'
 import { formatCurrency, formatMonth } from '@/lib/utils/formatters'
 import { INCOME_TYPE_LABELS } from '@/types/financial.types'
 import type { IncomeType, Database } from '@/types/database.types'
@@ -251,16 +252,35 @@ export default function FinancasPage() {
           <h1 className="text-xl font-bold text-app">Finanças</h1>
           <p className="mt-1 text-sm text-app-base">{formatMonth(currentMonth)} - lançamentos deste mês</p>
         </div>
-        <Button
-          onClick={() => {
-            setEditing(null)
-            setModalOpen(true)
-          }}
-          className="rounded-[8px] text-white"
-          style={{ background: 'linear-gradient(135deg, var(--accent-blue), var(--accent-cyan))' }}
-        >
-          <Plus className="mr-1 h-4 w-4" /> Adicionar
-        </Button>
+        <div className="flex items-center gap-2">
+          <ExportPDFButton
+            data={{
+              title: 'Relatório de Rendas',
+              subtitle: 'Módulo Pessoal',
+              month: formatMonth(currentMonth),
+              totalIncome: total,
+              totalExpenses: 0,
+              balance: total,
+              incomes: incomes.map((i) => ({
+                name: i.name,
+                type: INCOME_TYPE_LABELS[i.type] ?? i.type,
+                amount: i.amount,
+                date: i.created_at ? new Date(i.created_at).toLocaleDateString('pt-BR') : undefined,
+              })),
+            }}
+            fileName={`saooz-rendas-${currentMonth.toISOString().slice(0, 7)}.pdf`}
+          />
+          <Button
+            onClick={() => {
+              setEditing(null)
+              setModalOpen(true)
+            }}
+            className="rounded-[8px] text-white"
+            style={{ background: 'linear-gradient(135deg, var(--accent-blue), var(--accent-cyan))' }}
+          >
+            <Plus className="mr-1 h-4 w-4" /> Adicionar
+          </Button>
+        </div>
       </div>
 
       <div className="panel-card mb-6 p-5">

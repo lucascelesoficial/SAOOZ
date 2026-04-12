@@ -26,9 +26,10 @@ import {
   buildBusinessTrendHistory,
   type BusinessCategoryPoint,
 } from '@/lib/intelligence/business'
+import { ExportPDFButton } from '@/components/pdf/ExportPDFButton'
 import { useBusinessData } from '@/lib/context/BusinessDataContext'
 import { createClient } from '@/lib/supabase/client'
-import { formatCurrency, formatMonthShort, toMonthISO } from '@/lib/utils/formatters'
+import { formatCurrency, formatMonth, formatMonthShort, toMonthISO } from '@/lib/utils/formatters'
 
 const REV_LABELS: Record<string, string> = {
   servico: 'Serviço',
@@ -354,14 +355,41 @@ export function EmpresaInteligenciaClient({
               {business?.name ?? 'sua empresa'}.
             </p>
           </div>
-          <div
-            className="rounded-[12px] border px-4 py-3 text-sm text-app"
-            style={{
-              borderColor: 'color-mix(in oklab, var(--accent-blue) 22%, transparent)',
-              background: 'color-mix(in oklab, var(--accent-blue) 8%, transparent)',
-            }}
-          >
-            {intelligence.summary}
+          <div className="flex flex-col items-start gap-2 sm:flex-row sm:items-center">
+            <ExportPDFButton
+              data={{
+                title: 'Inteligência Empresarial',
+                subtitle: business?.name ?? 'Módulo Empresarial',
+                month: formatMonth(currentMonth),
+                totalIncome: totals.totalRevenue,
+                totalExpenses: totals.totalExpenses,
+                balance: totals.netProfit,
+                taxAmount: totals.taxAmount,
+                netProfit: totals.netProfit,
+                profitMargin: `${(totals.profitMargin * 100).toFixed(1)}%`,
+                businessName: business?.name,
+                taxRegime: business?.tax_regime,
+                incomes: revenueCategories.map((r) => ({
+                  name: r.label,
+                  type: r.label,
+                  amount: r.amount,
+                })),
+                expenses: expenseCategories.map((e) => ({
+                  category: e.label,
+                  amount: e.amount,
+                })),
+              }}
+              fileName={`saooz-inteligencia-empresa-${currentMonth.toISOString().slice(0, 7)}.pdf`}
+            />
+            <div
+              className="rounded-[12px] border px-4 py-3 text-sm text-app"
+              style={{
+                borderColor: 'color-mix(in oklab, var(--accent-blue) 22%, transparent)',
+                background: 'color-mix(in oklab, var(--accent-blue) 8%, transparent)',
+              }}
+            >
+              {intelligence.summary}
+            </div>
           </div>
         </div>
       </div>

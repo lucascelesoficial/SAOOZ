@@ -10,7 +10,7 @@ import {
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 export interface PDFExpenseItem {
-  description: string
+  description?: string
   category: string
   amount: number
   date?: string
