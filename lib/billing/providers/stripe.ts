@@ -68,8 +68,8 @@ export class StripeProvider implements PaymentProvider {
   private readonly webhookSecret: string | null
 
   constructor(options?: { secretKey?: string | null; webhookSecret?: string | null }) {
-    this.secretKey = options?.secretKey ?? process.env.STRIPE_SECRET_KEY ?? null
-    this.webhookSecret = options?.webhookSecret ?? process.env.STRIPE_WEBHOOK_SECRET ?? null
+    this.secretKey = (options?.secretKey ?? process.env.STRIPE_SECRET_KEY ?? null)?.trim() ?? null
+    this.webhookSecret = (options?.webhookSecret ?? process.env.STRIPE_WEBHOOK_SECRET ?? null)?.trim() ?? null
   }
 
   isConfigured() {
