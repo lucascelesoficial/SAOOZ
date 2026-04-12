@@ -1,70 +1,71 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+<svg width="512" height="512" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
   <defs>
-    <linearGradient id="g1" x1="30%" y1="0%" x2="70%" y2="100%">
-      <stop offset="0%" stop-color="#7dd3fc"/>
-      <stop offset="40%" stop-color="#818cf8"/>
-      <stop offset="100%" stop-color="#c084fc"/>
-    </linearGradient>
-    <linearGradient id="g2" x1="20%" y1="0%" x2="80%" y2="100%">
-      <stop offset="0%" stop-color="#38bdf8"/>
-      <stop offset="45%" stop-color="#6366f1"/>
-      <stop offset="100%" stop-color="#a855f7"/>
-    </linearGradient>
-    <linearGradient id="g3" x1="10%" y1="0%" x2="90%" y2="100%">
-      <stop offset="0%" stop-color="#22d3ee"/>
-      <stop offset="50%" stop-color="#818cf8"/>
-      <stop offset="100%" stop-color="#d946ef"/>
-    </linearGradient>
-    <linearGradient id="g4" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#7dd3fc"/>
-      <stop offset="50%" stop-color="#a78bfa"/>
-      <stop offset="100%" stop-color="#e879f9"/>
-    </linearGradient>
-    <filter id="glow-sm">
-      <feGaussianBlur stdDeviation="3" result="blur"/>
-      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    <filter id="g1" x="-120%" y="-120%" width="340%" height="340%">
+      <feGaussianBlur stdDeviation="4" result="b1"/>
+      <feGaussianBlur stdDeviation="8" result="b2" in="SourceGraphic"/>
+      <feMerge>
+        <feMergeNode in="b2"/>
+        <feMergeNode in="b1"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
     </filter>
-    <filter id="glow-md">
-      <feGaussianBlur stdDeviation="5" result="blur"/>
-      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    <filter id="g2" x="-80%" y="-80%" width="260%" height="260%">
+      <feGaussianBlur stdDeviation="2.5" result="b"/>
+      <feMerge>
+        <feMergeNode in="b"/>
+        <feMergeNode in="b"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
     </filter>
-    <filter id="glow-lg">
-      <feGaussianBlur stdDeviation="8" result="blur"/>
-      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    <filter id="g3" x="-200%" y="-200%" width="500%" height="500%">
+      <feGaussianBlur stdDeviation="6" result="b"/>
+      <feMerge>
+        <feMergeNode in="b"/>
+        <feMergeNode in="b"/>
+        <feMergeNode in="b"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
     </filter>
+    <radialGradient id="cg" cx="50%" cy="50%" r="50%">
+      <stop offset="0%"   stop-color="#a5f3fc" stop-opacity="1"/>
+      <stop offset="60%"  stop-color="#67e8f9" stop-opacity="0.6"/>
+      <stop offset="100%" stop-color="#3b82f6" stop-opacity="0"/>
+    </radialGradient>
   </defs>
 
-  <!-- Background -->
-  <rect width="512" height="512" fill="#000000"/>
+  <!-- Ring 1 — outermost, cyan-blue -->
+  <circle cx="40" cy="40" r="36"
+    stroke="#3b82f6" stroke-width="1" fill="none"
+    filter="url(#g1)"
+    stroke-dasharray="6 10"/>
 
-  <!-- Ring 1 — outermost, thin -->
-  <circle cx="256" cy="256" r="242" fill="none" stroke="url(#g1)" stroke-width="2" opacity="0.75" filter="url(#glow-sm)"/>
+  <!-- Ring 2 — solid blue -->
+  <circle cx="40" cy="40" r="30"
+    stroke="#60a5fa" stroke-width="1.5" fill="none"
+    filter="url(#g2)"/>
 
-  <!-- Ring 2 -->
-  <circle cx="256" cy="256" r="210" fill="none" stroke="url(#g2)" stroke-width="3" opacity="0.8" filter="url(#glow-sm)"/>
+  <!-- Ring 3 — blue-indigo -->
+  <circle cx="40" cy="40" r="23"
+    stroke="#818cf8" stroke-width="2" fill="none"
+    filter="url(#g2)"/>
 
-  <!-- Ring 3 — thick band start -->
-  <circle cx="256" cy="256" r="175" fill="none" stroke="url(#g3)" stroke-width="22" opacity="0.9" filter="url(#glow-md)"/>
+  <!-- Ring 4 — violet-purple -->
+  <circle cx="40" cy="40" r="16"
+    stroke="#a78bfa" stroke-width="2.5" fill="none"
+    filter="url(#g2)"/>
 
-  <!-- Ring 3 inner edge crisp -->
-  <circle cx="256" cy="256" r="154" fill="none" stroke="url(#g4)" stroke-width="2" opacity="0.6"/>
+  <!-- Ring 5 — innermost magenta -->
+  <circle cx="40" cy="40" r="9.5"
+    stroke="#c084fc" stroke-width="2" fill="none"
+    filter="url(#g2)"/>
 
-  <!-- Ring 4 — thick inner band -->
-  <circle cx="256" cy="256" r="130" fill="none" stroke="url(#g2)" stroke-width="18" opacity="0.95" filter="url(#glow-md)"/>
+  <!-- Ambient halo -->
+  <circle cx="40" cy="40" r="7"
+    fill="url(#cg)" opacity="0.4"
+    filter="url(#g3)"/>
 
-  <!-- Ring 5 — innermost thick ring -->
-  <circle cx="256" cy="256" r="105" fill="none" stroke="url(#g3)" stroke-width="14" filter="url(#glow-lg)"/>
-
-  <!-- Inner gap ring -->
-  <circle cx="256" cy="256" r="88" fill="none" stroke="url(#g1)" stroke-width="3" opacity="0.7" filter="url(#glow-sm)"/>
-
-  <!-- Center hole ring -->
-  <circle cx="256" cy="256" r="75" fill="none" stroke="url(#g4)" stroke-width="2" opacity="0.5"/>
-
-  <!-- Glint top-center on outermost ring -->
-  <ellipse cx="256" cy="16" rx="18" ry="6" fill="white" opacity="0.9" filter="url(#glow-lg)"/>
-  <ellipse cx="256" cy="14" rx="6" ry="3" fill="white" opacity="1"/>
-
-  <!-- Glint left side subtle -->
-  <ellipse cx="14" cy="290" rx="4" ry="8" fill="white" opacity="0.4" filter="url(#glow-sm)"/>
+  <!-- Core bright dot -->
+  <circle cx="40" cy="40" r="3.5"
+    fill="#a5f3fc"
+    filter="url(#g3)"/>
 </svg>
