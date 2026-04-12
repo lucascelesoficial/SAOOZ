@@ -84,6 +84,7 @@ export interface UpsertReserveTargetInput {
   userId: string
   scope: ReserveScope
   businessId?: string
+  reserveId?: string
   targetAmount?: number
   initialAmount?: number
   monthlyTargetContribution?: number | null
@@ -96,6 +97,7 @@ export interface CreateReserveMovementInput {
   userId: string
   scope: ReserveScope
   businessId?: string
+  reserveId?: string
   entryType: ReserveEntryType
   amount: number
   happenedOn?: string
@@ -307,7 +309,24 @@ async function getActiveReserve(input: {
   userId: string
   scope: ReserveScope
   businessId: string | null
+  reserveId?: string
 }) {
+  if (input.reserveId) {
+    const { data, error } = await input.supabase
+      .from('financial_reserves')
+      .select('*')
+      .eq('id', input.reserveId)
+      .eq('user_id', input.userId)
+      .eq('is_active', true)
+      .maybeSingle()
+
+    if (error) {
+      throw normalizeSupabaseError(error.message, 'Falha ao carregar configuração da reserva.')
+    }
+
+    return data ?? null
+  }
+
   let query = input.supabase
     .from('financial_reserves')
     .select('*')
@@ -519,6 +538,7 @@ export async function getReserveModuleSnapshot(input: {
   scope: ReserveScope
   monthIso?: string
   businessId?: string
+  reserveId?: string
 }): Promise<ReserveModuleSnapshot> {
   const selectedMonth = resolveSelectedMonth(input.monthIso)
   const selectedMonthIso = toMonthQueryDate(selectedMonth)
@@ -537,6 +557,7 @@ export async function getReserveModuleSnapshot(input: {
     userId: input.userId,
     scope: input.scope,
     businessId,
+    reserveId: input.reserveId,
   })
 
   const entries = reserve
@@ -627,6 +648,7 @@ export async function upsertReserveTarget(input: UpsertReserveTargetInput) {
     userId: input.userId,
     scope: input.scope,
     businessId,
+    reserveId: input.reserveId,
   })
 
   if (currentReserve) {
@@ -696,6 +718,7 @@ export async function createReserveMovement(input: CreateReserveMovementInput) {
     userId: input.userId,
     scope: input.scope,
     businessId,
+    reserveId: input.reserveId,
   })
 
   if (!reserve) {
@@ -738,4 +761,88 @@ export async function createReserveMovement(input: CreateReserveMovementInput) {
   }
 
   return data
+}
+
+export interface ActiveReserveItem {
+  id: string
+  name: string
+  targetAmount: number
+  currentAmount: number
+}
+
+export async function listActiveReserves(input: {
+  supabase: SupabaseClient<Database>
+  userId: string
+  scope: ReserveScope
+  businessId: string | null
+}): Promise<ActiveReserveItem[]> {
+  let query = input.supabase
+    .from('financial_reserves')
+    .select('*')
+    .eq('user_id', input.userId)
+    .eq('scope', input.scope)
+    .eq('is_active', true)
+    .order('created_at', { ascending: true })
+
+  if (input.scope === 'business') {
+    query = query.eq('business_id', input.businessId as string)
+  } else {
+    query = query.is('business_id', null)
+  }
+
+  const { data, error } = await query
+  if (error) throw normalizeSupabaseError(error.message, 'Falha ao listar reservas.')
+  if (!data || data.length === 0) return []
+
+  const results = await Promise.all(
+    data.map(async (reserve) => {
+      const entries = await getReserveEntries({ supabase: input.supabase, reserveId: reserve.id })
+      const currentAmount = Math.max(
+        0,
+        reserve.initial_amount +
+          entries.reduce((sum, e) => sum + signedReserveEntryAmount(e.entry_type, e.amount), 0)
+      )
+      return { id: reserve.id, name: reserve.name, targetAmount: reserve.target_amount, currentAmount }
+    })
+  )
+  return results
+}
+
+export async function createNewReserve(input: {
+  supabase: SupabaseClient<Database>
+  userId: string
+  scope: ReserveScope
+  businessId: string | null
+  name: string
+}) {
+  const { data, error } = await input.supabase
+    .from('financial_reserves')
+    .insert({
+      user_id: input.userId,
+      scope: input.scope,
+      business_id: input.businessId,
+      name: input.name,
+      target_amount: 0,
+      initial_amount: 0,
+      is_active: true,
+    })
+    .select('*')
+    .single()
+
+  if (error) throw normalizeSupabaseError(error.message, 'Falha ao criar reserva.')
+  return data
+}
+
+export async function deactivateReserve(input: {
+  supabase: SupabaseClient<Database>
+  userId: string
+  reserveId: string
+}) {
+  const { error } = await input.supabase
+    .from('financial_reserves')
+    .update({ is_active: false })
+    .eq('id', input.reserveId)
+    .eq('user_id', input.userId)
+
+  if (error) throw normalizeSupabaseError(error.message, 'Falha ao excluir reserva.')
 }

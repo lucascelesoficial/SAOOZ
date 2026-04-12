@@ -35,6 +35,7 @@ export const reserveQuerySchema = z.object({
   scope: reserveScopeSchema,
   month: z.string().regex(ISO_DATE_REGEX).optional(),
   businessId: z.string().uuid().optional(),
+  reserveId: z.string().uuid().optional(),
 })
 
 export const reserveTargetMutationSchema = z

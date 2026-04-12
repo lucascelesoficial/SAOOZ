@@ -31,6 +31,7 @@ function parseQuery(request: Request) {
     scope: url.searchParams.get('scope'),
     month: url.searchParams.get('month') ?? undefined,
     businessId: url.searchParams.get('businessId') ?? undefined,
+    reserveId: url.searchParams.get('reserveId') ?? undefined,
   })
 }
 
@@ -51,7 +52,7 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: 'Nao autenticado.' }, { status: 401 })
     }
 
-    const { scope, month, businessId } = queryResult.data
+    const { scope, month, businessId, reserveId } = queryResult.data
     const policy = await resolveUserAccessPolicy(user.id)
     if (!canAccessScope(policy, scope)) {
       const block = getPolicyBlock(policy, scope === 'business' ? 'business_module_locked' : 'personal_module_locked')
@@ -73,6 +74,7 @@ export async function GET(request: Request) {
       scope,
       monthIso: month,
       businessId,
+      reserveId,
     })
 
     return NextResponse.json({ snapshot })
@@ -118,11 +120,14 @@ export async function POST(request: Request) {
       )
     }
 
+    const postReserveId = url.searchParams.get('reserveId') ?? undefined
+
     const movement = await createReserveMovement({
       supabase,
       userId: user.id,
       scope: payload.scope,
       businessId: payload.businessId,
+      reserveId: postReserveId,
       entryType: payload.entryType,
       amount: payload.amount,
       happenedOn: payload.happenedOn,
@@ -135,6 +140,7 @@ export async function POST(request: Request) {
       scope: payload.scope,
       monthIso: month,
       businessId: payload.businessId,
+      reserveId: postReserveId,
     })
 
     return NextResponse.json({ movement, snapshot })

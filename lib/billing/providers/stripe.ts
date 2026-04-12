@@ -101,42 +101,67 @@ export class StripeProvider implements PaymentProvider {
 
     const stripe = await this.getStripeClient()
 
-    const commonParams = {
-      mode: 'payment' as const,
-      customer_email: input.userEmail ?? undefined,
-      line_items: [
-        {
-          price_data: {
-            currency: input.currency.toLowerCase(),
-            product_data: {
-              name: input.productName || resolveProductLabel(input.planType, input.durationMonths),
-            },
-            unit_amount: input.amountCents,
-          },
-          quantity: 1,
-        },
-      ],
-      metadata: {
-        user_id: input.userId,
-        plan_type: input.planType,
-        duration: String(input.durationMonths),
-        payment_method: input.paymentMethod,
-      },
-      success_url: input.successUrl,
-      cancel_url: input.cancelUrl,
+    const metadata = {
+      user_id: input.userId,
+      plan_type: input.planType,
+      duration: String(input.durationMonths),
+      payment_method: input.paymentMethod,
     }
 
-    // Card: restrict explicitly to card only
-    // PIX: omit payment_method_types → Stripe uses all methods active in the dashboard (pix, boleto…)
-    const session =
-      input.paymentMethod === 'pix'
-        ? await stripe.checkout.sessions.create({
-            ...commonParams,
-          })
-        : await stripe.checkout.sessions.create({
-            ...commonParams,
-            payment_method_types: ['card'],
-          })
+    let session: Awaited<ReturnType<typeof stripe.checkout.sessions.create>>
+
+    if (input.trialDays && input.trialDays > 0) {
+      // Subscription mode with free trial — card required upfront, no charge until trial ends
+      session = await stripe.checkout.sessions.create({
+        mode: 'subscription',
+        customer_email: input.userEmail ?? undefined,
+        payment_method_types: ['card'],
+        line_items: [
+          {
+            price_data: {
+              currency: input.currency.toLowerCase(),
+              product_data: {
+                name: input.productName || resolveProductLabel(input.planType, input.durationMonths),
+              },
+              unit_amount: input.amountCents,
+              recurring: { interval: 'month', interval_count: input.durationMonths },
+            },
+            quantity: 1,
+          },
+        ],
+        subscription_data: { trial_period_days: input.trialDays },
+        metadata,
+        success_url: input.successUrl,
+        cancel_url: input.cancelUrl,
+      })
+    } else {
+      const commonParams = {
+        mode: 'payment' as const,
+        customer_email: input.userEmail ?? undefined,
+        line_items: [
+          {
+            price_data: {
+              currency: input.currency.toLowerCase(),
+              product_data: {
+                name: input.productName || resolveProductLabel(input.planType, input.durationMonths),
+              },
+              unit_amount: input.amountCents,
+            },
+            quantity: 1,
+          },
+        ],
+        metadata,
+        success_url: input.successUrl,
+        cancel_url: input.cancelUrl,
+      }
+
+      // Card: restrict explicitly to card only
+      // PIX: omit payment_method_types → Stripe uses all methods active in the dashboard
+      session =
+        input.paymentMethod === 'pix'
+          ? await stripe.checkout.sessions.create({ ...commonParams })
+          : await stripe.checkout.sessions.create({ ...commonParams, payment_method_types: ['card'] })
+    }
 
     if (!session.url) {
       throw new Error('Stripe checkout session URL is missing.')

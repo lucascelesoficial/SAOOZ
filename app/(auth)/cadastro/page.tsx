@@ -86,7 +86,7 @@ export default function CadastroPage() {
       email, password,
       options: {
         data: { name },
-        emailRedirectTo: `${window.location.origin}/auth/callback?next=/onboarding`,
+        emailRedirectTo: `${window.location.origin}/auth/callback?next=/onboarding/plano`,
       },
     })
     setLoading(false)
@@ -108,7 +108,7 @@ export default function CadastroPage() {
     }
     toast.success('Conta criada!', { description: 'Bem-vindo ao SAOOZ.' })
     router.refresh()
-    router.push('/onboarding')
+    router.push('/onboarding/plano')
   }
 
   const EyeBtn = ({ show, toggle }: { show: boolean; toggle: () => void }) => (

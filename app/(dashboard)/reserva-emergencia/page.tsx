@@ -9,6 +9,7 @@ import {
   Home,
   Loader2,
   MinusCircle,
+  Plus,
   PlusCircle,
   Settings2,
   ShieldCheck,
@@ -16,6 +17,7 @@ import {
   Umbrella,
   Wallet,
   Wrench,
+  X,
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
@@ -331,11 +333,141 @@ function HistoryList({ movements, onDelete }: {
   )
 }
 
+// ── Seletor de reservas ───────────────────────────────────────────────────────
+
+function ReserveSelector({
+  reserves,
+  selectedId,
+  onSelect,
+  onCreate,
+  onDelete,
+}: {
+  reserves: Array<{ id: string; name: string; currentAmount: number }>
+  selectedId: string | null
+  onSelect: (id: string) => void
+  onCreate: (name: string) => Promise<void>
+  onDelete: (id: string) => Promise<void>
+}) {
+  const [creating, setCreating] = useState(false)
+  const [newName, setNewName] = useState('')
+  const [saving, setSaving] = useState(false)
+  const [deletingId, setDeletingId] = useState<string | null>(null)
+
+  async function handleCreate() {
+    const trimmed = newName.trim()
+    if (!trimmed) return
+    setSaving(true)
+    try {
+      await onCreate(trimmed)
+      setNewName('')
+      setCreating(false)
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  async function handleDelete(id: string) {
+    if (!confirm('Excluir esta reserva? Os registros serão desativados.')) return
+    setDeletingId(id)
+    try {
+      await onDelete(id)
+    } finally {
+      setDeletingId(null)
+    }
+  }
+
+  return (
+    <div className="mb-5">
+      <div className="flex items-center gap-2 flex-wrap">
+        {reserves.map((r) => {
+          const isActive = r.id === selectedId
+          return (
+            <div key={r.id} className="group relative flex items-center">
+              <button
+                onClick={() => onSelect(r.id)}
+                className="rounded-full px-3 py-1.5 text-sm font-medium transition-all pr-8"
+                style={{
+                  background: isActive ? 'color-mix(in oklab, var(--accent-blue) 20%, transparent)' : 'var(--panel-bg-soft)',
+                  border: `1px solid ${isActive ? 'color-mix(in oklab, var(--accent-blue) 50%, transparent)' : 'var(--panel-border)'}`,
+                  color: isActive ? 'var(--accent-blue)' : 'var(--text-soft)',
+                }}
+              >
+                <span>{r.name}</span>
+                <span className="ml-1.5 text-xs opacity-70">{formatCurrency(r.currentAmount)}</span>
+              </button>
+              {reserves.length > 1 && (
+                <button
+                  onClick={() => handleDelete(r.id)}
+                  disabled={deletingId === r.id}
+                  className="absolute right-1.5 rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition-opacity text-app-soft hover:text-[#f87171]"
+                  aria-label="Excluir reserva"
+                >
+                  {deletingId === r.id ? <Loader2 className="h-3 w-3 animate-spin" /> : <X className="h-3 w-3" />}
+                </button>
+              )}
+            </div>
+          )
+        })}
+
+        {/* Botão + para nova reserva */}
+        {!creating ? (
+          <button
+            onClick={() => setCreating(true)}
+            className="flex items-center gap-1 rounded-full px-3 py-1.5 text-sm font-medium transition-all"
+            style={{
+              background: 'var(--panel-bg-soft)',
+              border: '1px solid var(--panel-border)',
+              color: 'var(--text-soft)',
+            }}
+          >
+            <Plus className="h-3.5 w-3.5" />
+            Nova
+          </button>
+        ) : (
+          <div className="flex items-center gap-1.5">
+            <input
+              autoFocus
+              type="text"
+              value={newName}
+              onChange={(e) => setNewName(e.target.value)}
+              onKeyDown={(e) => { if (e.key === 'Enter') { void handleCreate() } if (e.key === 'Escape') { setCreating(false); setNewName('') } }}
+              placeholder="Nome da reserva"
+              className="h-8 rounded-full px-3 text-sm outline-none"
+              style={{
+                background: 'var(--panel-bg-soft)',
+                border: '1px solid var(--accent-blue)',
+                color: 'var(--text-strong)',
+                width: '140px',
+              }}
+            />
+            <button
+              onClick={() => void handleCreate()}
+              disabled={saving || !newName.trim()}
+              className="flex h-8 w-8 items-center justify-center rounded-full text-white disabled:opacity-50"
+              style={{ background: 'var(--accent-blue)' }}
+            >
+              {saving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Plus className="h-3.5 w-3.5" />}
+            </button>
+            <button
+              onClick={() => { setCreating(false); setNewName('') }}
+              className="flex h-8 w-8 items-center justify-center rounded-full text-app-soft hover:text-app transition-colors"
+              style={{ background: 'var(--panel-bg-soft)', border: '1px solid var(--panel-border)' }}
+            >
+              <X className="h-3.5 w-3.5" />
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
 // ── Página principal ──────────────────────────────────────────────────────────
 
 export default function ReservaEmergenciaPFPage() {
   const [protectionModalOpen, setProtectionModalOpen] = useState(false)
   const [moneyModalOpen, setMoneyModalOpen] = useState(false)
+  const [selectedReserveId, setSelectedReserveId] = useState<string | null>(null)
 
   const {
     reserve,
@@ -349,7 +481,14 @@ export default function ReservaEmergenciaPFPage() {
     refresh,
     updateTarget,
     addMovement,
-  } = useReserveData({ scope: 'personal' })
+    allReserves,
+    createReserve,
+    deleteReserve,
+    refreshReserveList,
+  } = useReserveData({ scope: 'personal', reserveId: selectedReserveId ?? undefined })
+
+  // Auto-select first reserve when list loads
+  const effectiveReserveId = selectedReserveId ?? (allReserves[0]?.id ?? null)
 
   async function handleDeleteMovement(id: string) {
     const { error: err } = await createClient()
@@ -393,6 +532,32 @@ export default function ReservaEmergenciaPFPage() {
     }
   }
 
+  async function handleCreateReserve(name: string) {
+    try {
+      const newReserve = await createReserve({ scope: 'personal', name })
+      if (newReserve?.id) {
+        setSelectedReserveId(newReserve.id)
+      }
+      toast.success('Reserva criada!')
+    } catch (err) {
+      toast.error('Erro ao criar reserva', { description: err instanceof Error ? err.message : 'Tente novamente.' })
+    }
+  }
+
+  async function handleDeleteReserve(id: string) {
+    try {
+      await deleteReserve(id)
+      if (effectiveReserveId === id) {
+        const remaining = allReserves.filter((r) => r.id !== id)
+        setSelectedReserveId(remaining[0]?.id ?? null)
+      }
+      await refreshReserveList()
+      toast.success('Reserva excluída.')
+    } catch (err) {
+      toast.error('Erro ao excluir reserva', { description: err instanceof Error ? err.message : 'Tente novamente.' })
+    }
+  }
+
   const coverageInfo = metrics ? getCoverageInfo(metrics.coverageMonths) : null
   const pct = metrics && metrics.targetAmount > 0
     ? Math.min(100, (metrics.reserveCurrentAmount / metrics.targetAmount) * 100)
@@ -403,16 +568,29 @@ export default function ReservaEmergenciaPFPage() {
     <div className="mx-auto max-w-lg pb-24 md:pb-0">
 
       {/* ── Header ── */}
-      <div className="mb-6 flex items-start justify-between">
+      <div className="mb-5 flex items-start justify-between">
         <div>
           <h1 className="text-xl font-bold text-app">Reserva de Emergência</h1>
           <p className="mt-1 text-sm text-app-soft">Sua proteção para o imprevisto</p>
         </div>
-        <button onClick={() => setProtectionModalOpen(true)} className="flex items-center gap-1.5 rounded-[8px] px-3 py-1.5 text-xs font-medium transition-opacity hover:opacity-70" style={{ background: 'var(--panel-bg-soft)', border: '1px solid var(--panel-border)', color: 'var(--text-base)' }}>
-          <Settings2 className="h-3.5 w-3.5" />
-          Ajustar meta
-        </button>
+        {allReserves.length > 0 && (
+          <button onClick={() => setProtectionModalOpen(true)} className="flex items-center gap-1.5 rounded-[8px] px-3 py-1.5 text-xs font-medium transition-opacity hover:opacity-70" style={{ background: 'var(--panel-bg-soft)', border: '1px solid var(--panel-border)', color: 'var(--text-base)' }}>
+            <Settings2 className="h-3.5 w-3.5" />
+            Ajustar meta
+          </button>
+        )}
       </div>
+
+      {/* ── Reserve selector ── */}
+      {allReserves.length > 0 && (
+        <ReserveSelector
+          reserves={allReserves}
+          selectedId={effectiveReserveId}
+          onSelect={(id) => setSelectedReserveId(id)}
+          onCreate={handleCreateReserve}
+          onDelete={handleDeleteReserve}
+        />
+      )}
 
       {isLoading && (
         <div className="flex items-center justify-center py-20">
@@ -426,7 +604,29 @@ export default function ReservaEmergenciaPFPage() {
         </div>
       )}
 
-      {!isLoading && !error && metrics && (
+      {/* ── Empty state: no reserves at all ── */}
+      {!isLoading && !error && allReserves.length === 0 && (
+        <div className="rounded-[16px] p-8 text-center" style={{ background: 'var(--panel-bg)', border: '1px solid var(--panel-border)' }}>
+          <ShieldCheck className="mx-auto mb-3 h-10 w-10 opacity-30 text-app" />
+          <p className="font-semibold text-app">Você ainda não tem nenhuma reserva</p>
+          <p className="mt-1 text-sm text-app-soft">
+            Crie sua primeira reserva de emergência e comece a se proteger.
+          </p>
+          <Button
+            onClick={() => {
+              // Inline create by simulating the selector open — handled via handleCreateReserve
+              const name = prompt('Nome da sua reserva (ex: Reserva Principal):')
+              if (name?.trim()) void handleCreateReserve(name.trim())
+            }}
+            className="mt-4 rounded-[10px] text-white"
+            style={{ background: 'linear-gradient(135deg, var(--accent-blue), var(--accent-cyan))' }}
+          >
+            Criar primeira reserva
+          </Button>
+        </div>
+      )}
+
+      {!isLoading && !error && allReserves.length > 0 && metrics && (
         <div className="space-y-5">
 
           {/* ── Card de status principal ── */}

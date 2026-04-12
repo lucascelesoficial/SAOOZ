@@ -18,6 +18,7 @@ export interface CheckoutInput {
   productName: string
   successUrl: string
   cancelUrl: string
+  trialDays?: number
 }
 
 export interface ProviderPaymentReferences {

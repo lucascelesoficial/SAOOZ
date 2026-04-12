@@ -13,6 +13,7 @@ const checkoutSchema = z.object({
   duration: z.union([z.literal(1), z.literal(3), z.literal(6), z.literal(12)]),
   paymentMethod: z.enum(['card', 'pix']),
   gateway: z.enum(['stripe', 'kiwify', 'cakto']).optional(),
+  trialDays: z.number().int().min(0).max(30).optional(),
 })
 
 export async function POST(request: NextRequest) {
@@ -34,7 +35,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Dados invalidos.' }, { status: 400 })
     }
 
-    const { planType, duration, paymentMethod, gateway } = parsed.data
+    const { planType, duration, paymentMethod, gateway, trialDays } = parsed.data
     const pricing = getPlanPriceForDuration(planType, duration as BillingDuration)
 
     // Resolve base URL: env var → request origin → fallback
@@ -80,8 +81,11 @@ export async function POST(request: NextRequest) {
         amountCents: Math.round(pricing.totalPrice * 100),
         currency: 'BRL',
         productName: `SAOOZ ${planType.toUpperCase()} - ${getDurationLabel(duration)}`,
-        successUrl: `${appUrl}/onboarding/documento?plan=${planType}&redirect=${encodeURIComponent(planType === 'pj' ? '/empresa' : '/central')}`,
-        cancelUrl: `${appUrl}/planos?payment=cancelled`,
+        successUrl: trialDays
+          ? `${appUrl}/onboarding`
+          : `${appUrl}/onboarding/documento?plan=${planType}&redirect=${encodeURIComponent(planType === 'pj' ? '/empresa' : '/central')}`,
+        cancelUrl: `${appUrl}/onboarding/plano?payment=cancelled`,
+        trialDays,
       })
 
       return NextResponse.json({
