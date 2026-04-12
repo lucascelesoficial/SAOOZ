@@ -133,7 +133,7 @@ export default function EmpresaPage() {
             <span className="text-[#383838]">·</span>
             <span className="text-xs text-[#6B6B6B]">{business ? activityLabel(business.activity) : ''}</span>
           </div>
-          <h1 className="text-xl font-extrabold text-white">Painel Empresarial</h1>
+          <h1 className="text-xl font-extrabold text-white">Empresa</h1>
           <p className="text-sm text-[#6B6B6B] mt-0.5">{formatMonth(currentMonth)}</p>
         </div>
 
@@ -141,7 +141,7 @@ export default function EmpresaPage() {
         <div className="flex items-center gap-3">
           <ExportPDFButton
             data={{
-              title: 'Painel Empresarial',
+              title: 'Relatório Empresa',
               subtitle: business?.name ?? 'Módulo Empresarial',
               month: formatMonth(currentMonth),
               totalIncome: totals.totalRevenue,

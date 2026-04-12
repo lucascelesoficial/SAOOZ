@@ -9,6 +9,7 @@ import {
   useState,
 } from 'react'
 import { useAppState } from '@/lib/context/AppStateContext'
+import { toMonthQueryDate } from '@/lib/modules/_shared/month'
 import { createClient } from '@/lib/supabase/client'
 import { estimateTax } from '@/lib/utils/taxes'
 import type {
@@ -93,9 +94,7 @@ export function BusinessDataProvider({ businessId, children }: ProviderProps) {
   >(new Map())
 
   const fetchData = useCallback(async (options?: { force?: boolean }) => {
-    const monthStr = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 1)
-      .toISOString()
-      .split('T')[0]
+    const monthStr = toMonthQueryDate(currentMonth)
     const cacheKey = `${businessId}:${monthStr}`
     const cached = monthCache.current.get(cacheKey)
 

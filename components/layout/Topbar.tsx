@@ -8,6 +8,12 @@ import { toast } from 'sonner'
 import { ThemeToggle } from '@/components/theme/ThemeToggle'
 import { createClient } from '@/lib/supabase/client'
 import { useAppState } from '@/lib/context/AppStateContext'
+import { getModuleErrorMessage } from '@/lib/modules/_shared/errors'
+import {
+  getModuleScopeRoot,
+  MODULE_SCOPE_LABEL,
+  resolveModuleScopeFromPathname,
+} from '@/lib/modules/_shared/scope'
 import { formatMonth } from '@/lib/utils/formatters'
 import type { Database } from '@/types/database.types'
 
@@ -94,7 +100,8 @@ export function Topbar({
     router.push('/login')
   }
 
-  const isBusinessPath = pathname.startsWith('/empresa')
+  const currentScope = resolveModuleScopeFromPathname(pathname)
+  const isBusinessPath = currentScope === 'business'
   const accountHref = isBusinessPath ? '/empresa/configuracoes' : '/configuracoes'
   const activeBusinessId =
     businesses.find((business) => business.id === profile?.active_business_id)?.id ??
@@ -105,19 +112,19 @@ export function Topbar({
 
   const modeSwitchHref = isBusinessPath
       ? canAccessPersonalModule
-      ? '/central'
+      ? getModuleScopeRoot('personal')
       : '/planos?feature=personal'
     : canAccessBusinessModule
-      ? '/empresa'
+      ? getModuleScopeRoot('business')
       : '/planos?feature=business'
 
   const modeSwitchLabel = isBusinessPath
     ? canAccessPersonalModule
-      ? 'PF'
-      : 'Liberar PF'
+      ? MODULE_SCOPE_LABEL.personal
+      : `Liberar ${MODULE_SCOPE_LABEL.personal}`
     : canAccessBusinessModule
-      ? 'PJ'
-      : 'Liberar PJ'
+      ? MODULE_SCOPE_LABEL.business
+      : `Liberar ${MODULE_SCOPE_LABEL.business}`
 
   const businessActionHref = canCreateBusiness
     ? '/onboarding/empresa'
@@ -159,8 +166,7 @@ export function Topbar({
         router.refresh()
       })
     } catch (error) {
-      const message =
-        error instanceof Error ? error.message : 'Não foi possível trocar a empresa ativa.'
+      const message = getModuleErrorMessage(error, 'Não foi possível trocar a empresa ativa.')
       toast.error('Falha ao alternar empresa', { description: message })
     } finally {
       setIsSwitchingBusiness(false)

@@ -8,7 +8,14 @@ import {
   useMemo,
   useState,
 } from 'react'
-import { parseMonth, toMonthISO } from '@/lib/utils/formatters'
+import {
+  ACTIVE_MONTH_STORAGE_KEY,
+  activeMonthFromStorage,
+  activeMonthToStorage,
+  isSameMonth,
+  normalizeActiveMonth,
+  shiftActiveMonth,
+} from '@/lib/modules/_shared/month'
 
 interface AppStateContextValue {
   currentMonth: Date
@@ -18,17 +25,8 @@ interface AppStateContextValue {
   isCurrentMonth: boolean
 }
 
-const STORAGE_KEY = 'saooz.current-month'
-
-function normalizeMonth(date: Date) {
-  const normalized = new Date(date)
-  normalized.setDate(1)
-  normalized.setHours(0, 0, 0, 0)
-  return normalized
-}
-
 const AppStateContext = createContext<AppStateContextValue>({
-  currentMonth: normalizeMonth(new Date()),
+  currentMonth: normalizeActiveMonth(new Date()),
   setMonth: () => {},
   prevMonth: () => {},
   nextMonth: () => {},
@@ -40,49 +38,39 @@ export function useAppState() {
 }
 
 export function AppStateProvider({ children }: { children: React.ReactNode }) {
-  const [currentMonth, setCurrentMonth] = useState<Date>(() => normalizeMonth(new Date()))
+  const [currentMonth, setCurrentMonth] = useState<Date>(() => normalizeActiveMonth(new Date()))
 
   useEffect(() => {
-    const storedMonth = window.localStorage.getItem(STORAGE_KEY)
+    const storedMonth = window.localStorage.getItem(ACTIVE_MONTH_STORAGE_KEY)
     if (!storedMonth) {
       return
     }
 
     try {
-      setCurrentMonth(normalizeMonth(parseMonth(storedMonth)))
+      setCurrentMonth(activeMonthFromStorage(storedMonth))
     } catch {
-      window.localStorage.removeItem(STORAGE_KEY)
+      window.localStorage.removeItem(ACTIVE_MONTH_STORAGE_KEY)
     }
   }, [])
 
   useEffect(() => {
-    window.localStorage.setItem(STORAGE_KEY, toMonthISO(currentMonth))
+    window.localStorage.setItem(ACTIVE_MONTH_STORAGE_KEY, activeMonthToStorage(currentMonth))
   }, [currentMonth])
 
   const setMonth = useCallback((date: Date) => {
-    setCurrentMonth(normalizeMonth(date))
+    setCurrentMonth(normalizeActiveMonth(date))
   }, [])
 
   const prevMonth = useCallback(() => {
-    setCurrentMonth((previous) => {
-      const next = new Date(previous)
-      next.setMonth(next.getMonth() - 1)
-      return normalizeMonth(next)
-    })
+    setCurrentMonth((previous) => shiftActiveMonth(previous, -1))
   }, [])
 
   const nextMonth = useCallback(() => {
-    setCurrentMonth((previous) => {
-      const next = new Date(previous)
-      next.setMonth(next.getMonth() + 1)
-      return normalizeMonth(next)
-    })
+    setCurrentMonth((previous) => shiftActiveMonth(previous, 1))
   }, [])
 
-  const currentDate = normalizeMonth(new Date())
-  const isCurrentMonth =
-    currentMonth.getMonth() === currentDate.getMonth() &&
-    currentMonth.getFullYear() === currentDate.getFullYear()
+  const currentDate = normalizeActiveMonth(new Date())
+  const isCurrentMonth = isSameMonth(currentMonth, currentDate)
 
   const value = useMemo(
     () => ({

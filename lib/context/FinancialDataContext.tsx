@@ -9,6 +9,7 @@ import {
   useState,
 } from 'react'
 import { useAppState } from '@/lib/context/AppStateContext'
+import { toMonthQueryDate } from '@/lib/modules/_shared/month'
 import { createClient } from '@/lib/supabase/client'
 import { calculateTotals, groupByCategory } from '@/lib/utils/calculations'
 import type { Database } from '@/types/database.types'
@@ -63,9 +64,7 @@ export function FinancialDataProvider({ userId, children }: ProviderProps) {
   const monthCache = useRef<Map<string, { incomes: Income[]; expenses: Expense[] }>>(new Map())
 
   const fetchData = useCallback(async (options?: { force?: boolean }) => {
-    const monthStr = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 1)
-      .toISOString()
-      .split('T')[0]
+    const monthStr = toMonthQueryDate(currentMonth)
     const cacheKey = `${userId}:${monthStr}`
     const cached = monthCache.current.get(cacheKey)
 

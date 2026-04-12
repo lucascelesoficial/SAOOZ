@@ -43,14 +43,14 @@ export function DashboardClient({
         <div>
           <h1 className="text-xl font-bold text-app">Central</h1>
           <p className="mt-1 text-sm text-app-soft">
-            Seu cockpit financeiro pessoal com visão rápida, execução e expansão para PJ.
+            Seu cockpit financeiro PF com visão rápida, execução e expansão para PJ.
           </p>
         </div>
         <div className="flex items-center gap-2">
           <ExportPDFButton
             data={{
               title: 'Relatório Central',
-              subtitle: 'Módulo Pessoal',
+              subtitle: 'Módulo PF',
               month: formatMonth(currentMonth),
               totalIncome: totals.totalIncome,
               totalExpenses: totals.totalExpenses,

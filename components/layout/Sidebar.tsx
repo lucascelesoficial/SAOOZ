@@ -13,11 +13,16 @@ import {
   LogOut,
   Receipt,
   Settings,
+  ShieldCheck,
   TrendingDown,
   TrendingUp,
 } from 'lucide-react'
 import { SaoozLogo } from '@/components/ui/SaoozLogo'
 import { useAuth } from '@/lib/hooks/useAuth'
+import {
+  MODULE_SCOPE_LABEL,
+  resolveModuleScopeFromPathname,
+} from '@/lib/modules/_shared/scope'
 import type { Database } from '@/types/database.types'
 
 type Profile = Database['public']['Tables']['profiles']['Row']
@@ -34,6 +39,7 @@ const PF_NAV = [
   { href: '/central', label: 'Central', icon: LayoutDashboard },
   { href: '/financas', label: 'Finanças', icon: Briefcase },
   { href: '/despesas', label: 'Despesas', icon: Receipt },
+  { href: '/reserva-emergencia', label: 'Reserva', icon: ShieldCheck },
   { href: '/inteligencia', label: 'Inteligência', icon: BarChart2 },
   { href: '/assistente', label: 'Assistente', icon: Bot },
   { href: '/planos', label: 'Planos', icon: CreditCard },
@@ -44,6 +50,7 @@ const PJ_NAV = [
   { href: '/empresa', label: 'Empresa', icon: Building2 },
   { href: '/empresa/financas', label: 'Finanças', icon: TrendingUp },
   { href: '/empresa/despesas', label: 'Despesas', icon: TrendingDown },
+  { href: '/empresa/reserva-emergencia', label: 'Reserva', icon: ShieldCheck },
   { href: '/empresa/impostos', label: 'Impostos', icon: Receipt },
   { href: '/empresa/pro-labore', label: 'Pró-labore', icon: ArrowUpRight },
   { href: '/empresa/inteligencia', label: 'Inteligência', icon: BarChart2 },
@@ -62,11 +69,12 @@ export function Sidebar({
   const pathname = usePathname()
   const { signOut } = useAuth()
 
-  const isPJPath = pathname.startsWith('/empresa')
+  const currentScope = resolveModuleScopeFromPathname(pathname)
+  const isBusinessScope = currentScope === 'business'
   const mode = profile?.mode ?? 'pf'
   const hasBusinessContext = mode === 'pj' || mode === 'both'
   const canToggleMode = hasBusinessContext && canAccessPersonalModule && canAccessBusinessModule
-  const navItems = hasBusinessContext && isPJPath ? PJ_NAV : PF_NAV
+  const navItems = hasBusinessContext && isBusinessScope ? PJ_NAV : PF_NAV
 
   return (
     <aside
@@ -91,7 +99,7 @@ export function Sidebar({
               href="/central"
               className="flex-1 rounded-[6px] py-1.5 text-center text-xs font-bold transition-all"
               style={
-                !isPJPath
+                !isBusinessScope
                   ? {
                       background: 'color-mix(in oklab, var(--accent-blue) 20%, transparent)',
                       color: 'var(--accent-blue)',
@@ -99,13 +107,13 @@ export function Sidebar({
                   : { color: 'var(--text-soft)' }
               }
             >
-              PF
+              {MODULE_SCOPE_LABEL.personal}
             </Link>
             <Link
               href="/empresa"
               className="flex-1 rounded-[6px] py-1.5 text-center text-xs font-bold transition-all"
               style={
-                isPJPath
+                isBusinessScope
                   ? {
                       background: 'color-mix(in oklab, var(--accent-blue) 20%, transparent)',
                       color: 'var(--accent-blue)',
@@ -113,7 +121,7 @@ export function Sidebar({
                   : { color: 'var(--text-soft)' }
               }
             >
-              PJ
+              {MODULE_SCOPE_LABEL.business}
             </Link>
           </div>
         </div>

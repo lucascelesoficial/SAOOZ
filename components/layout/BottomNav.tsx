@@ -12,6 +12,7 @@ import {
   TrendingDown,
   TrendingUp,
 } from 'lucide-react'
+import { resolveModuleScopeFromPathname } from '@/lib/modules/_shared/scope'
 
 const PF_ITEMS = [
   { href: '/central', label: 'Central', icon: LayoutDashboard },
@@ -32,8 +33,8 @@ const PJ_ITEMS = [
 export function BottomNav() {
   const pathname = usePathname()
 
-  const isPJ = pathname.startsWith('/empresa')
-  const items = isPJ ? PJ_ITEMS : PF_ITEMS
+  const scope = resolveModuleScopeFromPathname(pathname)
+  const items = scope === 'business' ? PJ_ITEMS : PF_ITEMS
 
   return (
     <nav

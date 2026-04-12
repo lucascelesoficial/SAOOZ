@@ -83,6 +83,35 @@ export type PaymentMethod = 'card' | 'pix'
 export type SubscriptionPaymentMethod = PaymentMethod | 'none'
 export type BillingGateway = 'stripe' | 'kiwify' | 'cakto'
 export type AuditActorType = 'user' | 'system' | 'ai'
+export type FinancialModuleScope = 'personal' | 'business'
+export type ReserveEntryType = 'aporte' | 'resgate' | 'ajuste'
+export type CreditCardTransactionType =
+  | 'compra'
+  | 'pagamento'
+  | 'tarifa'
+  | 'juros'
+  | 'estorno'
+  | 'ajuste'
+export type InvestmentAccountType = 'corretora' | 'banco' | 'previdencia' | 'cripto' | 'outra'
+export type InvestmentAssetType =
+  | 'acao'
+  | 'fii'
+  | 'etf'
+  | 'renda_fixa'
+  | 'cripto'
+  | 'fundo'
+  | 'internacional'
+  | 'outro'
+export type InvestmentMovementType =
+  | 'compra'
+  | 'venda'
+  | 'dividendo'
+  | 'juros'
+  | 'aporte'
+  | 'resgate'
+  | 'taxa'
+  | 'ajuste'
+export type CounterpartyType = 'fornecedor' | 'cliente' | 'ambos'
 
 export interface Database {
   public: {
@@ -364,6 +393,392 @@ export interface Database {
         Relationships: []
       }
 
+      financial_reserves: {
+        Row: {
+          id: string
+          user_id: string
+          scope: FinancialModuleScope
+          business_id: string | null
+          name: string
+          target_amount: number
+          initial_amount: number
+          monthly_target_contribution: number | null
+          notes: string | null
+          is_active: boolean
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          scope: FinancialModuleScope
+          business_id?: string | null
+          name?: string
+          target_amount?: number
+          initial_amount?: number
+          monthly_target_contribution?: number | null
+          notes?: string | null
+          is_active?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          scope?: FinancialModuleScope
+          business_id?: string | null
+          name?: string
+          target_amount?: number
+          initial_amount?: number
+          monthly_target_contribution?: number | null
+          notes?: string | null
+          is_active?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+
+      financial_reserve_entries: {
+        Row: {
+          id: string
+          reserve_id: string
+          user_id: string
+          scope: FinancialModuleScope
+          business_id: string | null
+          entry_type: ReserveEntryType
+          amount: number
+          happened_on: string
+          description: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          reserve_id: string
+          user_id: string
+          scope: FinancialModuleScope
+          business_id?: string | null
+          entry_type: ReserveEntryType
+          amount: number
+          happened_on?: string
+          description?: string | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          reserve_id?: string
+          user_id?: string
+          scope?: FinancialModuleScope
+          business_id?: string | null
+          entry_type?: ReserveEntryType
+          amount?: number
+          happened_on?: string
+          description?: string | null
+          created_at?: string
+        }
+        Relationships: []
+      }
+
+      credit_cards: {
+        Row: {
+          id: string
+          user_id: string
+          scope: FinancialModuleScope
+          business_id: string | null
+          name: string
+          issuer: string | null
+          brand: string | null
+          last_four: string | null
+          credit_limit: number | null
+          closing_day: number | null
+          due_day: number | null
+          is_active: boolean
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          scope: FinancialModuleScope
+          business_id?: string | null
+          name: string
+          issuer?: string | null
+          brand?: string | null
+          last_four?: string | null
+          credit_limit?: number | null
+          closing_day?: number | null
+          due_day?: number | null
+          is_active?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          scope?: FinancialModuleScope
+          business_id?: string | null
+          name?: string
+          issuer?: string | null
+          brand?: string | null
+          last_four?: string | null
+          credit_limit?: number | null
+          closing_day?: number | null
+          due_day?: number | null
+          is_active?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+
+      credit_card_transactions: {
+        Row: {
+          id: string
+          card_id: string
+          user_id: string
+          scope: FinancialModuleScope
+          business_id: string | null
+          transaction_type: CreditCardTransactionType
+          description: string
+          amount: number
+          installment_total: number
+          installment_number: number
+          occurred_on: string
+          posted_month: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          card_id: string
+          user_id: string
+          scope: FinancialModuleScope
+          business_id?: string | null
+          transaction_type?: CreditCardTransactionType
+          description: string
+          amount: number
+          installment_total?: number
+          installment_number?: number
+          occurred_on?: string
+          posted_month?: string
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          card_id?: string
+          user_id?: string
+          scope?: FinancialModuleScope
+          business_id?: string | null
+          transaction_type?: CreditCardTransactionType
+          description?: string
+          amount?: number
+          installment_total?: number
+          installment_number?: number
+          occurred_on?: string
+          posted_month?: string
+          created_at?: string
+        }
+        Relationships: []
+      }
+
+      investment_accounts: {
+        Row: {
+          id: string
+          user_id: string
+          scope: FinancialModuleScope
+          business_id: string | null
+          name: string
+          institution: string | null
+          account_type: InvestmentAccountType
+          currency: string
+          is_active: boolean
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          scope: FinancialModuleScope
+          business_id?: string | null
+          name: string
+          institution?: string | null
+          account_type?: InvestmentAccountType
+          currency?: string
+          is_active?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          scope?: FinancialModuleScope
+          business_id?: string | null
+          name?: string
+          institution?: string | null
+          account_type?: InvestmentAccountType
+          currency?: string
+          is_active?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+
+      investment_assets: {
+        Row: {
+          id: string
+          account_id: string
+          user_id: string
+          scope: FinancialModuleScope
+          business_id: string | null
+          symbol: string
+          name: string | null
+          asset_type: InvestmentAssetType
+          quantity: number
+          average_price: number
+          target_allocation_pct: number | null
+          is_active: boolean
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          account_id: string
+          user_id: string
+          scope: FinancialModuleScope
+          business_id?: string | null
+          symbol: string
+          name?: string | null
+          asset_type?: InvestmentAssetType
+          quantity?: number
+          average_price?: number
+          target_allocation_pct?: number | null
+          is_active?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          account_id?: string
+          user_id?: string
+          scope?: FinancialModuleScope
+          business_id?: string | null
+          symbol?: string
+          name?: string | null
+          asset_type?: InvestmentAssetType
+          quantity?: number
+          average_price?: number
+          target_allocation_pct?: number | null
+          is_active?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+
+      investment_movements: {
+        Row: {
+          id: string
+          account_id: string
+          asset_id: string | null
+          user_id: string
+          scope: FinancialModuleScope
+          business_id: string | null
+          movement_type: InvestmentMovementType
+          amount: number
+          quantity: number | null
+          unit_price: number | null
+          occurred_on: string
+          description: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          account_id: string
+          asset_id?: string | null
+          user_id: string
+          scope: FinancialModuleScope
+          business_id?: string | null
+          movement_type: InvestmentMovementType
+          amount: number
+          quantity?: number | null
+          unit_price?: number | null
+          occurred_on?: string
+          description?: string | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          account_id?: string
+          asset_id?: string | null
+          user_id?: string
+          scope?: FinancialModuleScope
+          business_id?: string | null
+          movement_type?: InvestmentMovementType
+          amount?: number
+          quantity?: number | null
+          unit_price?: number | null
+          occurred_on?: string
+          description?: string | null
+          created_at?: string
+        }
+        Relationships: []
+      }
+
+      business_counterparties: {
+        Row: {
+          id: string
+          user_id: string
+          business_id: string
+          type: CounterpartyType
+          name: string
+          legal_name: string | null
+          document: string | null
+          email: string | null
+          phone: string | null
+          city: string | null
+          state: string | null
+          notes: string | null
+          is_active: boolean
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          business_id: string
+          type?: CounterpartyType
+          name: string
+          legal_name?: string | null
+          document?: string | null
+          email?: string | null
+          phone?: string | null
+          city?: string | null
+          state?: string | null
+          notes?: string | null
+          is_active?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          business_id?: string
+          type?: CounterpartyType
+          name?: string
+          legal_name?: string | null
+          document?: string | null
+          email?: string | null
+          phone?: string | null
+          city?: string | null
+          state?: string | null
+          notes?: string | null
+          is_active?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+
       subscriptions: {
         Row: {
           id: string
@@ -637,6 +1052,13 @@ export interface Database {
       business_activity: BusinessActivity
       business_rev_category: BusinessRevCategory
       business_exp_category: BusinessExpCategory
+      financial_module_scope: FinancialModuleScope
+      reserve_entry_type: ReserveEntryType
+      credit_card_transaction_type: CreditCardTransactionType
+      investment_account_type: InvestmentAccountType
+      investment_asset_type: InvestmentAssetType
+      investment_movement_type: InvestmentMovementType
+      counterparty_type: CounterpartyType
     }
     CompositeTypes: Record<string, never>
   }
