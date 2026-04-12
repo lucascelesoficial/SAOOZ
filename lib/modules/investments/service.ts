@@ -345,7 +345,7 @@ export async function getInvestmentModuleSnapshot(input: {
     .order('created_at', { ascending: true })
 
   if (input.scope === 'business') {
-    accountsQuery = accountsQuery.eq('business_id', businessId)
+    accountsQuery = accountsQuery.eq('business_id', businessId as string)
   } else {
     accountsQuery = accountsQuery.is('business_id', null)
   }
