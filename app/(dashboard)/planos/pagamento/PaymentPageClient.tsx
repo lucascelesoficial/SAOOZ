@@ -32,12 +32,12 @@ export function PaymentPageClient() {
 
   async function confirmPayment() {
     setConfirming(true)
-    // After PIX payment, user notifies manually — we mark as pending review
     toast.success('Pagamento enviado para revisão', {
       description: 'Seu plano será ativado em até 1 hora após confirmação do PIX.',
     })
     await new Promise((r) => setTimeout(r, 1500))
-    router.push('/planos')
+    const redirectTo = plan === 'pj' ? '/empresa' : '/central'
+    router.push(`/onboarding/documento?plan=${plan}&redirect=${encodeURIComponent(redirectTo)}`)
   }
 
   return (

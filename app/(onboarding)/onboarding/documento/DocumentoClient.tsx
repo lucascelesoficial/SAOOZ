@@ -141,9 +141,9 @@ export function DocumentoClient() {
           >
             <FileText className="h-7 w-7 text-white" />
           </div>
-          <h1 className="text-2xl font-bold text-app">Quase lá!</h1>
+          <h1 className="text-2xl font-bold text-app">Último passo!</h1>
           <p className="mt-2 text-sm text-app-soft">
-            Para emitir recibos e notas fiscais, precisamos do seu {label}.
+            Informe seu {label} para ativar o acesso completo à plataforma.
           </p>
         </div>
 
@@ -187,13 +187,6 @@ export function DocumentoClient() {
               {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : `Salvar ${label} e continuar`}
             </button>
 
-            <button
-              type="button"
-              onClick={() => router.push(redirectTo)}
-              className="w-full text-xs text-app-soft hover:text-app transition-colors"
-            >
-              Pular por agora (pode preencher depois em Configurações)
-            </button>
           </form>
         </div>
       </div>
