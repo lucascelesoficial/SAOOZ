@@ -12,6 +12,11 @@ const inter = Inter({
 export const metadata: Metadata = {
   title: 'SAOOZ - Dashboard Financeiro',
   description: 'Entenda para onde vai seu dinheiro em menos de 5 segundos.',
+  icons: {
+    icon: '/icon.svg',
+    shortcut: '/icon.svg',
+    apple: '/icon.svg',
+  },
 }
 
 export default function RootLayout({
