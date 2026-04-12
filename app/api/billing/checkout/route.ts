@@ -11,7 +11,7 @@ export const dynamic = 'force-dynamic'
 const checkoutSchema = z.object({
   planType: z.enum(['pf', 'pj', 'pro']),
   duration: z.union([z.literal(1), z.literal(3), z.literal(6), z.literal(12)]),
-  paymentMethod: z.enum(['pix', 'card']),
+  paymentMethod: z.enum(['card']),
   gateway: z.enum(['stripe', 'kiwify', 'cakto']).optional(),
 })
 
@@ -76,25 +76,10 @@ export async function POST(request: NextRequest) {
       })
     }
 
-    // No configured provider — fall back to manual PIX instructions.
-    // Subscription state is NOT touched here: it will be updated by the
-    // webhook handler after payment is confirmed by the operator.
-    const pixKey = process.env.PIX_KEY ?? null
-    const pixName = process.env.PIX_NAME ?? 'SAOOZ'
-    const pixKeyParam = pixKey ? `&pixKey=${encodeURIComponent(pixKey)}` : ''
-    const pixNameParam = `&pixName=${encodeURIComponent(pixName)}`
-
-    return NextResponse.json({
-      provider: 'manual',
-      paymentMethod,
-      planType,
-      duration,
-      totalPrice: pricing.totalPrice,
-      effectiveMonthly: pricing.effectiveMonthly,
-      pixKey,
-      pixName,
-      checkoutUrl: `/planos/pagamento?plan=${planType}&duration=${duration}&method=${paymentMethod}&total=${pricing.totalPrice}${pixKeyParam}${pixNameParam}`,
-    })
+    return NextResponse.json(
+      { error: 'Pagamento via cartão não configurado. Entre em contato com o suporte.' },
+      { status: 503 }
+    )
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Erro interno.'
     console.error('Checkout error:', message)

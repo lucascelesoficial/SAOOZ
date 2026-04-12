@@ -8,7 +8,6 @@ import {
   CreditCard,
   Crown,
   Layers3,
-  QrCode,
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { formatCurrency } from '@/lib/utils/formatters'
@@ -86,13 +85,13 @@ export function PlanosClient({ snapshot }: PlanosClientProps) {
   const [checkingOut, setCheckingOut] = useState<string | null>(null)
   const searchParams = useSearchParams()
 
-  async function handleCheckout(planCode: SubscriptionPlanType, paymentMethod: 'pix' | 'card') {
-    setCheckingOut(`${planCode}-${paymentMethod}`)
+  async function handleCheckout(planCode: SubscriptionPlanType) {
+    setCheckingOut(planCode)
     try {
       const res = await fetch('/api/billing/checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ planType: planCode, duration, paymentMethod }),
+        body: JSON.stringify({ planType: planCode, duration, paymentMethod: 'card' }),
       })
       const data = await res.json()
       if (!res.ok) {
@@ -310,24 +309,11 @@ export function PlanosClient({ snapshot }: PlanosClientProps) {
                 <p className="mt-1 text-xs text-app-soft">{businessCapacityLabel(planCode, duration)}</p>
               </div>
 
-              <div className="mt-5 grid grid-cols-2 gap-2">
+              <div className="mt-5">
                 <button
-                  onClick={() => handleCheckout(planCode, 'pix')}
+                  onClick={() => handleCheckout(planCode)}
                   disabled={(isCurrentPlan && snapshot.paidAccess) || !!checkingOut}
-                  className="flex h-11 items-center justify-center rounded-[10px] text-sm font-semibold transition-all disabled:opacity-60"
-                  style={{
-                    background: 'var(--panel-bg-soft)',
-                    border: '1.5px solid var(--panel-border)',
-                    color: 'var(--text-base)',
-                  }}
-                >
-                  <QrCode className="mr-1.5 h-4 w-4" />
-                  PIX
-                </button>
-                <button
-                  onClick={() => handleCheckout(planCode, 'card')}
-                  disabled={(isCurrentPlan && snapshot.paidAccess) || !!checkingOut}
-                  className="flex h-11 items-center justify-center rounded-[10px] text-sm font-semibold text-white transition-all disabled:opacity-60"
+                  className="flex h-11 w-full items-center justify-center rounded-[10px] text-sm font-semibold text-white transition-all disabled:opacity-60"
                   style={{
                     background: plan.highlight
                       ? 'linear-gradient(135deg, var(--accent-blue), var(--accent-cyan))'
@@ -335,7 +321,7 @@ export function PlanosClient({ snapshot }: PlanosClientProps) {
                   }}
                 >
                   <CreditCard className="mr-1.5 h-4 w-4" />
-                  {isCurrentPlan && snapshot.paidAccess ? 'Ativo' : 'Cartão'}
+                  {isCurrentPlan && snapshot.paidAccess ? 'Ativo' : checkingOut === planCode ? 'Aguarde...' : 'Assinar com Cartão'}
                 </button>
               </div>
             </article>
@@ -388,8 +374,8 @@ export function PlanosClient({ snapshot }: PlanosClientProps) {
             Como funciona
           </h2>
           <div className="mt-4 space-y-3 text-sm text-app-soft">
-            <p>Cartão: pagamento registrado, assinatura ativada e renovação automática no vencimento.</p>
-            <p>PIX: cobrança imediata, plano ativado após confirmação do pagamento.</p>
+            <p>Pagamento seguro via cartão de crédito processado pelo Stripe.</p>
+            <p>Plano ativado imediatamente após a confirmação do pagamento.</p>
             <p>Cada ativação passa por confirmação de pagamento antes da liberação final.</p>
           </div>
         </div>
@@ -404,12 +390,9 @@ export function PlanosClient({ snapshot }: PlanosClientProps) {
               <p className="text-xs uppercase tracking-wider text-app-soft">Métodos</p>
               <p className="mt-2 flex items-center gap-2 text-sm font-semibold text-app">
                 <CreditCard className="h-4 w-4" />
-                Cartao
+                Cartão de crédito
               </p>
-              <p className="mt-1 flex items-center gap-2 text-sm font-semibold text-app">
-                <QrCode className="h-4 w-4" />
-                PIX
-              </p>
+              <p className="mt-1 text-xs text-app-soft">Processado via Stripe</p>
             </div>
             <div className="rounded-[12px] border p-4" style={{ borderColor: 'var(--panel-border)' }}>
               <p className="text-xs uppercase tracking-wider text-app-soft">Ciclo</p>
