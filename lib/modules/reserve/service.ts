@@ -316,7 +316,7 @@ async function getActiveReserve(input: {
     .eq('is_active', true)
 
   if (input.scope === 'business') {
-    query = query.eq('business_id', input.businessId)
+    query = query.eq('business_id', input.businessId as string)
   } else {
     query = query.is('business_id', null)
   }
@@ -392,7 +392,7 @@ async function calculateEssentialMonthlyAverage(input: {
     .from('business_expenses')
     .select('amount, month')
     .eq('user_id', input.userId)
-    .eq('business_id', input.businessId)
+    .eq('business_id', input.businessId as string)
     .in('month', input.monthWindow)
     .in('category', BUSINESS_ESSENTIAL_CATEGORIES)
 
