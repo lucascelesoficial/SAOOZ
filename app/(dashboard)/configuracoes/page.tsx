@@ -19,6 +19,25 @@ interface ProfileValues {
   email: string
 }
 
+function maskCPF(v: string) {
+  return v.replace(/\D/g, '').replace(/(\d{3})(\d)/, '$1.$2').replace(/(\d{3})(\d)/, '$1.$2').replace(/(\d{3})(\d{1,2})$/, '$1-$2').slice(0, 14)
+}
+
+function validateCPF(raw: string): boolean {
+  const cpf = raw.replace(/\D/g, '')
+  if (cpf.length !== 11 || /^(.)\1+$/.test(cpf)) return false
+  let sum = 0
+  for (let i = 0; i < 9; i++) sum += parseInt(cpf[i]) * (10 - i)
+  let rest = (sum * 10) % 11
+  if (rest === 10 || rest === 11) rest = 0
+  if (rest !== parseInt(cpf[9])) return false
+  sum = 0
+  for (let i = 0; i < 10; i++) sum += parseInt(cpf[i]) * (11 - i)
+  rest = (sum * 10) % 11
+  if (rest === 10 || rest === 11) rest = 0
+  return rest === parseInt(cpf[10])
+}
+
 interface PasswordValues {
   newPassword: string
   confirmPassword: string
@@ -42,6 +61,8 @@ export default function ConfiguracoesPage() {
   const [deleteModalOpen, setDeleteModalOpen] = useState(false)
   const [deleteConfirmation, setDeleteConfirmation] = useState('')
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null)
+  const [cpf, setCpf] = useState('')
+  const [savingCpf, setSavingCpf] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const profileForm = useForm<ProfileValues>({ defaultValues: { name: '', email: '' } })
@@ -56,6 +77,7 @@ export default function ConfiguracoesPage() {
       if (p) {
         setProfile(p)
         profileForm.reset({ name: p.name, email: p.email })
+        if (p.cpf) setCpf(maskCPF(p.cpf))
       }
     })
   }, [profileForm])
@@ -157,6 +179,20 @@ export default function ConfiguracoesPage() {
     passwordForm.reset()
   }
 
+  async function handleSaveCpf() {
+    if (!profile) return
+    if (!validateCPF(cpf)) { toast.error('CPF inválido'); return }
+    setSavingCpf(true)
+    const supabase = createClient()
+    const { error } = await supabase
+      .from('profiles')
+      .update({ cpf: cpf.replace(/\D/g, '') })
+      .eq('id', profile.id)
+    setSavingCpf(false)
+    if (error) { toast.error('Erro ao salvar CPF', { description: error.message }); return }
+    toast.success('CPF salvo')
+  }
+
   async function handleDeleteAccount() {
     setDeletingAccount(true)
     try {
@@ -238,6 +274,38 @@ export default function ConfiguracoesPage() {
             {savingProfile ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Salvar dados'}
           </Button>
         </form>
+      </div>
+
+      <div className="panel-card p-6">
+        <h2 className="text-sm font-semibold text-app-base uppercase tracking-wider mb-4">Documento</h2>
+        <div className="space-y-3">
+          <div className="space-y-2">
+            <Label className="text-app-base">CPF</Label>
+            <Input
+              value={cpf}
+              onChange={(e) => setCpf(maskCPF(e.target.value))}
+              placeholder="000.000.000-00"
+              className="rounded-[8px] font-mono tracking-wide"
+              style={{ background: 'var(--panel-bg-soft)', borderColor: 'var(--panel-border)', color: 'var(--text-strong)' }}
+            />
+            {cpf && !validateCPF(cpf) && (
+              <p className="text-[#f87171] text-xs">CPF inválido. Verifique os números.</p>
+            )}
+            {cpf && validateCPF(cpf) && (
+              <div className="flex items-center gap-1.5 text-xs text-[#22c55e]">
+                <Check className="h-3.5 w-3.5" /> CPF válido
+              </div>
+            )}
+          </div>
+          <Button
+            onClick={handleSaveCpf}
+            disabled={savingCpf || !validateCPF(cpf)}
+            className="w-full text-white rounded-[8px]"
+            style={{ background: 'linear-gradient(135deg, var(--accent-blue), var(--accent-cyan))' }}
+          >
+            {savingCpf ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Salvar CPF'}
+          </Button>
+        </div>
       </div>
 
       <div className="panel-card p-6">

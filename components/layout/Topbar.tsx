@@ -1,11 +1,12 @@
 'use client'
 
-import { startTransition, useEffect, useState } from 'react'
-import { ArrowRightLeft, Building2, ChevronLeft, ChevronRight, Plus } from 'lucide-react'
+import { startTransition, useEffect, useRef, useState } from 'react'
+import { ArrowRightLeft, Building2, ChevronLeft, ChevronRight, LogOut, Plus, Settings } from 'lucide-react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import { ThemeToggle } from '@/components/theme/ThemeToggle'
+import { createClient } from '@/lib/supabase/client'
 import { useAppState } from '@/lib/context/AppStateContext'
 import { formatMonth } from '@/lib/utils/formatters'
 import type { Database } from '@/types/database.types'
@@ -74,6 +75,24 @@ export function Topbar({
   const router = useRouter()
   const { currentMonth, prevMonth, nextMonth, isCurrentMonth } = useAppState()
   const [isSwitchingBusiness, setIsSwitchingBusiness] = useState(false)
+  const [menuOpen, setMenuOpen] = useState(false)
+  const menuRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setMenuOpen(false)
+      }
+    }
+    if (menuOpen) document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [menuOpen])
+
+  async function handleSignOut() {
+    const supabase = createClient()
+    await supabase.auth.signOut()
+    router.push('/login')
+  }
 
   const isBusinessPath = pathname.startsWith('/empresa')
   const accountHref = isBusinessPath ? '/empresa/configuracoes' : '/configuracoes'
@@ -235,22 +254,53 @@ export function Topbar({
 
         <ThemeToggle />
 
-        <Link
-          href={accountHref}
-          className="ring-2 flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-full text-xs font-bold text-white transition-opacity hover:opacity-80"
-          style={{
-            background: 'linear-gradient(135deg, var(--accent-blue), var(--accent-cyan))',
-            boxShadow: '0 0 0 2px color-mix(in oklab, var(--accent-blue) 16%, transparent)',
-          }}
-          aria-label="Abrir configurações"
-        >
-          {profile?.avatar_url ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={profile.avatar_url} alt="Avatar do usuário" className="h-full w-full object-cover" />
-          ) : (
-            <span>{profile?.name?.charAt(0).toUpperCase() ?? 'U'}</span>
+        <div ref={menuRef} className="relative">
+          <button
+            onClick={() => setMenuOpen((v) => !v)}
+            className="flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-full text-xs font-bold text-white transition-opacity hover:opacity-80"
+            style={{
+              background: 'linear-gradient(135deg, var(--accent-blue), var(--accent-cyan))',
+              boxShadow: '0 0 0 2px color-mix(in oklab, var(--accent-blue) 16%, transparent)',
+            }}
+            aria-label="Menu do usuário"
+          >
+            {profile?.avatar_url ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={profile.avatar_url} alt="Avatar do usuário" className="h-full w-full object-cover" />
+            ) : (
+              <span>{profile?.name?.charAt(0).toUpperCase() ?? 'U'}</span>
+            )}
+          </button>
+
+          {menuOpen && (
+            <div
+              className="absolute right-0 top-10 z-50 min-w-[180px] rounded-[12px] border p-1.5 shadow-xl"
+              style={{ background: 'var(--panel-bg)', borderColor: 'var(--panel-border)' }}
+            >
+              {profile?.name && (
+                <div className="px-3 py-2 border-b mb-1" style={{ borderColor: 'var(--panel-border)' }}>
+                  <p className="text-xs font-semibold text-app truncate">{profile.name}</p>
+                  <p className="text-[11px] text-app-soft truncate">{profile.email}</p>
+                </div>
+              )}
+              <Link
+                href={accountHref}
+                onClick={() => setMenuOpen(false)}
+                className="flex items-center gap-2.5 rounded-[8px] px-3 py-2 text-sm text-app transition-colors hover:bg-[color-mix(in_oklab,var(--accent-blue)_8%,transparent)]"
+              >
+                <Settings className="h-4 w-4 text-app-soft" />
+                Configurações
+              </Link>
+              <button
+                onClick={handleSignOut}
+                className="flex w-full items-center gap-2.5 rounded-[8px] px-3 py-2 text-sm text-[#f87171] transition-colors hover:bg-[#f8717110]"
+              >
+                <LogOut className="h-4 w-4" />
+                Sair
+              </button>
+            </div>
           )}
-        </Link>
+        </div>
       </div>
     </header>
   )
