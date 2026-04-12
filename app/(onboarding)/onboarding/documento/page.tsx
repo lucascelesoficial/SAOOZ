@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { Suspense, useEffect, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { CheckCircle2, FileText, Loader2, ShieldCheck } from 'lucide-react'
 import { toast } from 'sonner'
@@ -48,7 +48,7 @@ function maskCNPJ(v: string) {
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
-export default function OnboardingDocumentoPage() {
+function OnboardingDocumentoContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const plan = searchParams.get('plan') ?? 'pf' // 'pf' | 'pj'
@@ -200,5 +200,13 @@ export default function OnboardingDocumentoPage() {
         </div>
       </div>
     </div>
+  )
+}
+
+export default function OnboardingDocumentoPage() {
+  return (
+    <Suspense>
+      <OnboardingDocumentoContent />
+    </Suspense>
   )
 }
