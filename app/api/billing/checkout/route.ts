@@ -36,7 +36,22 @@ export async function POST(request: NextRequest) {
 
     const { planType, duration, paymentMethod, gateway } = parsed.data
     const pricing = getPlanPriceForDuration(planType, duration as BillingDuration)
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? new URL(request.url).origin
+
+    // Resolve base URL: env var → request origin → fallback
+    let appUrl = process.env.NEXT_PUBLIC_APP_URL?.trim() ?? ''
+    if (!appUrl) {
+      try {
+        appUrl = new URL(request.url).origin
+      } catch {
+        appUrl = ''
+      }
+    }
+    if (!appUrl || !appUrl.startsWith('http')) {
+      return NextResponse.json(
+        { error: 'URL do app não configurada. Defina NEXT_PUBLIC_APP_URL nas variáveis de ambiente.' },
+        { status: 500 }
+      )
+    }
 
     const runtimeProvider = resolveCheckoutProvider({
       requestedProvider: (gateway ?? undefined) as BillingGateway | undefined,
