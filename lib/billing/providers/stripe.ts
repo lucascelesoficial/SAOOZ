@@ -101,17 +101,8 @@ export class StripeProvider implements PaymentProvider {
 
     const stripe = await this.getStripeClient()
 
-    // PIX uses automatic_payment_methods so Stripe shows all enabled Brazilian
-    // methods (boleto, pix, etc.) without hardcoding the type — avoids the
-    // "payment method not activated" error when PIX isn't yet enabled.
-    const sessionParams: Record<string, unknown> =
-      input.paymentMethod === 'pix'
-        ? { automatic_payment_methods: { enabled: true } }
-        : { payment_method_types: ['card'] }
-
-    const session = await stripe.checkout.sessions.create({
-      ...sessionParams,
-      mode: 'payment',
+    const commonParams = {
+      mode: 'payment' as const,
       customer_email: input.userEmail ?? undefined,
       line_items: [
         {
@@ -133,7 +124,19 @@ export class StripeProvider implements PaymentProvider {
       },
       success_url: input.successUrl,
       cancel_url: input.cancelUrl,
-    })
+    }
+
+    // Card: restrict explicitly to card only
+    // PIX: omit payment_method_types → Stripe uses all methods active in the dashboard (pix, boleto…)
+    const session =
+      input.paymentMethod === 'pix'
+        ? await stripe.checkout.sessions.create({
+            ...commonParams,
+          })
+        : await stripe.checkout.sessions.create({
+            ...commonParams,
+            payment_method_types: ['card'],
+          })
 
     if (!session.url) {
       throw new Error('Stripe checkout session URL is missing.')
