@@ -177,7 +177,7 @@ export function Topbar({
         <span className="truncate text-sm font-semibold text-app md:hidden">SAOOZ</span>
       </div>
 
-      <div className="flex items-center gap-1">
+      <div className="flex items-center gap-0.5">
         <button
           onClick={prevMonth}
           className="rounded-[6px] p-1.5 text-app-soft transition-colors hover:text-app"
@@ -185,7 +185,7 @@ export function Topbar({
         >
           <ChevronLeft className="h-4 w-4" />
         </button>
-        <span className="min-w-[110px] text-center text-sm font-medium capitalize text-app">
+        <span className="min-w-[90px] md:min-w-[110px] text-center text-xs md:text-sm font-medium capitalize text-app">
           {formatMonth(currentMonth)}
         </span>
         <button

@@ -1,4 +1,4 @@
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
 import { Inter } from 'next/font/google'
 import './globals.css'
 import { Toaster } from '@/components/ui/sonner'
@@ -9,13 +9,28 @@ const inter = Inter({
   variable: '--font-inter',
 })
 
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+  themeColor: '#080d28',
+  viewportFit: 'cover',
+}
+
 export const metadata: Metadata = {
   title: 'SAOOZ - Dashboard Financeiro',
   description: 'Entenda para onde vai seu dinheiro em menos de 5 segundos.',
+  manifest: '/manifest.webmanifest',
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'black-translucent',
+    title: 'SAOOZ',
+  },
   icons: {
     icon: '/icon.svg',
     shortcut: '/icon.svg',
-    apple: '/icon.svg',
+    apple: '/apple-icon.svg',
   },
 }
 

@@ -37,8 +37,13 @@ export function BottomNav() {
 
   return (
     <nav
-      className="safe-area-inset-bottom fixed bottom-0 left-0 right-0 z-30 flex items-center justify-around px-2 py-2 md:hidden"
-      style={{ background: 'var(--surface-bg)', borderTop: '1px solid var(--panel-border)' }}
+      className="fixed bottom-0 left-0 right-0 z-30 flex items-center justify-around px-2 md:hidden"
+      style={{
+        background: 'var(--surface-bg)',
+        borderTop: '1px solid var(--panel-border)',
+        paddingBottom: 'max(10px, env(safe-area-inset-bottom))',
+        paddingTop: '8px',
+      }}
     >
       {items.map(({ href, label, icon: Icon }) => {
         const isActive =
@@ -50,8 +55,11 @@ export function BottomNav() {
           <Link
             key={href}
             href={href}
-            className="min-w-0 rounded-[8px] px-3 py-1 flex flex-col items-center gap-1 transition-colors"
-            style={{ color: isActive ? 'var(--accent-blue)' : 'var(--text-soft)' }}
+            className="min-w-0 flex flex-col items-center gap-1 px-3 py-1 rounded-[10px] transition-all active:scale-95"
+            style={{
+              color: isActive ? 'var(--accent-blue)' : 'var(--text-soft)',
+              background: isActive ? 'color-mix(in oklab, var(--accent-blue) 10%, transparent)' : 'transparent',
+            }}
           >
             <Icon className="h-5 w-5 shrink-0" aria-hidden />
             <span className="truncate text-[10px] font-medium">{label}</span>
