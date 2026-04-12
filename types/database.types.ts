@@ -171,6 +171,7 @@ export interface Database {
           type: IncomeType
           active: boolean
           month: string
+          is_recurring: boolean
           created_at: string
         }
         Insert: {
@@ -181,6 +182,7 @@ export interface Database {
           type: IncomeType
           active?: boolean
           month: string
+          is_recurring?: boolean
           created_at?: string
         }
         Update: {
@@ -191,6 +193,7 @@ export interface Database {
           type?: IncomeType
           active?: boolean
           month?: string
+          is_recurring?: boolean
           created_at?: string
         }
         Relationships: []
@@ -204,6 +207,7 @@ export interface Database {
           description: string | null
           amount: number
           month: string
+          is_recurring: boolean
           created_at: string
         }
         Insert: {
@@ -213,6 +217,7 @@ export interface Database {
           description?: string | null
           amount: number
           month: string
+          is_recurring?: boolean
           created_at?: string
         }
         Update: {
@@ -222,6 +227,7 @@ export interface Database {
           description?: string | null
           amount?: number
           month?: string
+          is_recurring?: boolean
           created_at?: string
         }
         Relationships: []

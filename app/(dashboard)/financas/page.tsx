@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
-import { Plus, Loader2, Pencil, Trash2, Briefcase } from 'lucide-react'
+import { Plus, Loader2, Pencil, Trash2, Briefcase, Pin } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -223,6 +223,7 @@ export default function FinancasPage() {
   const [modalOpen, setModalOpen] = useState(false)
   const [editing, setEditing] = useState<Income | null>(null)
   const [deleting, setDeleting] = useState<string | null>(null)
+  const [toggling, setToggling] = useState<string | null>(null)
 
   useEffect(() => {
     createClient().auth.getUser().then(({ data }) => setUserId(data.user?.id ?? null))
@@ -243,6 +244,23 @@ export default function FinancasPage() {
     await refresh()
     setDeleting(null)
     toast.success('Renda removida')
+  }
+
+  async function handleToggleRecurring(income: Income) {
+    setToggling(income.id)
+    const supabase = createClient()
+    const { error } = await supabase
+      .from('income_sources')
+      .update({ is_recurring: !income.is_recurring })
+      .eq('id', income.id)
+    if (error) {
+      toast.error('Erro ao atualizar')
+      setToggling(null)
+      return
+    }
+    await refresh()
+    setToggling(null)
+    toast.success(income.is_recurring ? 'Fixação removida' : 'Fixado para os próximos meses')
   }
 
   return (
@@ -306,9 +324,30 @@ export default function FinancasPage() {
                 <div className="mb-2 flex items-start justify-between gap-2">
                   <div className="min-w-0">
                     <p className="truncate font-medium text-app">{income.name}</p>
-                    <p className="mt-0.5 text-xs text-app-soft">{INCOME_TYPE_LABELS[income.type]}</p>
+                    <p className="mt-0.5 flex items-center gap-1.5 text-xs text-app-soft">
+                      {INCOME_TYPE_LABELS[income.type]}
+                      {income.is_recurring && (
+                        <span className="inline-flex items-center gap-0.5 rounded-full px-1.5 py-0.5 text-[10px] font-semibold" style={{ background: 'color-mix(in oklab, var(--accent-blue) 12%, transparent)', color: 'var(--accent-blue)' }}>
+                          <Pin className="h-2.5 w-2.5" /> Fixo
+                        </span>
+                      )}
+                    </p>
                   </div>
                   <div className="flex shrink-0 items-center gap-1">
+                    <button
+                      onClick={() => handleToggleRecurring(income)}
+                      disabled={toggling === income.id}
+                      className="rounded-[6px] p-1.5 transition-colors"
+                      style={{ color: income.is_recurring ? 'var(--accent-blue)' : 'var(--text-soft)' }}
+                      title={income.is_recurring ? 'Fixado — clique para desafixar' : 'Fixar para próximos meses'}
+                      aria-label="Fixar"
+                    >
+                      {toggling === income.id ? (
+                        <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                      ) : (
+                        <Pin className="h-3.5 w-3.5" style={{ fill: income.is_recurring ? 'var(--accent-blue)' : 'none' }} />
+                      )}
+                    </button>
                     <button
                       onClick={() => {
                         setEditing(income)

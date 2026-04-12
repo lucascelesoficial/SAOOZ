@@ -78,7 +78,10 @@ export function FinancialDataProvider({ userId, children }: ProviderProps) {
     setIsLoading(true)
     const supabase = createClient()
 
-    const [incomesRes, expensesRes] = await Promise.all([
+    const prevDate = new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1, 1)
+    const prevMonthStr = toMonthQueryDate(prevDate)
+
+    const [incomesRes, expensesRes, prevIncomesRes, prevExpensesRes] = await Promise.all([
       supabase
         .from('income_sources')
         .select('*')
@@ -91,11 +94,55 @@ export function FinancialDataProvider({ userId, children }: ProviderProps) {
         .eq('user_id', userId)
         .eq('month', monthStr)
         .order('amount', { ascending: false }),
+      supabase
+        .from('income_sources')
+        .select('*')
+        .eq('user_id', userId)
+        .eq('month', prevMonthStr)
+        .eq('is_recurring', true),
+      supabase
+        .from('expenses')
+        .select('*')
+        .eq('user_id', userId)
+        .eq('month', prevMonthStr)
+        .eq('is_recurring', true),
     ])
 
+    let currentIncomes = incomesRes.data ?? []
+    let currentExpenses = expensesRes.data ?? []
+
+    // Auto-carry recurring items from previous month if they don't exist yet
+    const recurringIncomes = prevIncomesRes.data ?? []
+    const recurringExpenses = prevExpensesRes.data ?? []
+
+    const newIncomes = recurringIncomes.filter(
+      (prev) => !currentIncomes.some((cur) => cur.name === prev.name && cur.type === prev.type)
+    )
+    const newExpenses = recurringExpenses.filter(
+      (prev) => !currentExpenses.some((cur) => cur.category === prev.category && cur.description === prev.description)
+    )
+
+    if (newIncomes.length > 0) {
+      const { data: inserted } = await supabase.from('income_sources').insert(
+        newIncomes.map(({ name, type, amount, active }) => ({
+          user_id: userId, name, type, amount, active, month: monthStr, is_recurring: true,
+        }))
+      ).select()
+      if (inserted) currentIncomes = [...currentIncomes, ...inserted].sort((a, b) => b.amount - a.amount)
+    }
+
+    if (newExpenses.length > 0) {
+      const { data: inserted } = await supabase.from('expenses').insert(
+        newExpenses.map(({ category, description, amount }) => ({
+          user_id: userId, category, description, amount, month: monthStr, is_recurring: true,
+        }))
+      ).select()
+      if (inserted) currentExpenses = [...currentExpenses, ...inserted].sort((a, b) => b.amount - a.amount)
+    }
+
     const nextState = {
-      incomes: incomesRes.data ?? [],
-      expenses: expensesRes.data ?? [],
+      incomes: currentIncomes,
+      expenses: currentExpenses,
     }
 
     monthCache.current.set(cacheKey, nextState)

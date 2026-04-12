@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
-import { Loader2, Pencil, Plus, Trash2, TrendingDown } from 'lucide-react'
+import { Loader2, Pencil, Pin, Plus, Trash2, TrendingDown } from 'lucide-react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -275,6 +275,7 @@ export default function DespesasPFPage() {
   const [modalOpen, setModalOpen] = useState(false)
   const [editing, setEditing] = useState<PfExpense | null>(null)
   const [deleting, setDeleting] = useState<string | null>(null)
+  const [toggling, setToggling] = useState<string | null>(null)
 
   useEffect(() => {
     createClient()
@@ -294,6 +295,22 @@ export default function DespesasPFPage() {
     await refresh()
     setDeleting(null)
     toast.success('Removido')
+  }
+
+  async function handleToggleRecurring(expense: PfExpense) {
+    setToggling(expense.id)
+    const { error } = await createClient()
+      .from('expenses')
+      .update({ is_recurring: !expense.is_recurring })
+      .eq('id', expense.id)
+    if (error) {
+      toast.error('Erro ao atualizar')
+      setToggling(null)
+      return
+    }
+    await refresh()
+    setToggling(null)
+    toast.success(expense.is_recurring ? 'Fixação removida' : 'Fixado para os próximos meses')
   }
 
   const grouped = expenses.reduce<Record<string, PfExpense[]>>((acc, expense) => {
@@ -391,11 +408,29 @@ export default function DespesasPFPage() {
                             <p className="truncate font-medium text-app">
                               {expense.description ?? cat?.label ?? '-'}
                             </p>
-                            <p className="mt-0.5 text-xs text-app-soft">
+                            <p className="mt-0.5 flex items-center gap-1.5 text-xs text-app-soft">
                               {CATEGORY_LABELS[expense.category as keyof typeof CATEGORY_LABELS] ?? cat?.label}
+                              {expense.is_recurring && (
+                                <span className="inline-flex items-center gap-0.5 rounded-full px-1.5 py-0.5 text-[10px] font-semibold" style={{ background: 'color-mix(in oklab, var(--accent-blue) 12%, transparent)', color: 'var(--accent-blue)' }}>
+                                  <Pin className="h-2.5 w-2.5" /> Fixo
+                                </span>
+                              )}
                             </p>
                           </div>
                           <div className="flex shrink-0 items-center gap-1">
+                            <button
+                              onClick={() => handleToggleRecurring(expense)}
+                              disabled={toggling === expense.id}
+                              className="rounded-[6px] p-1.5 transition-colors"
+                              style={{ color: expense.is_recurring ? 'var(--accent-blue)' : 'var(--text-soft)' }}
+                              title={expense.is_recurring ? 'Fixado — clique para desafixar' : 'Fixar para próximos meses'}
+                            >
+                              {toggling === expense.id ? (
+                                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                              ) : (
+                                <Pin className="h-3.5 w-3.5" style={{ fill: expense.is_recurring ? 'var(--accent-blue)' : 'none' }} />
+                              )}
+                            </button>
                             <button
                               onClick={() => {
                                 setEditing(expense)

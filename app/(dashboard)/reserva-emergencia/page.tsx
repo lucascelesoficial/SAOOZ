@@ -12,6 +12,7 @@ import {
   PlusCircle,
   Settings2,
   ShieldCheck,
+  Trash2,
   Umbrella,
   Wallet,
   Wrench,
@@ -22,6 +23,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Modal } from '@/components/ui/Modal'
 import { useReserveData } from '@/lib/hooks/useReserveData'
+import { createClient } from '@/lib/supabase/client'
 import { formatCurrency } from '@/lib/utils/formatters'
 
 // ── Categorias de emergência ──────────────────────────────────────────────────
@@ -268,7 +270,7 @@ function MoneyForm({
 
 // ── Histórico simplificado ────────────────────────────────────────────────────
 
-function HistoryList({ movements }: {
+function HistoryList({ movements, onDelete }: {
   movements: Array<{
     id: string
     entryType: 'aporte' | 'resgate' | 'ajuste'
@@ -276,10 +278,20 @@ function HistoryList({ movements }: {
     signedAmount: number
     happenedOn: string
   }>
+  onDelete: (id: string) => Promise<void>
 }) {
+  const [deleting, setDeleting] = useState<string | null>(null)
+
   if (!movements.length) return (
     <p className="py-4 text-center text-sm text-app-soft">Nenhum registro neste mês.</p>
   )
+
+  async function handleDelete(id: string) {
+    if (!confirm('Remover este registro?')) return
+    setDeleting(id)
+    await onDelete(id)
+    setDeleting(null)
+  }
 
   return (
     <div className="space-y-2">
@@ -304,6 +316,14 @@ function HistoryList({ movements }: {
             <p className="font-bold tabular-nums text-sm shrink-0" style={{ color: isIn ? '#22c55e' : '#f59e0b' }}>
               {isIn ? '+' : ''}{formatCurrency(mv.signedAmount)}
             </p>
+            <button
+              onClick={() => handleDelete(mv.id)}
+              disabled={deleting === mv.id}
+              className="ml-1 shrink-0 rounded-[6px] p-1.5 text-app-soft hover:text-[#f87171] transition-colors"
+              aria-label="Remover"
+            >
+              {deleting === mv.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Trash2 className="h-3.5 w-3.5" />}
+            </button>
           </div>
         )
       })}
@@ -326,9 +346,20 @@ export default function ReservaEmergenciaPFPage() {
     isSavingTarget,
     isSavingMovement,
     error,
+    refresh,
     updateTarget,
     addMovement,
   } = useReserveData({ scope: 'personal' })
+
+  async function handleDeleteMovement(id: string) {
+    const { error: err } = await createClient()
+      .from('financial_reserve_entries')
+      .delete()
+      .eq('id', id)
+    if (err) { toast.error('Erro ao remover'); return }
+    await refresh()
+    toast.success('Registro removido')
+  }
 
   async function handleSaveProtection(values: ProtectionFormValues) {
     const parse = (v: string) => { const n = parseFloat(v.replace(',','.')); return isNaN(n) ? undefined : n }
@@ -525,7 +556,7 @@ export default function ReservaEmergenciaPFPage() {
           {reserve && (
             <div>
               <p className="mb-3 px-1 text-sm font-semibold text-app">Registros recentes</p>
-              <HistoryList movements={movements} />
+              <HistoryList movements={movements} onDelete={handleDeleteMovement} />
             </div>
           )}
 

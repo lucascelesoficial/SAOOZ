@@ -20,6 +20,7 @@ import { Modal } from '@/components/ui/Modal'
 import { ReserveKpiCards } from '@/components/modules/reserve/ReserveKpiCards'
 import { ReserveMovementsTable } from '@/components/modules/reserve/ReserveMovementsTable'
 import { useReserveData } from '@/lib/hooks/useReserveData'
+import { createClient } from '@/lib/supabase/client'
 import { useBusinessData } from '@/lib/context/BusinessDataContext'
 import { formatCurrency, formatMonth } from '@/lib/utils/formatters'
 import { useAppState } from '@/lib/context/AppStateContext'
@@ -429,11 +430,22 @@ export default function ReservaEmergenciaPJPage() {
     isSavingTarget,
     isSavingMovement,
     error,
+    refresh,
     updateTarget,
     addMovement,
   } = useReserveData({ scope: 'business', businessId, enabled: isEnabled })
 
   // ── Handlers ────────────────────────────────────────────────────────────────
+
+  async function handleDeleteMovement(id: string) {
+    const { error: err } = await createClient()
+      .from('financial_reserve_entries')
+      .delete()
+      .eq('id', id)
+    if (err) { toast.error('Erro ao remover'); return }
+    await refresh()
+    toast.success('Registro removido')
+  }
 
   async function handleSaveTarget(values: TargetFormValues) {
     const parse = (v: string) => {
@@ -624,7 +636,7 @@ export default function ReservaEmergenciaPJPage() {
                 Nova
               </button>
             </div>
-            <ReserveMovementsTable movements={movements} />
+            <ReserveMovementsTable movements={movements} onDelete={handleDeleteMovement} />
           </div>
         </div>
       )}

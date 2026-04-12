@@ -12,6 +12,7 @@ import {
   Loader2,
   Plus,
   SlidersHorizontal,
+  Trash2,
   TrendingUp,
 } from 'lucide-react'
 import { toast } from 'sonner'
@@ -30,6 +31,7 @@ import { InvestmentSummaryCards } from '@/components/modules/investments/Investm
 import { AllocationChart } from '@/components/modules/investments/AllocationChart'
 import { PositionsTable } from '@/components/modules/investments/PositionsTable'
 import { useInvestmentsData } from '@/lib/hooks/useInvestmentsData'
+import { createClient } from '@/lib/supabase/client'
 import { useBusinessData } from '@/lib/context/BusinessDataContext'
 import {
   ACCOUNT_TYPE_LABELS,
@@ -270,7 +272,16 @@ function CashPositionBanner({
 
 // ── Movimentações recentes ────────────────────────────────────────────────────
 
-function RecentMovementsTable({ movements }: { movements: Array<{ id: string; accountName: string; assetSymbol: string | null; movementType: InvestmentMovementType; signedAmount: number; occurredOn: string; description: string | null }> }) {
+function RecentMovementsTable({ movements, onDelete }: { movements: Array<{ id: string; accountName: string; assetSymbol: string | null; movementType: InvestmentMovementType; signedAmount: number; occurredOn: string; description: string | null }>; onDelete: (id: string) => Promise<void> }) {
+  const [deleting, setDeleting] = useState<string | null>(null)
+
+  async function handleDelete(id: string) {
+    if (!confirm('Remover esta movimentação?')) return
+    setDeleting(id)
+    await onDelete(id)
+    setDeleting(null)
+  }
+
   if (!movements.length) return (
     <div className="panel-card p-5 text-center">
       <p className="text-sm font-semibold text-app">Sem movimentações</p>
@@ -279,14 +290,14 @@ function RecentMovementsTable({ movements }: { movements: Array<{ id: string; ac
   )
   return (
     <div className="panel-card overflow-hidden">
-      <div className="grid grid-cols-[1.2fr_1fr_1fr] gap-3 border-b px-4 py-3 text-xs uppercase tracking-wider text-app-soft" style={{ borderColor: 'var(--panel-border)' }}>
-        <span>Movimentação</span><span className="text-right">Data</span><span className="text-right">Valor</span>
+      <div className="grid grid-cols-[1.2fr_1fr_1fr_auto] gap-3 border-b px-4 py-3 text-xs uppercase tracking-wider text-app-soft" style={{ borderColor: 'var(--panel-border)' }}>
+        <span>Movimentação</span><span className="text-right">Data</span><span className="text-right">Valor</span><span />
       </div>
       <div className="divide-y" style={{ borderColor: 'var(--panel-border)' }}>
         {movements.map((mv) => {
           const isPositive = mv.signedAmount >= 0
           return (
-            <div key={mv.id} className="grid grid-cols-[1.2fr_1fr_1fr] gap-3 px-4 py-3 text-sm">
+            <div key={mv.id} className="grid grid-cols-[1.2fr_1fr_1fr_auto] items-center gap-3 px-4 py-3 text-sm">
               <div className="min-w-0">
                 <p className="truncate font-medium text-app">{mv.description || MOVEMENT_TYPE_LABELS[mv.movementType]}</p>
                 <p className="mt-0.5 text-xs text-app-soft">{mv.accountName}{mv.assetSymbol ? ` · ${mv.assetSymbol}` : ''}</p>
@@ -295,6 +306,9 @@ function RecentMovementsTable({ movements }: { movements: Array<{ id: string; ac
               <div className="text-right font-semibold tabular-nums" style={{ color: isPositive ? '#22c55e' : '#f87171' }}>
                 {isPositive ? '+' : ''}{formatCurrency(mv.signedAmount)}
               </div>
+              <button onClick={() => handleDelete(mv.id)} disabled={deleting === mv.id} className="rounded-[6px] p-1.5 text-app-soft hover:text-[#f87171] transition-colors">
+                {deleting === mv.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Trash2 className="h-3.5 w-3.5" />}
+              </button>
             </div>
           )
         })}
@@ -315,7 +329,29 @@ export default function InvestimentosPJPage() {
   const businessId = business?.id ?? null
   const isEnabled = Boolean(businessId)
 
-  const { accounts, totalInvested, allocation, recentMovements, summary, isLoading, isCreatingAccount, isCreatingAsset, isRecordingMovement, error, createAccount, createAsset, recordMovement } = useInvestmentsData({ scope: 'business', businessId, enabled: isEnabled })
+  const { accounts, totalInvested, allocation, recentMovements, summary, isLoading, isCreatingAccount, isCreatingAsset, isRecordingMovement, error, refresh, createAccount, createAsset, recordMovement } = useInvestmentsData({ scope: 'business', businessId, enabled: isEnabled })
+
+  async function handleDeleteMovement(id: string) {
+    const { error: err } = await createClient().from('investment_movements').delete().eq('id', id)
+    if (err) { toast.error('Erro ao remover movimentação'); return }
+    await refresh()
+    toast.success('Movimentação removida')
+  }
+
+  async function handleDeleteAsset(id: string) {
+    const { error: err } = await createClient().from('investment_assets').delete().eq('id', id)
+    if (err) { toast.error('Erro ao remover ativo'); return }
+    await refresh()
+    toast.success('Ativo removido')
+  }
+
+  async function handleDeleteAccount(id: string) {
+    if (!confirm('Remover esta conta e todos os seus ativos?')) return
+    const { error: err } = await createClient().from('investment_accounts').update({ is_active: false }).eq('id', id)
+    if (err) { toast.error('Erro ao remover conta'); return }
+    await refresh()
+    toast.success('Conta removida')
+  }
 
   async function handleCreateAccount(values: AccountFormValues) {
     try {
@@ -417,7 +453,7 @@ export default function InvestimentosPJPage() {
 
               <div>
                 <p className="mb-3 px-1 text-sm font-semibold text-app">Contas e posições</p>
-                <PositionsTable accounts={accounts} onAddAsset={(id, name) => setAssetModal({ open: true, accountId: id, accountName: name })} onAddMovement={(id) => setMovementModal({ open: true, accountId: id })} />
+                <PositionsTable accounts={accounts} onAddAsset={(id, name) => setAssetModal({ open: true, accountId: id, accountName: name })} onAddMovement={(id) => setMovementModal({ open: true, accountId: id })} onDeleteAsset={handleDeleteAsset} onDeleteAccount={handleDeleteAccount} />
               </div>
 
               <div>
@@ -425,7 +461,7 @@ export default function InvestimentosPJPage() {
                   <p className="text-sm font-semibold text-app">Movimentações recentes</p>
                   <button onClick={() => setMovementModal({ open: true })} className="flex items-center gap-1 text-xs font-medium" style={{ color: 'var(--accent-blue)' }}><Plus className="h-3.5 w-3.5" />Nova</button>
                 </div>
-                <RecentMovementsTable movements={recentMovements} />
+                <RecentMovementsTable movements={recentMovements} onDelete={handleDeleteMovement} />
               </div>
             </>
           )}
