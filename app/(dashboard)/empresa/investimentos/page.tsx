@@ -102,7 +102,7 @@ function AccountForm({ onClose, onSave, isSaving }: { onClose: () => void; onSav
   )
 }
 
-function AssetForm({ onClose, onSave, isSaving, accountId, accountName }: { onClose: () => void; onSave: (v: AssetFormValues) => Promise<void>; isSaving: boolean; accountId: string; accountName: string }) {
+function AssetForm({ onClose, onSave, isSaving, accountName }: { onClose: () => void; onSave: (v: AssetFormValues) => Promise<void>; isSaving: boolean; accountId: string; accountName: string }) {
   const { register, handleSubmit, setValue, watch, formState: { errors } } = useForm<AssetFormValues>({
     defaultValues: { symbol: '', name: '', assetType: 'renda_fixa', quantity: '', averagePrice: '' },
   })
@@ -222,12 +222,11 @@ function MovementForm({ onClose, onSave, isSaving, accounts, defaultAccountId }:
 function CashPositionBanner({
   netProfit,
   totalInvested,
-  businessName,
   month,
 }: {
   netProfit: number
   totalInvested: number
-  businessName: string
+  businessName?: string
   month: Date
 }) {
   const investable = Math.max(0, netProfit)

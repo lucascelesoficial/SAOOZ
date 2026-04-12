@@ -132,7 +132,6 @@ function AssetForm({
   onClose,
   onSave,
   isSaving,
-  accountId,
   accountName,
 }: {
   onClose: () => void
