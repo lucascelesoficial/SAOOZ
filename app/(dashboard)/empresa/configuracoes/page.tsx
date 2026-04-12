@@ -8,6 +8,44 @@ import { createClient } from '@/lib/supabase/client'
 import { useBusinessData } from '@/lib/context/BusinessDataContext'
 import type { BusinessActivity, BusinessTaxRegime } from '@/types/database.types'
 
+const BR_STATES = ['AC','AL','AP','AM','BA','CE','DF','ES','GO','MA','MT','MS','MG','PA','PB','PR','PE','PI','RJ','RN','RS','RO','RR','SC','SP','SE','TO']
+
+function maskCNPJ(v: string) {
+  return v.replace(/\D/g, '').replace(/(\d{2})(\d)/, '$1.$2').replace(/(\d{3})(\d)/, '$1.$2').replace(/(\d{3})(\d)/, '$1/$2').replace(/(\d{4})(\d{1,2})$/, '$1-$2').slice(0, 18)
+}
+function validateCNPJ(raw: string): boolean {
+  const cnpj = raw.replace(/\D/g, '')
+  if (cnpj.length !== 14 || /^(.)\1+$/.test(cnpj)) return false
+  const calc = (s: string, len: number) => {
+    let sum = 0; let pos = len - 7
+    for (let i = len; i >= 1; i--) { sum += parseInt(s[len - i]) * pos--; if (pos < 2) pos = 9 }
+    return sum % 11 < 2 ? 0 : 11 - (sum % 11)
+  }
+  return calc(cnpj, 12) === parseInt(cnpj[12]) && calc(cnpj, 13) === parseInt(cnpj[13])
+}
+function maskCPF(v: string) {
+  return v.replace(/\D/g, '').replace(/(\d{3})(\d)/, '$1.$2').replace(/(\d{3})(\d)/, '$1.$2').replace(/(\d{3})(\d{1,2})$/, '$1-$2').slice(0, 14)
+}
+function validateCPF(raw: string): boolean {
+  const cpf = raw.replace(/\D/g, '')
+  if (cpf.length !== 11 || /^(.)\1+$/.test(cpf)) return false
+  let sum = 0
+  for (let i = 0; i < 9; i++) sum += parseInt(cpf[i]) * (10 - i)
+  let rest = (sum * 10) % 11
+  if (rest === 10 || rest === 11) rest = 0
+  if (rest !== parseInt(cpf[9])) return false
+  sum = 0
+  for (let i = 0; i < 10; i++) sum += parseInt(cpf[i]) * (11 - i)
+  rest = (sum * 10) % 11
+  if (rest === 10 || rest === 11) rest = 0
+  return rest === parseInt(cpf[10])
+}
+function maskPhone(v: string) {
+  const d = v.replace(/\D/g, '').slice(0, 11)
+  if (d.length <= 10) return d.replace(/(\d{2})(\d{4})(\d{0,4})/, '($1) $2-$3').replace(/-$/, '')
+  return d.replace(/(\d{2})(\d{5})(\d{0,4})/, '($1) $2-$3').replace(/-$/, '')
+}
+
 function SectionCard({
   title,
   icon: Icon,
@@ -83,6 +121,11 @@ export default function EmpresaConfiguracoesPage() {
   const [userId, setUserId] = useState('')
   const [userName, setUserName] = useState('')
   const [userEmail, setUserEmail] = useState('')
+  const [userCpf, setUserCpf] = useState('')
+  const [userPhone, setUserPhone] = useState('')
+  const [userBirthDate, setUserBirthDate] = useState('')
+  const [userCity, setUserCity] = useState('')
+  const [userBrazilState, setUserBrazilState] = useState('')
   const [avatarSrc, setAvatarSrc] = useState<string | null>(null)
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null)
   const [savingProfile, setSavingProfile] = useState(false)
@@ -109,7 +152,7 @@ export default function EmpresaConfiguracoesPage() {
   useEffect(() => {
     if (!business) return
     setBizName(business.name)
-    setBizCnpj(business.cnpj ?? '')
+    setBizCnpj(business.cnpj ? maskCNPJ(business.cnpj) : '')
     setBizRegime(business.tax_regime)
     setBizActivity(business.activity)
   }, [business])
@@ -124,12 +167,21 @@ export default function EmpresaConfiguracoesPage() {
       setUserName(p.name ?? '')
       setUserEmail(p.email ?? '')
       setAvatarSrc(p.avatar_url)
+      if (p.cpf) setUserCpf(maskCPF(p.cpf))
+      if (p.phone) setUserPhone(maskPhone(p.phone))
+      if (p.birth_date) setUserBirthDate((p.birth_date as string).slice(0, 10))
+      if (p.city) setUserCity(p.city)
+      if (p.state) setUserBrazilState(p.state)
     })
   }, [])
 
   async function saveBusiness(e: React.FormEvent) {
     e.preventDefault()
     if (!business || bizName.trim().length < 2) return
+    if (bizCnpj && !validateCNPJ(bizCnpj)) {
+      toast.error('CNPJ inválido', { description: 'Verifique os dígitos e tente novamente.' })
+      return
+    }
 
     setSavingBiz(true)
     const supabase = createClient()
@@ -137,7 +189,7 @@ export default function EmpresaConfiguracoesPage() {
       .from('business_profiles')
       .update({
         name: bizName.trim(),
-        cnpj: bizCnpj.trim() || null,
+        cnpj: bizCnpj.replace(/\D/g, '') || null,
         tax_regime: bizRegime,
         activity: bizActivity,
       })
@@ -164,7 +216,15 @@ export default function EmpresaConfiguracoesPage() {
     const { data: currentAuth } = await supabase.auth.getUser()
     const currentEmail = currentAuth.user?.email?.toLowerCase() ?? ''
 
-    const { error: profileErr } = await supabase.from('profiles').update({ name: normalizedName, email: normalizedEmail }).eq('id', userId)
+    const { error: profileErr } = await supabase.from('profiles').update({
+      name: normalizedName,
+      email: normalizedEmail,
+      cpf: userCpf.replace(/\D/g, '') || null,
+      phone: userPhone.replace(/\D/g, '') || null,
+      birth_date: userBirthDate || null,
+      city: userCity.trim() || null,
+      state: userBrazilState || null,
+    }).eq('id', userId)
     if (profileErr) {
       setSavingProfile(false)
       toast.error('Erro ao salvar perfil', { description: profileErr.message })
@@ -192,8 +252,8 @@ export default function EmpresaConfiguracoesPage() {
       toast.error('Arquivo inválido')
       return
     }
-    if (file.size > 5 * 1024 * 1024) {
-      toast.error('Arquivo muito grande (max 5MB)')
+    if (file.size > 100 * 1024 * 1024) {
+      toast.error('Arquivo muito grande (max 100MB)')
       return
     }
 
@@ -316,14 +376,21 @@ export default function EmpresaConfiguracoesPage() {
             />
           </Field>
 
-          <Field label="CNPJ (opcional)">
+          <Field label="CNPJ">
             <input
               type="text"
               value={bizCnpj}
-              onChange={(e) => setBizCnpj(e.target.value)}
+              onChange={(e) => setBizCnpj(maskCNPJ(e.target.value))}
               placeholder="00.000.000/0001-00"
-              className="theme-input w-full h-10 px-3 rounded-[9px] text-sm"
+              className="theme-input w-full h-10 px-3 rounded-[9px] text-sm font-mono tracking-wide"
+              style={bizCnpj && !validateCNPJ(bizCnpj) ? { border: '1px solid #f87171' } : undefined}
             />
+            {bizCnpj && !validateCNPJ(bizCnpj) && (
+              <p className="text-[#f87171] text-xs">CNPJ inválido. Verifique os dígitos.</p>
+            )}
+            {bizCnpj && validateCNPJ(bizCnpj) && (
+              <p className="text-[#22c55e] text-xs flex items-center gap-1"><Check className="h-3 w-3" /> CNPJ válido</p>
+            )}
           </Field>
 
           <Field label="Regime tributário">
@@ -397,9 +464,9 @@ export default function EmpresaConfiguracoesPage() {
           </div>
           <div>
             <p className="text-sm font-semibold text-app">{userName || 'Usuário'}</p>
-            <p className="text-xs text-app-soft">PNG ou JPG, max. 5MB</p>
+            <p className="text-xs text-app-soft">PNG, JPG ou WebP, max. 100MB</p>
           </div>
-          <input ref={fileInputRef} type="file" accept="image/png,image/jpeg" className="hidden" onChange={handleAvatarChange} />
+          <input ref={fileInputRef} type="file" accept="image/png,image/jpeg,image/webp,image/gif" className="hidden" onChange={handleAvatarChange} />
         </div>
 
         <form onSubmit={saveProfile} className="space-y-3">
@@ -409,6 +476,53 @@ export default function EmpresaConfiguracoesPage() {
           <Field label="E-mail">
             <input type="email" value={userEmail} onChange={(e) => setUserEmail(e.target.value)} className="theme-input w-full h-10 px-3 rounded-[9px] text-sm" />
           </Field>
+          <Field label="CPF do sócio responsável">
+            <input
+              value={userCpf}
+              onChange={(e) => setUserCpf(maskCPF(e.target.value))}
+              placeholder="000.000.000-00"
+              className="theme-input w-full h-10 px-3 rounded-[9px] text-sm font-mono tracking-wide"
+            />
+            {userCpf && !validateCPF(userCpf) && <p className="text-[#f87171] text-xs">CPF inválido</p>}
+            {userCpf && validateCPF(userCpf) && <p className="text-[#22c55e] text-xs flex items-center gap-1"><Check className="h-3 w-3" /> CPF válido</p>}
+          </Field>
+          <Field label="Telefone">
+            <input
+              value={userPhone}
+              onChange={(e) => setUserPhone(maskPhone(e.target.value))}
+              placeholder="(11) 99999-9999"
+              className="theme-input w-full h-10 px-3 rounded-[9px] text-sm font-mono tracking-wide"
+            />
+          </Field>
+          <Field label="Data de nascimento">
+            <input
+              type="date"
+              value={userBirthDate}
+              onChange={(e) => setUserBirthDate(e.target.value)}
+              className="theme-input w-full h-10 px-3 rounded-[9px] text-sm"
+            />
+          </Field>
+          <div className="grid grid-cols-2 gap-3">
+            <Field label="Cidade">
+              <input
+                type="text"
+                value={userCity}
+                onChange={(e) => setUserCity(e.target.value)}
+                placeholder="São Paulo"
+                className="theme-input w-full h-10 px-3 rounded-[9px] text-sm"
+              />
+            </Field>
+            <Field label="Estado (UF)">
+              <select
+                value={userBrazilState}
+                onChange={(e) => setUserBrazilState(e.target.value)}
+                className="theme-input w-full h-10 px-3 rounded-[9px] text-sm outline-none"
+              >
+                <option value="">--</option>
+                {BR_STATES.map((uf) => <option key={uf} value={uf}>{uf}</option>)}
+              </select>
+            </Field>
+          </div>
           <button
             type="submit"
             disabled={savingProfile}

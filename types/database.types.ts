@@ -97,6 +97,10 @@ export interface Database {
           active_business_id: string | null
           created_at: string
           cpf: string | null
+          phone: string | null
+          birth_date: string | null
+          city: string | null
+          state: string | null
         }
         Insert: {
           id: string
@@ -107,6 +111,10 @@ export interface Database {
           active_business_id?: string | null
           created_at?: string
           cpf?: string | null
+          phone?: string | null
+          birth_date?: string | null
+          city?: string | null
+          state?: string | null
         }
         Update: {
           id?: string
@@ -117,6 +125,10 @@ export interface Database {
           active_business_id?: string | null
           created_at?: string
           cpf?: string | null
+          phone?: string | null
+          birth_date?: string | null
+          city?: string | null
+          state?: string | null
         }
         Relationships: []
       }

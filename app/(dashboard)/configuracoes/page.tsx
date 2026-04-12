@@ -19,6 +19,12 @@ interface ProfileValues {
   email: string
 }
 
+function maskPhone(v: string) {
+  const d = v.replace(/\D/g, '').slice(0, 11)
+  if (d.length <= 10) return d.replace(/(\d{2})(\d{4})(\d{0,4})/, '($1) $2-$3').replace(/-$/, '')
+  return d.replace(/(\d{2})(\d{5})(\d{0,4})/, '($1) $2-$3').replace(/-$/, '')
+}
+
 function maskCPF(v: string) {
   return v.replace(/\D/g, '').replace(/(\d{3})(\d)/, '$1.$2').replace(/(\d{3})(\d)/, '$1.$2').replace(/(\d{3})(\d{1,2})$/, '$1-$2').slice(0, 14)
 }
@@ -63,6 +69,10 @@ export default function ConfiguracoesPage() {
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null)
   const [cpf, setCpf] = useState('')
   const [savingCpf, setSavingCpf] = useState(false)
+  const [phone, setPhone] = useState('')
+  const [birthDate, setBirthDate] = useState('')
+  const [city, setCity] = useState('')
+  const [brazilState, setBrazilState] = useState('')
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const profileForm = useForm<ProfileValues>({ defaultValues: { name: '', email: '' } })
@@ -78,6 +88,10 @@ export default function ConfiguracoesPage() {
         setProfile(p)
         profileForm.reset({ name: p.name, email: p.email })
         if (p.cpf) setCpf(maskCPF(p.cpf))
+        if (p.phone) setPhone(maskPhone(p.phone))
+        if (p.birth_date) setBirthDate(p.birth_date.slice(0, 10))
+        if (p.city) setCity(p.city)
+        if (p.state) setBrazilState(p.state)
       }
     })
   }, [profileForm])
@@ -89,8 +103,8 @@ export default function ConfiguracoesPage() {
       toast.error('Arquivo inválido')
       return
     }
-    if (file.size > 5 * 1024 * 1024) {
-      toast.error('Arquivo muito grande (max 5MB)')
+    if (file.size > 100 * 1024 * 1024) {
+      toast.error('Arquivo muito grande (max 100MB)')
       return
     }
 
@@ -135,7 +149,14 @@ export default function ConfiguracoesPage() {
 
     const { error: profileErr } = await supabase
       .from('profiles')
-      .update({ name: normalizedName, email: normalizedEmail })
+      .update({
+        name: normalizedName,
+        email: normalizedEmail,
+        phone: phone.replace(/\D/g, '') || null,
+        birth_date: birthDate || null,
+        city: city.trim() || null,
+        state: brazilState || null,
+      })
       .eq('id', profile.id)
 
     if (profileErr) {
@@ -154,7 +175,15 @@ export default function ConfiguracoesPage() {
     }
 
     setSavingProfile(false)
-    setProfile((prev) => (prev ? { ...prev, name: normalizedName, email: normalizedEmail } : prev))
+    setProfile((prev) => prev ? {
+      ...prev,
+      name: normalizedName,
+      email: normalizedEmail,
+      phone: phone.replace(/\D/g, '') || null,
+      birth_date: birthDate || null,
+      city: city.trim() || null,
+      state: brazilState || null,
+    } : prev)
     router.refresh()
     toast.success('Dados salvos')
   }
@@ -239,8 +268,8 @@ export default function ConfiguracoesPage() {
             <Camera className="h-3.5 w-3.5" />
           </button>
         </div>
-        <input ref={fileInputRef} type="file" accept="image/png,image/jpeg" className="hidden" onChange={handleAvatarChange} />
-        <p className="text-xs text-app-soft">PNG ou JPG, max. 5MB</p>
+        <input ref={fileInputRef} type="file" accept="image/png,image/jpeg,image/webp,image/gif" className="hidden" onChange={handleAvatarChange} />
+        <p className="text-xs text-app-soft">PNG, JPG ou WebP, max. 100MB</p>
       </div>
 
       <div className="panel-card p-6">
@@ -264,6 +293,52 @@ export default function ConfiguracoesPage() {
               {...profileForm.register('email', { required: 'Email é obrigatório', pattern: { value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/, message: 'Email inválido' } })}
             />
             {profileForm.formState.errors.email && <p className="text-[#f87171] text-xs">{profileForm.formState.errors.email.message}</p>}
+          </div>
+          <div className="space-y-2">
+            <Label className="text-app-base">Telefone</Label>
+            <Input
+              value={phone}
+              onChange={(e) => setPhone(maskPhone(e.target.value))}
+              placeholder="(11) 99999-9999"
+              className="rounded-[8px] font-mono tracking-wide"
+              style={{ background: 'var(--panel-bg-soft)', borderColor: 'var(--panel-border)', color: 'var(--text-strong)' }}
+            />
+          </div>
+          <div className="space-y-2">
+            <Label className="text-app-base">Data de nascimento</Label>
+            <Input
+              type="date"
+              value={birthDate}
+              onChange={(e) => setBirthDate(e.target.value)}
+              className="rounded-[8px]"
+              style={{ background: 'var(--panel-bg-soft)', borderColor: 'var(--panel-border)', color: 'var(--text-strong)' }}
+            />
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-2">
+              <Label className="text-app-base">Cidade</Label>
+              <Input
+                value={city}
+                onChange={(e) => setCity(e.target.value)}
+                placeholder="São Paulo"
+                className="rounded-[8px]"
+                style={{ background: 'var(--panel-bg-soft)', borderColor: 'var(--panel-border)', color: 'var(--text-strong)' }}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label className="text-app-base">Estado (UF)</Label>
+              <select
+                value={brazilState}
+                onChange={(e) => setBrazilState(e.target.value)}
+                className="w-full h-10 rounded-[8px] border px-3 text-sm outline-none"
+                style={{ background: 'var(--panel-bg-soft)', borderColor: 'var(--panel-border)', color: 'var(--text-strong)' }}
+              >
+                <option value="">--</option>
+                {['AC','AL','AP','AM','BA','CE','DF','ES','GO','MA','MT','MS','MG','PA','PB','PR','PE','PI','RJ','RN','RS','RO','RR','SC','SP','SE','TO'].map((uf) => (
+                  <option key={uf} value={uf}>{uf}</option>
+                ))}
+              </select>
+            </div>
           </div>
           <Button
             type="submit"

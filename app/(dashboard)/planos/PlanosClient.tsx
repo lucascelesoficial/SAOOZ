@@ -8,6 +8,7 @@ import {
   CreditCard,
   Crown,
   Layers3,
+  QrCode,
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { formatCurrency } from '@/lib/utils/formatters'
@@ -85,17 +86,21 @@ export function PlanosClient({ snapshot }: PlanosClientProps) {
   const [checkingOut, setCheckingOut] = useState<string | null>(null)
   const searchParams = useSearchParams()
 
-  async function handleCheckout(planCode: SubscriptionPlanType) {
-    setCheckingOut(planCode)
+  async function handleCheckout(planCode: SubscriptionPlanType, paymentMethod: 'card' | 'pix' = 'card') {
+    setCheckingOut(`${planCode}-${paymentMethod}`)
     try {
       const res = await fetch('/api/billing/checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ planType: planCode, duration, paymentMethod: 'card' }),
+        body: JSON.stringify({ planType: planCode, duration, paymentMethod }),
       })
       const data = await res.json()
       if (!res.ok) {
-        toast.error('Erro ao iniciar checkout', { description: data.error })
+        const description =
+          paymentMethod === 'pix' && data.error?.toLowerCase().includes('pix')
+            ? 'PIX ainda não está ativo nesta conta. Ative em: dashboard.stripe.com → Payment methods → Pix.'
+            : data.error
+        toast.error('Erro ao iniciar checkout', { description })
         return
       }
       if (data.checkoutUrl) {
@@ -309,20 +314,45 @@ export function PlanosClient({ snapshot }: PlanosClientProps) {
                 <p className="mt-1 text-xs text-app-soft">{businessCapacityLabel(planCode, duration)}</p>
               </div>
 
-              <div className="mt-5">
-                <button
-                  onClick={() => handleCheckout(planCode)}
-                  disabled={(isCurrentPlan && snapshot.paidAccess) || !!checkingOut}
-                  className="flex h-11 w-full items-center justify-center rounded-[10px] text-sm font-semibold text-white transition-all disabled:opacity-60"
-                  style={{
-                    background: plan.highlight
-                      ? 'linear-gradient(135deg, var(--accent-blue), var(--accent-cyan))'
-                      : 'linear-gradient(135deg, #334155, #1e293b)',
-                  }}
-                >
-                  <CreditCard className="mr-1.5 h-4 w-4" />
-                  {isCurrentPlan && snapshot.paidAccess ? 'Ativo' : checkingOut === planCode ? 'Aguarde...' : 'Assinar com Cartão'}
-                </button>
+              <div className="mt-5 space-y-2">
+                {isCurrentPlan && snapshot.paidAccess ? (
+                  <button
+                    disabled
+                    className="flex h-11 w-full items-center justify-center rounded-[10px] text-sm font-semibold text-white transition-all disabled:opacity-60"
+                    style={{ background: 'linear-gradient(135deg, #334155, #1e293b)' }}
+                  >
+                    Ativo
+                  </button>
+                ) : (
+                  <>
+                    <button
+                      onClick={() => handleCheckout(planCode, 'card')}
+                      disabled={!!checkingOut}
+                      className="flex h-11 w-full items-center justify-center rounded-[10px] text-sm font-semibold text-white transition-all disabled:opacity-60"
+                      style={{
+                        background: plan.highlight
+                          ? 'linear-gradient(135deg, var(--accent-blue), var(--accent-cyan))'
+                          : 'linear-gradient(135deg, #334155, #1e293b)',
+                      }}
+                    >
+                      <CreditCard className="mr-1.5 h-4 w-4" />
+                      {checkingOut === `${planCode}-card` ? 'Aguarde...' : 'Cartão de Crédito'}
+                    </button>
+                    <button
+                      onClick={() => handleCheckout(planCode, 'pix')}
+                      disabled={!!checkingOut}
+                      className="flex h-11 w-full items-center justify-center rounded-[10px] text-sm font-semibold transition-all disabled:opacity-60"
+                      style={{
+                        background: 'color-mix(in oklab, #22c55e 12%, transparent)',
+                        border: '1px solid color-mix(in oklab, #22c55e 35%, transparent)',
+                        color: '#22c55e',
+                      }}
+                    >
+                      <QrCode className="mr-1.5 h-4 w-4" />
+                      {checkingOut === `${planCode}-pix` ? 'Aguarde...' : 'Pagar com PIX'}
+                    </button>
+                  </>
+                )}
               </div>
             </article>
           )
@@ -374,9 +404,9 @@ export function PlanosClient({ snapshot }: PlanosClientProps) {
             Como funciona
           </h2>
           <div className="mt-4 space-y-3 text-sm text-app-soft">
-            <p>Pagamento seguro via cartão de crédito processado pelo Stripe.</p>
-            <p>Plano ativado imediatamente após a confirmação do pagamento.</p>
-            <p>Cada ativação passa por confirmação de pagamento antes da liberação final.</p>
+            <p>Pagamento seguro via cartão de crédito ou PIX, processado pelo Stripe.</p>
+            <p>Plano ativado automaticamente após confirmação do pagamento.</p>
+            <p>PIX: QR Code gerado pelo Stripe, válido por 24 horas.</p>
           </div>
         </div>
 
@@ -391,6 +421,10 @@ export function PlanosClient({ snapshot }: PlanosClientProps) {
               <p className="mt-2 flex items-center gap-2 text-sm font-semibold text-app">
                 <CreditCard className="h-4 w-4" />
                 Cartão de crédito
+              </p>
+              <p className="mt-1 flex items-center gap-2 text-sm font-semibold text-app">
+                <QrCode className="h-4 w-4 text-[#22c55e]" />
+                PIX
               </p>
               <p className="mt-1 text-xs text-app-soft">Processado via Stripe</p>
             </div>

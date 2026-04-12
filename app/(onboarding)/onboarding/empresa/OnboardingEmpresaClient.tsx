@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { Building2, ChevronRight, Loader2 } from 'lucide-react'
+import { Building2, ChevronRight, Loader2, User } from 'lucide-react'
 import { toast } from 'sonner'
 import { createClient } from '@/lib/supabase/client'
 import type {
@@ -12,6 +12,44 @@ import type {
 } from '@/types/database.types'
 
 type BusinessProfile = Database['public']['Tables']['business_profiles']['Row']
+
+const BR_STATES = ['AC','AL','AP','AM','BA','CE','DF','ES','GO','MA','MT','MS','MG','PA','PB','PR','PE','PI','RJ','RN','RS','RO','RR','SC','SP','SE','TO']
+
+function maskCNPJ(v: string) {
+  return v.replace(/\D/g, '').replace(/(\d{2})(\d)/, '$1.$2').replace(/(\d{3})(\d)/, '$1.$2').replace(/(\d{3})(\d)/, '$1/$2').replace(/(\d{4})(\d{1,2})$/, '$1-$2').slice(0, 18)
+}
+function validateCNPJ(raw: string): boolean {
+  const cnpj = raw.replace(/\D/g, '')
+  if (cnpj.length !== 14 || /^(.)\1+$/.test(cnpj)) return false
+  const calc = (s: string, len: number) => {
+    let sum = 0; let pos = len - 7
+    for (let i = len; i >= 1; i--) { sum += parseInt(s[len - i]) * pos--; if (pos < 2) pos = 9 }
+    return sum % 11 < 2 ? 0 : 11 - (sum % 11)
+  }
+  return calc(cnpj, 12) === parseInt(cnpj[12]) && calc(cnpj, 13) === parseInt(cnpj[13])
+}
+function maskCPF(v: string) {
+  return v.replace(/\D/g, '').replace(/(\d{3})(\d)/, '$1.$2').replace(/(\d{3})(\d)/, '$1.$2').replace(/(\d{3})(\d{1,2})$/, '$1-$2').slice(0, 14)
+}
+function validateCPF(raw: string): boolean {
+  const cpf = raw.replace(/\D/g, '')
+  if (cpf.length !== 11 || /^(.)\1+$/.test(cpf)) return false
+  let sum = 0
+  for (let i = 0; i < 9; i++) sum += parseInt(cpf[i]) * (10 - i)
+  let rest = (sum * 10) % 11
+  if (rest === 10 || rest === 11) rest = 0
+  if (rest !== parseInt(cpf[9])) return false
+  sum = 0
+  for (let i = 0; i < 10; i++) sum += parseInt(cpf[i]) * (11 - i)
+  rest = (sum * 10) % 11
+  if (rest === 10 || rest === 11) rest = 0
+  return rest === parseInt(cpf[10])
+}
+function maskPhone(v: string) {
+  const d = v.replace(/\D/g, '').slice(0, 11)
+  if (d.length <= 10) return d.replace(/(\d{2})(\d{4})(\d{0,4})/, '($1) $2-$3').replace(/-$/, '')
+  return d.replace(/(\d{2})(\d{5})(\d{0,4})/, '($1) $2-$3').replace(/-$/, '')
+}
 
 const TAX_REGIMES: Array<{ id: BusinessTaxRegime; label: string; desc: string; porte: string; tooltip: string }> = [
   { id: 'mei', label: 'MEI', desc: 'Até R$ 81k/ano', porte: 'Porte: MEI', tooltip: 'Microempreendedor Individual. Tributação fixa mensal via DAS.' },
@@ -73,6 +111,33 @@ export function OnboardingEmpresaClient({
   const [activity, setActivity] = useState<BusinessActivity>('servico')
   const [errors, setErrors] = useState<Record<string, string>>({})
 
+  // Sócio responsável
+  const [socioCpf, setSocioCpf] = useState('')
+  const [socioPhone, setSocioPhone] = useState('')
+  const [socioBirthDate, setSocioBirthDate] = useState('')
+  const [socioCity, setSocioCity] = useState('')
+  const [socioBrazilState, setSocioBrazilState] = useState('')
+
+  // Always load the user's existing profile data (pre-fill socio fields)
+  useEffect(() => {
+    const supabase = createClient()
+    supabase.auth.getUser().then(async ({ data }) => {
+      if (!data.user) return
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('cpf,phone,birth_date,city,state')
+        .eq('id', data.user.id)
+        .single()
+      if (profile) {
+        if (profile.cpf) setSocioCpf(maskCPF(profile.cpf))
+        if (profile.phone) setSocioPhone(maskPhone(profile.phone))
+        if (profile.birth_date) setSocioBirthDate(String(profile.birth_date).slice(0, 10))
+        if (profile.city) setSocioCity(profile.city)
+        if (profile.state) setSocioBrazilState(profile.state)
+      }
+    })
+  }, [])
+
   useEffect(() => {
     let active = true
 
@@ -111,7 +176,7 @@ export function OnboardingEmpresaClient({
 
       const business = data as BusinessProfile
       setName(business.name)
-      setCnpj(business.cnpj ?? '')
+      setCnpj(business.cnpj ? maskCNPJ(business.cnpj) : '')
       setRegime(business.tax_regime)
       setActivity(business.activity)
       setLoadingBusiness(false)
@@ -150,6 +215,12 @@ export function OnboardingEmpresaClient({
     if (!name || name.trim().length < 2) {
       nextErrors.name = 'Nome deve ter ao menos 2 caracteres.'
     }
+    if (!cnpj || !validateCNPJ(cnpj)) {
+      nextErrors.cnpj = 'CNPJ obrigatório e deve ser válido.'
+    }
+    if (!socioCpf || !validateCPF(socioCpf)) {
+      nextErrors.socioCpf = 'CPF do sócio responsável é obrigatório e deve ser válido.'
+    }
 
     if (Object.keys(nextErrors).length) {
       setErrors(nextErrors)
@@ -175,7 +246,7 @@ export function OnboardingEmpresaClient({
       body: JSON.stringify({
         businessId: businessId ?? undefined,
         name: name.trim(),
-        cnpj: cnpj.trim() || null,
+        cnpj: cnpj.replace(/\D/g, '') || null,
         taxRegime: regime,
         activity,
       }),
@@ -208,6 +279,15 @@ export function OnboardingEmpresaClient({
       setLoading(false)
       return
     }
+
+    // Save responsible partner data to the user's profile
+    await supabase.from('profiles').update({
+      cpf: socioCpf.replace(/\D/g, '') || null,
+      phone: socioPhone.replace(/\D/g, '') || null,
+      birth_date: socioBirthDate || null,
+      city: socioCity.trim() || null,
+      state: socioBrazilState || null,
+    }).eq('id', user.id)
 
     toast.success(isEditing ? 'Empresa atualizada' : 'Empresa cadastrada', {
       description: 'A empresa ativa foi atualizada no seu painel.',
@@ -250,17 +330,20 @@ export function OnboardingEmpresaClient({
           />
         </FieldWrap>
 
-        <FieldWrap label="CNPJ (opcional)">
+        <FieldWrap label="CNPJ *" error={errors.cnpj}>
           <input
             type="text"
             placeholder="00.000.000/0001-00"
             value={cnpj}
-            onChange={(event) => setCnpj(event.target.value)}
-            className="h-11 w-full rounded-[10px] px-4 text-sm placeholder:text-app-soft"
-            style={INPUT_STYLE}
+            onChange={(event) => setCnpj(maskCNPJ(event.target.value))}
+            className="h-11 w-full rounded-[10px] px-4 text-sm placeholder:text-app-soft font-mono tracking-wide"
+            style={cnpj && !validateCNPJ(cnpj) ? { ...INPUT_STYLE, border: '1.5px solid #f87171' } : INPUT_STYLE}
             onFocus={focusStyle}
             onBlur={blurStyle}
           />
+          {cnpj && validateCNPJ(cnpj) && (
+            <p className="text-xs text-[#22c55e] mt-1">CNPJ válido</p>
+          )}
         </FieldWrap>
 
         <FieldWrap label="Regime tributário">
@@ -314,6 +397,85 @@ export function OnboardingEmpresaClient({
             ))}
           </div>
         </FieldWrap>
+
+        {/* Sócio responsável */}
+        <div className="pt-2 space-y-4" style={{ borderTop: '1px solid var(--panel-border)' }}>
+          <div className="flex items-center gap-2">
+            <div className="h-7 w-7 rounded-[8px] flex items-center justify-center shrink-0" style={{ background: '#8b5cf615', border: '1px solid #8b5cf630' }}>
+              <User className="h-3.5 w-3.5 text-[#8b5cf6]" />
+            </div>
+            <span className="text-sm font-bold text-app">Sócio responsável</span>
+          </div>
+
+          <FieldWrap label="CPF do sócio *" error={errors.socioCpf}>
+            <input
+              type="text"
+              placeholder="000.000.000-00"
+              value={socioCpf}
+              onChange={(e) => setSocioCpf(maskCPF(e.target.value))}
+              className="h-11 w-full rounded-[10px] px-4 text-sm placeholder:text-app-soft font-mono tracking-wide"
+              style={socioCpf && !validateCPF(socioCpf) ? { ...INPUT_STYLE, border: '1.5px solid #f87171' } : INPUT_STYLE}
+              onFocus={focusStyle}
+              onBlur={blurStyle}
+            />
+            {socioCpf && validateCPF(socioCpf) && (
+              <p className="text-xs text-[#22c55e] mt-1">CPF válido</p>
+            )}
+          </FieldWrap>
+
+          <FieldWrap label="Telefone">
+            <input
+              type="text"
+              placeholder="(11) 99999-9999"
+              value={socioPhone}
+              onChange={(e) => setSocioPhone(maskPhone(e.target.value))}
+              className="h-11 w-full rounded-[10px] px-4 text-sm placeholder:text-app-soft font-mono tracking-wide"
+              style={INPUT_STYLE}
+              onFocus={focusStyle}
+              onBlur={blurStyle}
+            />
+          </FieldWrap>
+
+          <FieldWrap label="Data de nascimento">
+            <input
+              type="date"
+              value={socioBirthDate}
+              onChange={(e) => setSocioBirthDate(e.target.value)}
+              className="h-11 w-full rounded-[10px] px-4 text-sm"
+              style={INPUT_STYLE}
+              onFocus={focusStyle}
+              onBlur={blurStyle}
+            />
+          </FieldWrap>
+
+          <div className="grid grid-cols-2 gap-3">
+            <FieldWrap label="Cidade">
+              <input
+                type="text"
+                placeholder="São Paulo"
+                value={socioCity}
+                onChange={(e) => setSocioCity(e.target.value)}
+                className="h-11 w-full rounded-[10px] px-4 text-sm placeholder:text-app-soft"
+                style={INPUT_STYLE}
+                onFocus={focusStyle}
+                onBlur={blurStyle}
+              />
+            </FieldWrap>
+            <FieldWrap label="Estado (UF)">
+              <select
+                value={socioBrazilState}
+                onChange={(e) => setSocioBrazilState(e.target.value)}
+                className="h-11 w-full rounded-[10px] px-4 text-sm outline-none"
+                style={INPUT_STYLE}
+              >
+                <option value="">--</option>
+                {BR_STATES.map((uf) => (
+                  <option key={uf} value={uf}>{uf}</option>
+                ))}
+              </select>
+            </FieldWrap>
+          </div>
+        </div>
 
         <button
           type="submit"

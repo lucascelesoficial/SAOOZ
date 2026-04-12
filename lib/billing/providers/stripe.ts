@@ -77,7 +77,7 @@ export class StripeProvider implements PaymentProvider {
   }
 
   supportsPaymentMethod(method: 'card' | 'pix') {
-    return method === 'card'
+    return method === 'card' || method === 'pix'
   }
 
   resolvePaymentReferences(input: ResolvePaymentReferencesInput): ProviderPaymentReferences {
@@ -95,13 +95,22 @@ export class StripeProvider implements PaymentProvider {
       throw new Error('Stripe provider is not configured.')
     }
 
-    if (input.paymentMethod !== 'card') {
-      throw new Error('Stripe checkout currently supports card payments only.')
+    if (input.paymentMethod !== 'card' && input.paymentMethod !== 'pix') {
+      throw new Error('Stripe checkout supports card and pix only.')
     }
 
     const stripe = await this.getStripeClient()
+
+    // PIX uses automatic_payment_methods so Stripe shows all enabled Brazilian
+    // methods (boleto, pix, etc.) without hardcoding the type — avoids the
+    // "payment method not activated" error when PIX isn't yet enabled.
+    const sessionParams: Record<string, unknown> =
+      input.paymentMethod === 'pix'
+        ? { automatic_payment_methods: { enabled: true } }
+        : { payment_method_types: ['card'] }
+
     const session = await stripe.checkout.sessions.create({
-      payment_method_types: ['card'],
+      ...sessionParams,
       mode: 'payment',
       customer_email: input.userEmail ?? undefined,
       line_items: [

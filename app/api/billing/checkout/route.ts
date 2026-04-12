@@ -11,7 +11,7 @@ export const dynamic = 'force-dynamic'
 const checkoutSchema = z.object({
   planType: z.enum(['pf', 'pj', 'pro']),
   duration: z.union([z.literal(1), z.literal(3), z.literal(6), z.literal(12)]),
-  paymentMethod: z.enum(['card']),
+  paymentMethod: z.enum(['card', 'pix']),
   gateway: z.enum(['stripe', 'kiwify', 'cakto']).optional(),
 })
 
@@ -77,7 +77,7 @@ export async function POST(request: NextRequest) {
     }
 
     return NextResponse.json(
-      { error: 'Pagamento via cartão não configurado. Entre em contato com o suporte.' },
+      { error: 'Método de pagamento não configurado. Entre em contato com o suporte.' },
       { status: 503 }
     )
   } catch (error) {
