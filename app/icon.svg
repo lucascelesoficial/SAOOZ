@@ -1,8 +1,15 @@
-<svg width="512" height="512" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
   <defs>
+    <!-- Background gradient: linear-gradient(135deg, #0d1021, #080d28) -->
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0d1021"/>
+      <stop offset="100%" stop-color="#080d28"/>
+    </linearGradient>
+
+    <!-- Glow filters matching NucleusIcon -->
     <filter id="g1" x="-120%" y="-120%" width="340%" height="340%">
-      <feGaussianBlur stdDeviation="4" result="b1"/>
-      <feGaussianBlur stdDeviation="8" result="b2" in="SourceGraphic"/>
+      <feGaussianBlur stdDeviation="10" result="b1"/>
+      <feGaussianBlur stdDeviation="20" result="b2" in="SourceGraphic"/>
       <feMerge>
         <feMergeNode in="b2"/>
         <feMergeNode in="b1"/>
@@ -10,7 +17,7 @@
       </feMerge>
     </filter>
     <filter id="g2" x="-80%" y="-80%" width="260%" height="260%">
-      <feGaussianBlur stdDeviation="2.5" result="b"/>
+      <feGaussianBlur stdDeviation="6" result="b"/>
       <feMerge>
         <feMergeNode in="b"/>
         <feMergeNode in="b"/>
@@ -18,7 +25,7 @@
       </feMerge>
     </filter>
     <filter id="g3" x="-200%" y="-200%" width="500%" height="500%">
-      <feGaussianBlur stdDeviation="6" result="b"/>
+      <feGaussianBlur stdDeviation="15" result="b"/>
       <feMerge>
         <feMergeNode in="b"/>
         <feMergeNode in="b"/>
@@ -26,46 +33,65 @@
         <feMergeNode in="SourceGraphic"/>
       </feMerge>
     </filter>
+
     <radialGradient id="cg" cx="50%" cy="50%" r="50%">
       <stop offset="0%"   stop-color="#a5f3fc" stop-opacity="1"/>
       <stop offset="60%"  stop-color="#67e8f9" stop-opacity="0.6"/>
       <stop offset="100%" stop-color="#3b82f6" stop-opacity="0"/>
     </radialGradient>
+
+    <!-- Clip to rounded rect -->
+    <clipPath id="clip">
+      <rect width="512" height="512" rx="112" ry="112"/>
+    </clipPath>
   </defs>
 
-  <!-- Ring 1 — outermost, cyan-blue -->
-  <circle cx="40" cy="40" r="36"
-    stroke="#3b82f6" stroke-width="1" fill="none"
-    filter="url(#g1)"
-    stroke-dasharray="6 10"/>
+  <!-- Dark background with gradient -->
+  <rect width="512" height="512" rx="112" ry="112" fill="url(#bg)"/>
 
-  <!-- Ring 2 — solid blue -->
-  <circle cx="40" cy="40" r="30"
-    stroke="#60a5fa" stroke-width="1.5" fill="none"
-    filter="url(#g2)"/>
+  <!-- Border: #1e2847, 1px → scaled to ~5px at 512px -->
+  <rect width="512" height="512" rx="112" ry="112"
+    fill="none" stroke="#1e2847" stroke-width="5"/>
 
-  <!-- Ring 3 — blue-indigo -->
-  <circle cx="40" cy="40" r="23"
-    stroke="#818cf8" stroke-width="2" fill="none"
-    filter="url(#g2)"/>
+  <!-- NucleusIcon centered, scaled to 82% of 512 = ~420px, viewBox 80×80 scaled -->
+  <!-- Scale factor: 420/80 = 5.25, center offset: (512-420)/2 = 46 -->
+  <g transform="translate(46, 46) scale(5.25)">
 
-  <!-- Ring 4 — violet-purple -->
-  <circle cx="40" cy="40" r="16"
-    stroke="#a78bfa" stroke-width="2.5" fill="none"
-    filter="url(#g2)"/>
+    <!-- Ring 1 — outermost, dashed, cyan-blue -->
+    <circle cx="40" cy="40" r="36"
+      stroke="#3b82f6" stroke-width="1" fill="none"
+      filter="url(#g1)"
+      stroke-dasharray="6 10"/>
 
-  <!-- Ring 5 — innermost magenta -->
-  <circle cx="40" cy="40" r="9.5"
-    stroke="#c084fc" stroke-width="2" fill="none"
-    filter="url(#g2)"/>
+    <!-- Ring 2 — solid blue -->
+    <circle cx="40" cy="40" r="30"
+      stroke="#60a5fa" stroke-width="1.5" fill="none"
+      filter="url(#g2)"/>
 
-  <!-- Ambient halo -->
-  <circle cx="40" cy="40" r="7"
-    fill="url(#cg)" opacity="0.4"
-    filter="url(#g3)"/>
+    <!-- Ring 3 — blue-indigo -->
+    <circle cx="40" cy="40" r="23"
+      stroke="#818cf8" stroke-width="2" fill="none"
+      filter="url(#g2)"/>
 
-  <!-- Core bright dot -->
-  <circle cx="40" cy="40" r="3.5"
-    fill="#a5f3fc"
-    filter="url(#g3)"/>
+    <!-- Ring 4 — violet-purple -->
+    <circle cx="40" cy="40" r="16"
+      stroke="#a78bfa" stroke-width="2.5" fill="none"
+      filter="url(#g2)"/>
+
+    <!-- Ring 5 — innermost magenta -->
+    <circle cx="40" cy="40" r="9.5"
+      stroke="#c084fc" stroke-width="2" fill="none"
+      filter="url(#g2)"/>
+
+    <!-- Ambient halo -->
+    <circle cx="40" cy="40" r="9"
+      fill="url(#cg)" opacity="0.4"
+      filter="url(#g3)"/>
+
+    <!-- Core bright dot -->
+    <circle cx="40" cy="40" r="3.5"
+      fill="#a5f3fc"
+      filter="url(#g3)"/>
+
+  </g>
 </svg>
