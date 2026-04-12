@@ -18,6 +18,7 @@ import {
 } from '@/components/ui/select'
 import { Modal } from '@/components/ui/Modal'
 import { EmptyState } from '@/components/ui/EmptyState'
+import { ExportPDFButton } from '@/components/pdf/ExportPDFButton'
 import { createClient } from '@/lib/supabase/client'
 import { useFinancialData } from '@/lib/hooks/useFinancialData'
 import { formatCurrency, formatMonth } from '@/lib/utils/formatters'
@@ -310,16 +311,32 @@ export default function DespesasPFPage() {
           <h1 className="text-xl font-bold text-app">Despesas</h1>
           <p className="mt-1 text-sm text-app-base">{formatMonth(currentMonth)}</p>
         </div>
-        <Button
-          onClick={() => {
-            setEditing(null)
-            setModalOpen(true)
-          }}
-          className="rounded-[8px] text-white"
-          style={{ background: 'linear-gradient(135deg, var(--accent-blue), var(--accent-cyan))' }}
-        >
-          <Plus className="mr-1 h-4 w-4" /> Lançar
-        </Button>
+        <div className="flex items-center gap-2">
+          <ExportPDFButton
+            data={{
+              title: 'Relatório de Despesas',
+              subtitle: 'Módulo Pessoal',
+              month: formatMonth(currentMonth),
+              totalIncome: totals.totalIncome,
+              totalExpenses: totals.totalExpenses,
+              balance: totals.balance,
+              expenses: expenses.map((e) => ({
+                description: e.description ?? e.category,
+                category: CATEGORY_LABELS[e.category] ?? e.category,
+                amount: e.amount,
+                date: e.date ? new Date(e.date).toLocaleDateString('pt-BR') : undefined,
+              })),
+            }}
+            fileName={`saooz-despesas-${currentMonth}.pdf`}
+          />
+          <Button
+            onClick={() => { setEditing(null); setModalOpen(true) }}
+            className="rounded-[8px] text-white"
+            style={{ background: 'linear-gradient(135deg, var(--accent-blue), var(--accent-cyan))' }}
+          >
+            <Plus className="mr-1 h-4 w-4" /> Lançar
+          </Button>
+        </div>
       </div>
 
       <div className="panel-card mb-6 p-5">

@@ -121,15 +121,16 @@ export function SaoozAI({ totals, categoryData }: SaoozAIProps) {
         body: JSON.stringify({
           message: text.trim(),
           context: {
+            mode: 'pf',
             totalIncome: totals.totalIncome,
             totalExpenses: totals.totalExpenses,
             balance: totals.balance,
             consumptionRate: totals.consumptionRate,
-            categoryData: categoryData.map((item) => ({
-              label: item.label,
-              total: item.total,
-              percentage: item.percentage,
-            })),
+            currentMonth: new Date().toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' }),
+            topCategories: categoryData
+              .sort((a, b) => b.total - a.total)
+              .slice(0, 5)
+              .map((item) => ({ name: item.label, amount: item.total })),
           },
         }),
       })

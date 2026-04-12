@@ -67,8 +67,8 @@ export default function ConfiguracoesPage() {
       toast.error('Arquivo inválido')
       return
     }
-    if (file.size > 2 * 1024 * 1024) {
-      toast.error('Arquivo muito grande (max 2MB)')
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error('Arquivo muito grande (max 5MB)')
       return
     }
 
@@ -204,7 +204,7 @@ export default function ConfiguracoesPage() {
           </button>
         </div>
         <input ref={fileInputRef} type="file" accept="image/png,image/jpeg" className="hidden" onChange={handleAvatarChange} />
-        <p className="text-xs text-app-soft">PNG ou JPG, max. 2MB</p>
+        <p className="text-xs text-app-soft">PNG ou JPG, max. 5MB</p>
       </div>
 
       <div className="panel-card p-6">

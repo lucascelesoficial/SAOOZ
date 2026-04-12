@@ -5,97 +5,156 @@ import { enforceRateLimit, requireUser } from '@/lib/server/request-guard'
 
 export const dynamic = 'force-dynamic'
 
-const SAOOZ_CORE = `
-Você é SAOOZ, um assistente financeiro preciso, elegante e direto.
-Fale sempre em português do Brasil.
+// ─── System prompt core ──────────────────────────────────────────────────────
 
-Regras:
-- Nunca sugira apagar, sobrescrever em massa ou editar histórico inteiro.
+const SAOOZ_CORE = `
+Você é SAOOZ AI — um consultor financeiro especializado em finanças brasileiras.
+Fale sempre em português do Brasil. Seja direto, preciso e acionável.
+
+ESTILO DE RESPOSTA:
+- Respostas informativas: máximo 3 parágrafos curtos. Inclua valores numéricos sempre que relevante.
+- Nunca use fluff, respostas genéricas ou conselhos óbvios.
+- Dê insights específicos com base nos dados do usuário.
+- Identifique padrões, riscos e oportunidades reais.
+
+REGRAS DE AÇÃO:
+- Nunca sugira editar ou apagar histórico em massa.
 - Nunca proponha mais de um lançamento por resposta.
-- Quando o pedido for apenas informativo, responda em texto normal.
+- Quando o pedido for informativo, responda em texto normal.
 - Quando o usuário pedir um lançamento, responda SOMENTE com JSON válido.
-- JSON permitido:
-  {"action":"read_only","message":"..."}
-  {"action":"add_expense","scope":"personal|business","category":"...","amount":123.45,"description":"...","message":"..."}
-  {"action":"add_income","scope":"personal|business","amount":123.45,"type":"...","name":"...","category":"...","description":"...","message":"..."}
-- Para renda pessoal use "type" e "name".
-- Para receita empresarial use "category" e "description".
-- Se houver dúvida sobre valor, categoria ou contexto, não gere JSON; responda pedindo clarificação.
+
+JSON PERMITIDO:
+{"action":"read_only","message":"..."}
+{"action":"add_expense","scope":"personal|business","category":"...","amount":123.45,"description":"...","message":"..."}
+{"action":"add_income","scope":"personal|business","amount":123.45,"type":"...","name":"...","category":"...","description":"...","message":"..."}
+
+- Renda pessoal: use "type" e "name".
+- Receita empresarial: use "category" e "description".
+- Se tiver dúvida sobre valor, categoria ou contexto, pergunte antes de gerar JSON.
 `.trim()
 
+// ─── Context-aware prompt builders ───────────────────────────────────────────
+
 function buildPFPrompt(message: string, context: Record<string, unknown>) {
+  const income = (context.totalIncome as number) ?? 0
+  const expenses = (context.totalExpenses as number) ?? 0
+  const balance = (context.balance as number) ?? 0
+  const rate = (context.consumptionRate as number) ?? 0
+  const planType = (context.planType as string) ?? 'pf'
+
+  // Top spending categories
+  const topCategories = context.topCategories as Array<{ name: string; amount: number }> | undefined
+  const categoriesStr = topCategories?.length
+    ? topCategories.map((c, i) => `  ${i + 1}. ${c.name}: R$ ${c.amount.toFixed(2)}`).join('\n')
+    : '  (sem dados de categorias)'
+
+  const riskLevel = rate > 90 ? '🔴 CRÍTICO' : rate > 75 ? '🟡 ATENÇÃO' : '🟢 SAUDÁVEL'
+  const month = (context.currentMonth as string) ?? new Date().toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })
+
   return `${SAOOZ_CORE}
 
-CONTEXTO PESSOAL:
-Renda: R$ ${(context.totalIncome as number)?.toFixed(2) ?? '0.00'}
-Gastos: R$ ${(context.totalExpenses as number)?.toFixed(2) ?? '0.00'}
-Saldo: R$ ${(context.balance as number)?.toFixed(2) ?? '0.00'}
-Comprometimento: ${context.consumptionRate ?? 0}%
+PERFIL FINANCEIRO PESSOAL — ${month.toUpperCase()}
+Plano: ${planType.toUpperCase()}
+Status: ${riskLevel} (${rate}% da renda comprometida)
 
-Categorias validas para despesa pessoal:
+RESUMO:
+  Renda total:   R$ ${income.toFixed(2)}
+  Gastos totais: R$ ${expenses.toFixed(2)}
+  Saldo:         R$ ${balance.toFixed(2)}
+
+TOP CATEGORIAS DE GASTO:
+${categoriesStr}
+
+CATEGORIAS VÁLIDAS — despesa pessoal:
 moradia, alimentacao, transporte, saude, educacao, lazer, assinaturas, vestuario, beleza, pets, dividas, investimentos, familia, religiao, variaveis, outros
 
-Tipos validos para renda pessoal:
+TIPOS VÁLIDOS — renda pessoal:
 salario, freela, negocio, aluguel, investimento, pensao, outro
 
-Mensagem do usuario:
+MENSAGEM DO USUÁRIO:
 ${message}`
 }
 
 function buildPJPrompt(message: string, context: Record<string, unknown>) {
+  const revenue = (context.totalRevenue as number) ?? 0
+  const expenses = (context.totalExpenses as number) ?? 0
+  const tax = (context.taxAmount as number) ?? 0
+  const netProfit = (context.netProfit as number) ?? 0
+  const margin = (context.profitMargin as string) ?? '0%'
+  const planType = (context.planType as string) ?? 'pj'
+  const month = (context.currentMonth as string) ?? new Date().toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })
+
+  const topCategories = context.topCategories as Array<{ name: string; amount: number }> | undefined
+  const categoriesStr = topCategories?.length
+    ? topCategories.map((c, i) => `  ${i + 1}. ${c.name}: R$ ${c.amount.toFixed(2)}`).join('\n')
+    : '  (sem dados de categorias)'
+
+  const healthStatus = netProfit < 0 ? '🔴 PREJUÍZO' : parseFloat(margin) < 10 ? '🟡 MARGEM BAIXA' : '🟢 LUCRATIVO'
+
   return `${SAOOZ_CORE}
 
-CONTEXTO EMPRESARIAL:
+PERFIL EMPRESARIAL — ${month.toUpperCase()}
 Empresa: ${context.businessName ?? 'Empresa'}
-Regime: ${context.taxRegime ?? '-'}
-Atividade: ${context.activity ?? '-'}
-Faturamento: R$ ${(context.totalRevenue as number)?.toFixed(2) ?? '0.00'}
-Despesas: R$ ${(context.totalExpenses as number)?.toFixed(2) ?? '0.00'}
-Imposto estimado: R$ ${(context.taxAmount as number)?.toFixed(2) ?? '0.00'}
-Lucro liquido: R$ ${(context.netProfit as number)?.toFixed(2) ?? '0.00'}
-Margem: ${context.profitMargin ?? '-'}
+Plano: ${planType.toUpperCase()} | Regime: ${context.taxRegime ?? '-'} | Atividade: ${context.activity ?? '-'}
+Status: ${healthStatus}
 
-Categorias validas para despesa empresarial:
-fixo_aluguel, fixo_salarios, fixo_prolabore, fixo_contador, fixo_software, fixo_internet, fixo_outros, variavel_comissao, variavel_frete, variavel_embalagem, variavel_trafego, variavel_taxas, variavel_outros, operacional_marketing, operacional_admin, operacional_juridico, operacional_manutencao, operacional_viagem, operacional_outros, investimento_equipamento, investimento_estoque, investimento_expansao, investimento_contratacao, investimento_outros
+DEMONSTRATIVO:
+  Faturamento:      R$ ${revenue.toFixed(2)}
+  Despesas:         R$ ${expenses.toFixed(2)}
+  Impostos est.:    R$ ${tax.toFixed(2)}
+  Lucro líquido:    R$ ${netProfit.toFixed(2)}
+  Margem:           ${margin}
 
-Categorias validas para receita empresarial:
-servico, produto, recorrente, comissao, outro
+TOP CATEGORIAS DE DESPESA:
+${categoriesStr}
 
-Para receita empresarial use:
-{"action":"add_income","scope":"business","category":"servico","amount":123.45,"description":"...","message":"..."}
+CATEGORIAS VÁLIDAS — despesa empresarial:
+fixo_aluguel, fixo_salarios, fixo_prolabore, fixo_contador, fixo_software, fixo_internet, fixo_outros,
+variavel_comissao, variavel_frete, variavel_embalagem, variavel_trafego, variavel_taxas, variavel_outros,
+operacional_marketing, operacional_admin, operacional_juridico, operacional_manutencao, operacional_viagem, operacional_outros,
+investimento_equipamento, investimento_estoque, investimento_expansao, investimento_contratacao, investimento_outros
 
-Para despesa empresarial use:
-{"action":"add_expense","scope":"business","category":"fixo_outros","amount":123.45,"description":"...","message":"..."}
+CATEGORIAS VÁLIDAS — receita empresarial: servico, produto, recorrente, comissao, outro
 
-Mensagem do usuario:
+Para receita: {"action":"add_income","scope":"business","category":"servico","amount":0,"description":"...","message":"..."}
+Para despesa: {"action":"add_expense","scope":"business","category":"fixo_outros","amount":0,"description":"...","message":"..."}
+
+MENSAGEM DO USUÁRIO:
 ${message}`
 }
 
+function buildPROPrompt(message: string, context: Record<string, unknown>) {
+  // PRO users get unified PF+PJ context
+  const pfCtx = context.personal as Record<string, unknown> | undefined
+  const pjCtx = context.business as Record<string, unknown> | undefined
+
+  if (pjCtx && context.mode === 'pj') {
+    return buildPJPrompt(message, { ...pjCtx, planType: 'pro' })
+  }
+  return buildPFPrompt(message, { ...pfCtx, planType: 'pro' })
+}
+
+// ─── Helpers ─────────────────────────────────────────────────────────────────
+
 function extractStructuredAction(raw: string) {
   const cleaned = raw.replace(/^```json\s*/i, '').replace(/```$/i, '').trim()
-  if (!cleaned.startsWith('{')) {
-    return null
-  }
+  if (!cleaned.startsWith('{')) return null
 
   try {
     const parsed = JSON.parse(cleaned)
     const result = aiActionSchema.safeParse(parsed)
-    if (!result.success) {
-      return null
-    }
-
-    return result.data
+    return result.success ? result.data : null
   } catch {
     return null
   }
 }
 
+// ─── Route handler ────────────────────────────────────────────────────────────
+
 export async function POST(request: NextRequest) {
   try {
     const auth = await requireUser()
-    if (!auth.ok) {
-      return auth.response
-    }
+    if (!auth.ok) return auth.response
 
     const policy = await resolveUserAccessPolicy(auth.user.id)
 
@@ -105,30 +164,33 @@ export async function POST(request: NextRequest) {
       maxRequests: 30,
       windowMs: 60_000,
     })
-
-    if (!rate.ok) {
-      return rate.response
-    }
+    if (!rate.ok) return rate.response
 
     if (!process.env.GROQ_API_KEY) {
       return NextResponse.json({ error: 'GROQ_API_KEY não configurada.' }, { status: 500 })
     }
 
-    const { message, context } = await request.json()
+    const { message, context } = await request.json() as { message: unknown; context: Record<string, unknown> }
     const userMessage = typeof message === 'string' ? message.trim() : ''
 
-    if (!userMessage) {
-      return NextResponse.json({ error: 'Mensagem vazia.' }, { status: 400 })
+    if (!userMessage) return NextResponse.json({ error: 'Mensagem vazia.' }, { status: 400 })
+    if (userMessage.length > 1500) return NextResponse.json({ error: 'Mensagem muito longa.' }, { status: 400 })
+
+    // Inject plan info into context
+    const enrichedContext = {
+      ...context,
+      planType: policy.planType ?? 'free',
     }
 
-    if (userMessage.length > 1200) {
-      return NextResponse.json({ error: 'Mensagem muito longa.' }, { status: 400 })
+    // Select prompt based on plan + mode
+    let prompt: string
+    if (policy.planType === 'pro') {
+      prompt = buildPROPrompt(userMessage, enrichedContext)
+    } else if (enrichedContext.mode === 'pj') {
+      prompt = buildPJPrompt(userMessage, enrichedContext)
+    } else {
+      prompt = buildPFPrompt(userMessage, enrichedContext)
     }
-
-    const prompt =
-      context?.mode === 'pj'
-        ? buildPJPrompt(userMessage, context)
-        : buildPFPrompt(userMessage, context)
 
     const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',
@@ -139,8 +201,8 @@ export async function POST(request: NextRequest) {
       body: JSON.stringify({
         model: 'llama-3.3-70b-versatile',
         messages: [{ role: 'user', content: prompt }],
-        max_tokens: 420,
-        temperature: 0.35,
+        max_tokens: 800,
+        temperature: 0.2,
       }),
     })
 
@@ -149,41 +211,33 @@ export async function POST(request: NextRequest) {
       throw new Error(`Groq ${response.status}: ${errorBody}`)
     }
 
-    const payload = await response.json()
+    const payload = await response.json() as { choices?: Array<{ message?: { content?: string } }> }
     const raw = (payload.choices?.[0]?.message?.content ?? '').trim()
     const action = extractStructuredAction(raw)
 
-    if (!action) {
-      return NextResponse.json({ text: raw })
-    }
-
-    if (action.action === 'read_only') {
-      return NextResponse.json({ text: action.message })
-    }
+    if (!action) return NextResponse.json({ text: raw })
+    if (action.action === 'read_only') return NextResponse.json({ text: action.message })
 
     if (action.scope === 'business' && !canAccessScope(policy, 'business')) {
       return NextResponse.json({
-        text: 'Seu plano atual não libera ações empresariais. Vá em Planos para ativar o módulo PJ.',
+        text: 'Seu plano atual não inclui o módulo empresarial. Acesse Planos para ativar o módulo PJ.',
       })
     }
 
     if (action.scope === 'personal' && !canAccessScope(policy, 'personal')) {
       return NextResponse.json({
-        text: 'Seu plano atual não libera ações pessoais. Vá em Planos para ativar o módulo PF.',
+        text: 'Seu plano atual não inclui o módulo pessoal. Acesse Planos para ativar o módulo PF.',
       })
     }
 
-    return NextResponse.json({
-      text: action.message,
-      proposal: action,
-    })
+    return NextResponse.json({ text: action.message, proposal: action })
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : String(error)
     console.error('AI route error:', message)
 
     if (message.includes('429') || message.includes('quota') || message.includes('Too Many Requests')) {
       return NextResponse.json(
-        { text: 'Limite de requisições do modelo atingido no momento. Tente novamente mais tarde.' },
+        { text: 'Limite de requisições atingido. Tente novamente em alguns instantes.' },
         { status: 200 }
       )
     }

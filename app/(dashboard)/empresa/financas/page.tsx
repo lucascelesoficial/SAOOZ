@@ -10,6 +10,7 @@ import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Modal } from '@/components/ui/Modal'
 import { EmptyState } from '@/components/ui/EmptyState'
+import { ExportPDFButton } from '@/components/pdf/ExportPDFButton'
 import { createClient } from '@/lib/supabase/client'
 import { useBusinessData } from '@/lib/context/BusinessDataContext'
 import { formatCurrency, formatMonth } from '@/lib/utils/formatters'
@@ -259,15 +260,36 @@ export default function EmpresaFinancasPage() {
             {formatMonth(currentMonth)} - {business?.name}
           </p>
         </div>
-        <Button
-          onClick={() => {
-            setEditing(null)
-            setModalOpen(true)
-          }}
-          className="rounded-[8px] bg-[#22c55e] text-white hover:bg-[#16a34a]"
-        >
-          <Plus className="mr-1 h-4 w-4" /> Lancar
-        </Button>
+        <div className="flex items-center gap-2">
+          <ExportPDFButton
+            data={{
+              title: 'Relatório de Receitas',
+              subtitle: business?.name ?? 'Módulo Empresarial',
+              month: formatMonth(currentMonth),
+              totalIncome: totals.totalRevenue,
+              totalExpenses: totals.totalExpenses,
+              balance: totals.netProfit,
+              taxAmount: totals.taxAmount,
+              netProfit: totals.netProfit,
+              profitMargin: `${(totals.profitMargin * 100).toFixed(1)}%`,
+              businessName: business?.name,
+              taxRegime: business?.tax_regime,
+              incomes: revenues.map((r) => ({
+                name: r.description ?? r.category,
+                type: catLabel[r.category] ?? r.category,
+                amount: r.amount,
+                date: r.date ? new Date(r.date).toLocaleDateString('pt-BR') : undefined,
+              })),
+            }}
+            fileName={`saooz-receitas-${currentMonth}.pdf`}
+          />
+          <Button
+            onClick={() => { setEditing(null); setModalOpen(true) }}
+            className="rounded-[8px] bg-[#22c55e] text-white hover:bg-[#16a34a]"
+          >
+            <Plus className="mr-1 h-4 w-4" /> Lançar
+          </Button>
+        </div>
       </div>
 
       <div className="panel-card mb-6 p-5">

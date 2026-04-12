@@ -13,11 +13,11 @@ import type {
 
 type BusinessProfile = Database['public']['Tables']['business_profiles']['Row']
 
-const TAX_REGIMES: Array<{ id: BusinessTaxRegime; label: string; desc: string }> = [
-  { id: 'mei', label: 'MEI', desc: 'Ate R$ 81 mil por ano e DAS fixo.' },
-  { id: 'simples', label: 'Simples Nacional', desc: 'Modelo comum para pequenas empresas.' },
-  { id: 'presumido', label: 'Lucro Presumido', desc: 'Margem presumida para calculo tributario.' },
-  { id: 'real', label: 'Lucro Real', desc: 'Tributacao sobre lucro contabil.' },
+const TAX_REGIMES: Array<{ id: BusinessTaxRegime; label: string; desc: string; porte: string; tooltip: string }> = [
+  { id: 'mei', label: 'MEI', desc: 'Até R$ 81k/ano', porte: 'Porte: MEI', tooltip: 'Microempreendedor Individual. Tributação fixa mensal via DAS.' },
+  { id: 'simples', label: 'Simples Nacional', desc: 'Até R$ 4,8M/ano', porte: 'Porte: ME ou EPP', tooltip: 'Regime unificado com alíquota progressiva. O mais usado por PMEs.' },
+  { id: 'presumido', label: 'Lucro Presumido', desc: 'Margem presumida', porte: 'Médio/Grande porte', tooltip: 'IRPJ e CSLL sobre percentual fixo da receita bruta.' },
+  { id: 'real', label: 'Lucro Real', desc: 'Lucro contábil apurado', porte: 'Grande porte', tooltip: 'Tributação sobre o lucro real. Ideal para margens baixas.' },
 ]
 
 const ACTIVITIES: Array<{ id: BusinessActivity; label: string }> = [
@@ -263,37 +263,30 @@ export function OnboardingEmpresaClient({
           />
         </FieldWrap>
 
-        <FieldWrap label="Regime tributario">
+        <FieldWrap label="Regime tributário">
           <div className="grid grid-cols-2 gap-2">
             {TAX_REGIMES.map((taxRegime) => (
               <button
                 key={taxRegime.id}
                 type="button"
+                title={taxRegime.tooltip}
                 onClick={() => setRegime(taxRegime.id)}
                 className="rounded-[10px] p-3 text-left transition-all"
                 style={{
                   background: regime === taxRegime.id ? '#0ea5e915' : 'var(--panel-bg-soft)',
-                  border:
-                    regime === taxRegime.id
-                      ? '1.5px solid #0ea5e9'
-                      : '1.5px solid var(--panel-border)',
+                  border: regime === taxRegime.id ? '1.5px solid #0ea5e9' : '1.5px solid var(--panel-border)',
                   boxShadow: regime === taxRegime.id ? '0 0 12px #0ea5e930' : 'none',
                 }}
               >
-                <p
-                  className="text-sm font-semibold"
-                  style={{
-                    color: regime === taxRegime.id ? '#0ea5e9' : 'var(--text-base)',
-                  }}
-                >
+                <p className="text-sm font-semibold" style={{ color: regime === taxRegime.id ? '#0ea5e9' : 'var(--text-base)' }}>
                   {taxRegime.label}
                 </p>
-                <p className="mt-0.5 text-[11px] leading-tight text-app-soft">
-                  {taxRegime.desc}
-                </p>
+                <p className="mt-0.5 text-[11px] leading-tight text-app-soft">{taxRegime.desc}</p>
+                <p className="mt-0.5 text-[10px] leading-tight" style={{ color: regime === taxRegime.id ? '#0ea5e960' : 'var(--text-soft)' }}>{taxRegime.porte}</p>
               </button>
             ))}
           </div>
+          <p className="text-[10px] text-app-soft px-0.5">Passe o mouse sobre cada opção para mais detalhes</p>
         </FieldWrap>
 
         <FieldWrap label="Atividade principal">

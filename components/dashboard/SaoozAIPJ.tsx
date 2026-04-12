@@ -123,6 +123,9 @@ export function SaoozAIPJ({ userId }: SaoozAIPJProps) {
             businessName: business?.name ?? 'Empresa',
             taxRegime: business?.tax_regime ?? 'simples',
             activity: business?.activity ?? 'servico',
+            currentMonth: currentMonth
+              ? new Date(currentMonth + '-01').toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })
+              : new Date().toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' }),
             totalRevenue: totals.totalRevenue,
             totalExpenses: totals.totalExpenses,
             taxAmount: totals.taxAmount,

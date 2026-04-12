@@ -65,7 +65,7 @@ export async function POST(request: NextRequest) {
         amountCents: Math.round(pricing.totalPrice * 100),
         currency: 'BRL',
         productName: `SAOOZ ${planType.toUpperCase()} - ${getDurationLabel(duration)}`,
-        successUrl: `${appUrl}/planos?payment=success`,
+        successUrl: `${appUrl}/onboarding/documento?plan=${planType}&redirect=${encodeURIComponent(planType === 'pj' ? '/empresa' : '/central')}`,
         cancelUrl: `${appUrl}/planos?payment=cancelled`,
       })
 

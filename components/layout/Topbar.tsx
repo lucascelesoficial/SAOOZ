@@ -218,17 +218,20 @@ export function Topbar({
           </label>
         )}
 
-        <Link
-          href={businessActionHref}
-          className="inline-flex h-9 items-center gap-2 rounded-[8px] border px-3 text-sm font-medium text-app transition-colors hover:opacity-90"
-          style={{
-            background: 'var(--panel-bg-soft)',
-            borderColor: 'var(--panel-border)',
-          }}
-        >
-          <Plus className="h-4 w-4" />
-          <span className="hidden lg:inline">{businessActionLabel}</span>
-        </Link>
+        {/* Only show business action when user actually has access (can create or hit limit) */}
+        {(canCreateBusiness || businessLimitReached) && (
+          <Link
+            href={businessActionHref}
+            className="inline-flex h-9 items-center gap-2 rounded-[8px] border px-3 text-sm font-medium text-app transition-colors hover:opacity-90"
+            style={{
+              background: 'var(--panel-bg-soft)',
+              borderColor: 'var(--panel-border)',
+            }}
+          >
+            <Plus className="h-4 w-4" />
+            <span className="hidden lg:inline">{businessActionLabel}</span>
+          </Link>
+        )}
 
         <ThemeToggle />
 

@@ -27,16 +27,12 @@ export function DashboardClient({
   const [modalOpen, setModalOpen] = useState(false)
   const { totals, categoryData, incomes, expenses, isLoading } = useFinancialData()
   const insights = useMemo(() => generateInsights(totals, categoryData), [categoryData, totals])
+  // Show the header CTA only when user has PJ access (can create or hit limit)
+  const showHeaderCta = canCreateBusiness || businessLimitReached
   const businessCtaHref = canCreateBusiness
     ? '/onboarding/empresa'
-    : businessLimitReached
-      ? '/planos?feature=business_limit'
-      : '/planos?feature=business'
-  const businessCtaLabel = canCreateBusiness
-    ? 'Adicionar empresa'
-    : businessLimitReached
-      ? 'Aumentar limite'
-      : 'Liberar PJ'
+    : '/planos?feature=business_limit'
+  const businessCtaLabel = canCreateBusiness ? 'Adicionar empresa' : 'Aumentar limite'
 
   return (
     <>
@@ -44,20 +40,22 @@ export function DashboardClient({
         <div>
           <h1 className="text-xl font-bold text-app">Central</h1>
           <p className="mt-1 text-sm text-app-soft">
-            Seu cockpit financeiro pessoal com visao rapida, execucao e expansao para PJ.
+            Seu cockpit financeiro pessoal com visão rápida, execução e expansão para PJ.
           </p>
         </div>
-        <Link
-          href={businessCtaHref}
-          className="inline-flex h-10 items-center justify-center gap-2 rounded-[10px] border px-4 text-sm font-medium text-app transition-colors hover:opacity-90"
-          style={{
-            background: 'var(--panel-bg-soft)',
-            borderColor: 'var(--panel-border)',
-          }}
-        >
-          <Building2 className="h-4 w-4" />
-          {businessCtaLabel}
-        </Link>
+        {showHeaderCta && (
+          <Link
+            href={businessCtaHref}
+            className="inline-flex h-10 items-center justify-center gap-2 rounded-[10px] border px-4 text-sm font-medium text-app transition-colors hover:opacity-90"
+            style={{
+              background: 'var(--panel-bg-soft)',
+              borderColor: 'var(--panel-border)',
+            }}
+          >
+            <Building2 className="h-4 w-4" />
+            {businessCtaLabel}
+          </Link>
+        )}
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
@@ -119,6 +117,35 @@ export function DashboardClient({
           <SaoozAI userId={userId} totals={totals} categoryData={categoryData} />
         </div>
       </div>
+
+      {/* Passive PJ upgrade banner — only for users without any PJ access */}
+      {!canCreateBusiness && !businessLimitReached && (
+        <div
+          className="mt-6 rounded-[14px] p-5 flex flex-col sm:flex-row items-start sm:items-center gap-4"
+          style={{
+            background: 'var(--panel-bg)',
+            border: '1px solid var(--panel-border)',
+          }}
+        >
+          <div
+            className="h-10 w-10 rounded-[10px] flex items-center justify-center shrink-0"
+            style={{ background: 'color-mix(in oklab, var(--accent-blue) 12%, transparent)', border: '1px solid color-mix(in oklab, var(--accent-blue) 25%, transparent)' }}
+          >
+            <Building2 className="h-5 w-5" style={{ color: 'var(--accent-blue)' }} />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-semibold text-app">Módulo Empresarial</p>
+            <p className="text-xs text-app-soft mt-0.5">Gerencie sua empresa, impostos, faturamento e DRE no mesmo lugar.</p>
+          </div>
+          <Link
+            href="/planos"
+            className="shrink-0 inline-flex h-9 items-center justify-center gap-2 rounded-[9px] px-4 text-sm font-semibold text-white transition-all hover:opacity-90"
+            style={{ background: 'linear-gradient(135deg, var(--accent-blue), var(--accent-cyan))' }}
+          >
+            Ver planos
+          </Link>
+        </div>
+      )}
 
       <AddExpenseModal
         open={modalOpen}
