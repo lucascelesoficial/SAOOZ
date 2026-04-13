@@ -1,7 +1,6 @@
 'use client'
 
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
 import {
   Loader2, Check, X, Zap, Shield, Building2,
   TrendingUp, Bot, BarChart3, Receipt, PiggyBank,
@@ -167,7 +166,6 @@ function Cell({ value, color }: { value: FeatureStatus; color: string }) {
 // ── Componente principal ──────────────────────────────────────────────────────
 
 export default function OnboardingPlanoPage() {
-  const router = useRouter()
   const [duration, setDuration]   = useState<BillingDuration>(1)
   const [loading, setLoading]     = useState<string | null>(null)
 
@@ -518,16 +516,10 @@ export default function OnboardingPlanoPage() {
           ))}
         </div>
 
-        {/* ── Skip ── */}
-        <div className="text-center">
-          <button
-            onClick={() => router.push('/onboarding')}
-            className="text-xs transition-colors hover:text-white"
-            style={{ color: '#374151' }}
-          >
-            Continuar com o plano gratuito limitado (até 20 lançamentos) →
-          </button>
-        </div>
+        {/* ── Footer note ── */}
+        <p className="text-center text-[11px]" style={{ color: '#374151' }}>
+          Nenhuma cobrança durante os {TRIAL_DAYS} dias de teste · Cancele a qualquer momento
+        </p>
 
       </div>
     </div>

@@ -27,13 +27,11 @@ export async function middleware(request: NextRequest) {
 
   const { pathname } = request.nextUrl
 
-  const isAuthRoute = pathname.startsWith('/login') || pathname.startsWith('/cadastro')
-  const isPasswordResetRoute =
-    pathname.startsWith('/esqueci-senha') ||
-    pathname.startsWith('/redefinir-senha') ||
-    pathname.startsWith('/auth/callback')
+  const isAuthRoute       = pathname.startsWith('/login') || pathname.startsWith('/cadastro')
+  const isPasswordRoute   = pathname.startsWith('/esqueci-senha') || pathname.startsWith('/redefinir-senha') || pathname.startsWith('/auth/callback')
+  const isOnboardingPlano = pathname.startsWith('/onboarding/plano')
   const isOnboardingRoute = pathname.startsWith('/onboarding')
-  const isDemoRoute = pathname.startsWith('/demo')
+  const isDemoRoute       = pathname.startsWith('/demo')
 
   const isProtectedRoute =
     pathname.startsWith('/central') ||
@@ -46,18 +44,53 @@ export async function middleware(request: NextRequest) {
     pathname.startsWith('/configuracoes') ||
     pathname.startsWith('/conta') ||
     pathname.startsWith('/planos') ||
-    pathname.startsWith('/empresa')
+    pathname.startsWith('/empresa') ||
+    pathname.startsWith('/reserva-emergencia') ||
+    pathname.startsWith('/investimentos') ||
+    pathname.startsWith('/perfil-financeiro')
 
-  if (isDemoRoute || isPasswordResetRoute) {
+  // Always allow: password reset, demo, static
+  if (isDemoRoute || isPasswordRoute) {
     return supabaseResponse
   }
 
+  // Not logged in → login (except auth routes)
   if (!user && (isProtectedRoute || isOnboardingRoute)) {
     return NextResponse.redirect(new URL('/login', request.url))
   }
 
+  // Logged in + trying to access login/cadastro → check where to send
   if (user && isAuthRoute) {
-    return NextResponse.redirect(new URL('/central', request.url))
+    // Will be handled below after subscription check
+  }
+
+  if (user) {
+    // Check if user has an active subscription or trial
+    const { data: sub } = await supabase
+      .from('subscriptions')
+      .select('id, status')
+      .eq('user_id', user.id)
+      .in('status', ['active', 'trialing'])
+      .limit(1)
+      .maybeSingle()
+
+    const hasSubscription = !!sub
+
+    // No subscription → force plan selection (except if already on plan page or onboarding/plano)
+    if (!hasSubscription && !isOnboardingPlano) {
+      // Allow /onboarding/plano itself
+      if (isAuthRoute || isProtectedRoute || isOnboardingRoute) {
+        return NextResponse.redirect(new URL('/onboarding/plano', request.url))
+      }
+    }
+
+    // Has subscription + on auth route → go to dashboard
+    if (isAuthRoute) {
+      if (hasSubscription) {
+        return NextResponse.redirect(new URL('/central', request.url))
+      }
+      // No subscription handled above
+    }
   }
 
   return supabaseResponse
