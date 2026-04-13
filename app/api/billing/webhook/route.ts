@@ -8,6 +8,13 @@ import {
   processBillingWebhookEvent,
   updateBillingWebhookEventStatus,
 } from '@/lib/billing/webhook'
+import { sendTrialStartedEmail, sendSubscriptionActiveEmail } from '@/lib/email/sender'
+
+const PLAN_LABEL: Record<string, string> = {
+  pf: 'Pessoa Física',
+  pj: 'Pessoa Jurídica',
+  pro: 'PRO',
+}
 
 export const dynamic = 'force-dynamic'
 
@@ -130,6 +137,40 @@ export async function POST(request: NextRequest) {
         result: result.reason,
         relatedSubscriptionId: result.relatedSubscriptionId,
       })
+
+      // ── Send transactional email ──────────────────────────────────────────
+      if (result.processed && event.relatedUserId) {
+        try {
+          const { data: userData } = await admin.auth.admin.getUserById(event.relatedUserId)
+          const userEmail = userData?.user?.email
+          const userName =
+            (userData?.user?.user_metadata?.full_name as string | undefined) ??
+            (userData?.user?.user_metadata?.name as string | undefined) ??
+            userEmail?.split('@')[0] ??
+            'usuário'
+
+          if (userEmail && event.action.type === 'activate_subscription') {
+            const payload = event.action.payload
+            const planLabel = PLAN_LABEL[payload.planType] ?? payload.planType
+            const isTrial = event.externalEvent.eventType?.includes('trial') ||
+              payload.providerEventType?.includes('trial')
+
+            if (isTrial) {
+              const trialEnd = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
+                .toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' })
+              await sendTrialStartedEmail(userEmail, userName, planLabel, trialEnd)
+            } else {
+              const nextBilling = new Date(
+                Date.now() + payload.duration * 30 * 24 * 60 * 60 * 1000,
+              ).toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' })
+              await sendSubscriptionActiveEmail(userEmail, userName, planLabel, nextBilling)
+            }
+          }
+        } catch (emailErr) {
+          // Email failure never blocks the webhook response
+          console.warn('[email] failed to send post-activation email:', emailErr)
+        }
+      }
 
       return NextResponse.json({ ok: true })
     } catch (processingError) {
