@@ -1,9 +1,9 @@
 import Link from 'next/link'
 import {
   ArrowRight, BadgeCheck, Brain, Briefcase, Building2,
-  CalendarDays, Clock3, CreditCard, Layers, MessageSquare,
+  Clock3, CreditCard, Layers,
   Shield, TrendingUp, User, Zap, CircleAlert, BarChart3,
-  PiggyBank, LineChart, Lock, CheckCircle2, Star,
+  CheckCircle2, Star,
   Mail, ChevronRight,
 } from 'lucide-react'
 import { SaoozWordmark } from '@/components/ui/SaoozLogo'
@@ -776,7 +776,7 @@ export function SalesLanding() {
                       <Star key={i} className="h-4 w-4 fill-current" style={{ color: '#f59e0b' }} />
                     ))}
                   </div>
-                  <p className="text-sm leading-relaxed text-app-base">"{t.quote}"</p>
+                  <p className="text-sm leading-relaxed text-app-base">&ldquo;{t.quote}&rdquo;</p>
                   <div className="flex items-center gap-3 pt-1">
                     <div
                       className="h-9 w-9 rounded-full flex items-center justify-center text-sm font-bold text-white"
