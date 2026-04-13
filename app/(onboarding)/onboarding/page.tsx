@@ -1,8 +1,9 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { User, Briefcase, Layers, ChevronRight, Loader2 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
+import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import type { UserMode } from '@/types/database.types'
 
@@ -43,8 +44,38 @@ const OPTIONS: ModeOption[] = [
 ]
 
 export default function OnboardingPage() {
+  const router = useRouter()
   const [selected, setSelected] = useState<UserMode | null>(null)
   const [loading, setLoading] = useState(false)
+  const [checking, setChecking] = useState(true)
+
+  useEffect(() => {
+    const supabase = createClient()
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (!user) { window.location.href = '/login'; return }
+      supabase
+        .from('subscriptions')
+        .select('id, status')
+        .eq('user_id', user.id)
+        .in('status', ['active', 'trialing'])
+        .limit(1)
+        .then(({ data }) => {
+          if (!data || data.length === 0) {
+            router.replace('/onboarding/plano')
+          } else {
+            setChecking(false)
+          }
+        })
+    })
+  }, [router])
+
+  if (checking) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <Loader2 className="h-6 w-6 animate-spin text-white opacity-40" />
+      </div>
+    )
+  }
 
   async function handleContinue() {
     if (!selected) return
