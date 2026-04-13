@@ -94,6 +94,14 @@ const FAQ_ITEMS = [
     a: 'A configuração inicial leva poucos minutos. No mesmo dia você já consegue registrar, analisar e decidir com base em dados reais.',
   },
   {
+    q: 'O cartão é obrigatório para o trial?',
+    a: 'Sim. O cartão é necessário para ativar os 7 dias gratuitos. Nenhuma cobrança é feita durante o período de teste — a assinatura só começa depois, caso você não cancele.',
+  },
+  {
+    q: 'Quando começa a cobrança?',
+    a: 'Somente após o término dos 7 dias de trial. Cancele antes do vencimento e você não paga nada. Sem fidelidade, sem multa.',
+  },
+  {
     q: 'Posso começar no PF e depois adicionar PJ?',
     a: 'Sim. O produto foi preparado para evolução. Você não fica travado no modo inicial.',
   },
@@ -196,14 +204,14 @@ export function SalesLanding() {
                 className="inline-flex h-11 items-center gap-2 rounded-[11px] px-5 text-sm font-semibold text-white"
                 style={{ background: 'linear-gradient(135deg, var(--accent-blue), var(--accent-cyan))' }}
               >
-                Quero organizar meu financeiro
+                Testar gratuitamente por 7 dias
                 <ArrowRight className="h-4 w-4" />
               </Link>
               <Link
-                href="#vsl"
+                href="#planos"
                 className="theme-outline-button inline-flex h-11 items-center gap-2 rounded-[11px] px-5 text-sm font-medium"
               >
-                Ver demonstração
+                Ver planos
                 <PlayCircle className="h-4 w-4" />
               </Link>
             </div>
@@ -508,10 +516,26 @@ export function SalesLanding() {
       </main>
 
       <footer className="relative z-10 border-t px-4 py-7 md:px-6" style={{ borderColor: 'var(--panel-border)' }}>
-        <div className="mx-auto flex w-full max-w-6xl flex-col gap-3 md:flex-row md:items-center md:justify-between">
-          <div>
+        <div className="mx-auto flex w-full max-w-6xl flex-col gap-5 md:flex-row md:items-start md:justify-between">
+          <div className="space-y-1">
             <p className="text-sm font-semibold text-app">SAOOZ</p>
             <p className="text-xs text-app-soft">Sistema financeiro premium com IA para PF e PJ.</p>
+            <div className="flex flex-wrap gap-3 pt-1 text-xs text-app-soft">
+              <a
+                href="https://instagram.com/saoozia"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="transition-colors hover:text-app"
+              >
+                Instagram: @SAOOZIA
+              </a>
+              <a
+                href="mailto:suporte@saooz.com"
+                className="transition-colors hover:text-app"
+              >
+                suporte@saooz.com
+              </a>
+            </div>
           </div>
           <div className="flex flex-wrap items-center gap-4 text-sm">
             <Link href="/contato" className="text-app-base transition-colors hover:text-app">
@@ -528,7 +552,7 @@ export function SalesLanding() {
               className="inline-flex items-center gap-1 font-semibold"
               style={{ color: 'var(--accent-blue)' }}
             >
-              Criar conta
+              Testar grátis
               <ArrowRight className="h-3.5 w-3.5" />
             </Link>
           </div>

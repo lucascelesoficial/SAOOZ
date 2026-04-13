@@ -29,8 +29,9 @@ export async function middleware(request: NextRequest) {
 
   const isAuthRoute       = pathname.startsWith('/login') || pathname.startsWith('/cadastro')
   const isPasswordRoute   = pathname.startsWith('/esqueci-senha') || pathname.startsWith('/redefinir-senha') || pathname.startsWith('/auth/callback')
-  const isOnboardingPlano = pathname.startsWith('/onboarding/plano')
-  const isOnboardingRoute = pathname.startsWith('/onboarding')
+  const isOnboardingPlano       = pathname.startsWith('/onboarding/plano')
+  const isTrialConfirmRoute     = pathname.startsWith('/onboarding/trial-ativo')
+  const isOnboardingRoute       = pathname.startsWith('/onboarding')
   const isDemoRoute       = pathname.startsWith('/demo')
 
   const isProtectedRoute =
@@ -76,9 +77,10 @@ export async function middleware(request: NextRequest) {
 
     const hasSubscription = !!sub
 
-    // No subscription → force plan selection (except if already on plan page or onboarding/plano)
-    if (!hasSubscription && !isOnboardingPlano) {
-      // Allow /onboarding/plano itself
+    // No subscription → force plan selection
+    // Exceptions: /onboarding/plano itself and /onboarding/trial-ativo (Stripe return URL,
+    // webhook may not have fired yet when the redirect lands)
+    if (!hasSubscription && !isOnboardingPlano && !isTrialConfirmRoute) {
       if (isAuthRoute || isProtectedRoute || isOnboardingRoute) {
         return NextResponse.redirect(new URL('/onboarding/plano', request.url))
       }

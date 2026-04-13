@@ -82,7 +82,7 @@ export async function POST(request: NextRequest) {
         currency: 'BRL',
         productName: `SAOOZ ${planType.toUpperCase()} - ${getDurationLabel(duration)}`,
         successUrl: trialDays
-          ? `${appUrl}/onboarding`
+          ? `${appUrl}/onboarding/trial-ativo`
           : `${appUrl}/onboarding/documento?plan=${planType}&redirect=${encodeURIComponent(planType === 'pj' ? '/empresa' : '/central')}`,
         cancelUrl: `${appUrl}/onboarding/plano?payment=cancelled`,
         trialDays,
