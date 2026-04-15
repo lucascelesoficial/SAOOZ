@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
+import { identifyUser, resetUser, EVENTS, trackEvent } from '@/lib/posthog/client'
 import type { User } from '@supabase/supabase-js'
 import type { Database } from '@/types/database.types'
 
@@ -25,7 +26,16 @@ export function useAuth() {
           .select('*')
           .eq('id', data.user.id)
           .single()
-          .then(({ data: p }) => setProfile(p))
+          .then(({ data: p }) => {
+            setProfile(p)
+            if (p) {
+              identifyUser(data.user!.id, {
+                name:  p.name,
+                email: p.email,
+                mode:  p.mode ?? 'pf',
+              })
+            }
+          })
       }
       setLoading(false)
     })
@@ -42,6 +52,8 @@ export function useAuth() {
 
   const signOut = useCallback(async () => {
     const supabase = createClient()
+    trackEvent(EVENTS.USER_LOGOUT)
+    resetUser()
     await supabase.auth.signOut()
     router.push('/login')
     router.refresh()

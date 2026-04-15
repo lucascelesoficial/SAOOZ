@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import { Loader2, Eye, EyeOff, Check, X } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
+import { trackEvent, identifyUser, EVENTS } from '@/lib/posthog/client'
 
 function Req({ met, label }: { met: boolean; label: string }) {
   return (
@@ -98,6 +99,8 @@ export default function CadastroPage() {
 
     // Email confirmation required (Supabase project setting)
     if (data.user && !data.session) {
+      identifyUser(data.user.id, { name, email })
+      trackEvent(EVENTS.USER_SIGNUP, { method: 'email', confirmed: false })
       router.push(`/cadastro/confirmar?email=${encodeURIComponent(email)}`)
       return
     }
@@ -105,6 +108,8 @@ export default function CadastroPage() {
     // Auto-confirmed (email confirmation disabled in Supabase)
     if (data.user) {
       await supabase.from('profiles').upsert({ id: data.user.id, name, email })
+      identifyUser(data.user.id, { name, email })
+      trackEvent(EVENTS.USER_SIGNUP, { method: 'email' })
     }
     toast.success('Conta criada!', { description: 'Bem-vindo ao SAOOZ.' })
     router.refresh()

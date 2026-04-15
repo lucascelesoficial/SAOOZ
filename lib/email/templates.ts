@@ -144,3 +144,155 @@ export function passwordResetEmail(resetUrl: string) {
     ${small('Por segurança, nunca compartilhe este link com ninguém.')}
   `)
 }
+
+// ─── Due Date Reminder ─────────────────────────────────────────────────────
+export interface DueItem {
+  description: string
+  amount:      number
+  dueDate:     string
+  type:        'receber' | 'pagar'
+}
+
+export function dueDateReminderEmail(
+  name:  string,
+  items: DueItem[],
+  scope: 'pf' | 'pj',
+) {
+  const count       = items.length
+  const totalAmount = items.reduce((s, i) => s + i.amount, 0)
+  const formatted   = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(totalAmount)
+  const dashUrl     = scope === 'pj'
+    ? 'https://saooz.com/empresa/fluxo-de-caixa'
+    : 'https://saooz.com/financas'
+
+  const rows = items.map((item) => {
+    const color = item.type === 'receber' ? '#4ade80' : '#f87171'
+    const label = item.type === 'receber' ? 'A Receber' : 'A Pagar'
+    const amt   = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(item.amount)
+    return `
+      <tr>
+        <td style="padding:10px 0;border-bottom:1px solid #1e2030;font-size:13px;color:#9ca3af;">
+          ${item.description}
+        </td>
+        <td style="padding:10px 0;border-bottom:1px solid #1e2030;font-size:12px;color:${color};text-align:center;white-space:nowrap;">
+          ${label}
+        </td>
+        <td style="padding:10px 0;border-bottom:1px solid #1e2030;font-size:13px;color:#fff;text-align:right;font-weight:600;white-space:nowrap;">
+          ${amt}
+        </td>
+      </tr>
+    `
+  }).join('')
+
+  return wrapper(`
+    ${h1(`Você tem ${count} vencimento${count !== 1 ? 's' : ''} próximo${count !== 1 ? 's' : ''} ⏰`)}
+    ${p(`Olá ${name}, estes lançamentos vencem nos próximos dias. Total envolvido: <strong style="color:#fff;">${formatted}</strong>.`)}
+    <div style="background:#0a0c13;border:1px solid #1e2030;border-radius:12px;padding:4px 20px;margin:20px 0;">
+      <table width="100%" cellpadding="0" cellspacing="0">
+        <tr>
+          <th style="padding:12px 0 8px;font-size:11px;font-weight:600;color:#4b5563;text-transform:uppercase;text-align:left;">Descrição</th>
+          <th style="padding:12px 0 8px;font-size:11px;font-weight:600;color:#4b5563;text-transform:uppercase;text-align:center;">Tipo</th>
+          <th style="padding:12px 0 8px;font-size:11px;font-weight:600;color:#4b5563;text-transform:uppercase;text-align:right;">Valor</th>
+        </tr>
+        ${rows}
+      </table>
+    </div>
+    <div style="text-align:center;margin:28px 0;">
+      ${btn(dashUrl, 'Ver no SAOOZ')}
+    </div>
+    ${small('Você recebe este aviso porque tem lançamentos vencendo em até 3 dias. <a href="https://saooz.com/configuracoes" style="color:#6b7280;">Gerenciar notificações</a>')}
+  `)
+}
+
+// ─── Overdue Alert ─────────────────────────────────────────────────────────
+export function overdueAlertEmail(
+  name:    string,
+  items:   DueItem[],
+  scope:   'pf' | 'pj',
+) {
+  const count     = items.length
+  const totalAmt  = items.reduce((s, i) => s + i.amount, 0)
+  const formatted = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(totalAmt)
+  const dashUrl   = scope === 'pj'
+    ? 'https://saooz.com/empresa/fluxo-de-caixa'
+    : 'https://saooz.com/financas'
+
+  return wrapper(`
+    ${h1(`Atenção: ${count} lançamento${count !== 1 ? 's' : ''} em atraso ⚠️`)}
+    ${p(`Olá ${name}, você possui <strong style="color:#f87171;">${count} lançamento${count !== 1 ? 's' : ''} em atraso</strong>, totalizando <strong style="color:#fff;">${formatted}</strong>. Regularize o quanto antes para manter suas finanças em dia.`)}
+    <div style="text-align:center;margin:28px 0;">
+      ${btn(dashUrl, 'Resolver agora', '#f87171')}
+    </div>
+    ${divider()}
+    ${small('Acesse o SAOOZ para marcar como pago ou renegociar os lançamentos. <a href="https://saooz.com/configuracoes" style="color:#6b7280;">Gerenciar notificações</a>')}
+  `)
+}
+
+// ─── Monthly Digest ────────────────────────────────────────────────────────
+export interface MonthlyDigestData {
+  month:          string     // e.g. "Março 2025"
+  totalIncome:    number
+  totalExpenses:  number
+  balance:        number
+  topCategory:    string
+  topAmount:      number
+  savingsRate:    number     // 0–1
+  scope:          'pf' | 'pj'
+  businessName?:  string
+}
+
+export function monthlyDigestEmail(name: string, data: MonthlyDigestData) {
+  const fmt         = (n: number) =>
+    new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(n)
+  const isPositive  = data.balance >= 0
+  const balColor    = isPositive ? '#4ade80' : '#f87171'
+  const balSign     = isPositive ? '+' : ''
+  const srPct       = Math.round(data.savingsRate * 100)
+  const srColor     = srPct >= 20 ? '#4ade80' : srPct >= 10 ? '#f59e0b' : '#f87171'
+  const dashUrl     = data.scope === 'pj'
+    ? 'https://saooz.com/empresa/dre'
+    : 'https://saooz.com/analise'
+  const subtitle    = data.scope === 'pj' && data.businessName
+    ? `${data.businessName} · `
+    : ''
+
+  return wrapper(`
+    ${h1(`Fechamento ${data.month} 📊`)}
+    ${p(`Olá ${name}, ${subtitle}aqui está o resumo financeiro do mês de <strong style="color:#fff;">${data.month}</strong>.`)}
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:20px 0;">
+      <div style="background:#0a0c13;border:1px solid #1e2030;border-radius:12px;padding:16px 20px;">
+        <p style="margin:0 0 4px;font-size:11px;font-weight:600;color:#4b5563;text-transform:uppercase;letter-spacing:.05em;">
+          ${data.scope === 'pj' ? 'Receitas' : 'Rendas'}
+        </p>
+        <p style="margin:0;font-size:20px;font-weight:700;color:#4ade80;">${fmt(data.totalIncome)}</p>
+      </div>
+      <div style="background:#0a0c13;border:1px solid #1e2030;border-radius:12px;padding:16px 20px;">
+        <p style="margin:0 0 4px;font-size:11px;font-weight:600;color:#4b5563;text-transform:uppercase;letter-spacing:.05em;">Despesas</p>
+        <p style="margin:0;font-size:20px;font-weight:700;color:#f87171;">${fmt(data.totalExpenses)}</p>
+      </div>
+    </div>
+
+    <div style="background:#0a0c13;border:1px solid #1e2030;border-radius:12px;padding:16px 20px;margin:12px 0;">
+      <table width="100%" cellpadding="0" cellspacing="0">
+        <tr>
+          <td style="font-size:13px;color:#6b7280;">${isPositive ? 'Saldo / Lucro' : 'Déficit'}</td>
+          <td align="right" style="font-size:16px;font-weight:700;color:${balColor};">${balSign}${fmt(data.balance)}</td>
+        </tr>
+        <tr>
+          <td style="padding-top:12px;font-size:13px;color:#6b7280;">Taxa de poupança</td>
+          <td align="right" style="padding-top:12px;font-size:15px;font-weight:700;color:${srColor};">${srPct}%</td>
+        </tr>
+        <tr>
+          <td style="padding-top:12px;font-size:13px;color:#6b7280;">Maior categoria</td>
+          <td align="right" style="padding-top:12px;font-size:13px;color:#fff;">${data.topCategory} · ${fmt(data.topAmount)}</td>
+        </tr>
+      </table>
+    </div>
+
+    <div style="text-align:center;margin:28px 0;">
+      ${btn(dashUrl, 'Ver análise completa')}
+    </div>
+    ${small('Receba este digest mensalmente. <a href="https://saooz.com/configuracoes" style="color:#6b7280;">Gerenciar preferências</a>')}
+  `)
+}

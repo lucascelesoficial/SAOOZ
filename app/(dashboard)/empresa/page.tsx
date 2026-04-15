@@ -3,6 +3,7 @@
 import { useState, useEffect, useMemo } from 'react'
 import Link from 'next/link'
 import { MetricCard } from '@/components/dashboard/MetricCard'
+import { OnboardingChecklist } from '@/components/dashboard/OnboardingChecklist'
 import { SaoozAIPJ } from '@/components/dashboard/SaoozAIPJ'
 import { createClient } from '@/lib/supabase/client'
 import { useBusinessData } from '@/lib/context/BusinessDataContext'
@@ -358,6 +359,15 @@ export default function EmpresaPage() {
 
   return (
     <div className="space-y-5">
+
+      {/* Onboarding checklist PJ — shown until all steps done or dismissed */}
+      {userId && (
+        <OnboardingChecklist
+          scope="pj"
+          userId={userId}
+          activeBusinessId={business?.id ?? null}
+        />
+      )}
 
       {/* ── HEADER ─────────────────────────────────────────────────────────── */}
       <div className="flex items-start justify-between gap-4">

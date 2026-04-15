@@ -5,6 +5,11 @@ import {
   trialEndingSoonEmail,
   subscriptionActiveEmail,
   passwordResetEmail,
+  dueDateReminderEmail,
+  overdueAlertEmail,
+  monthlyDigestEmail,
+  type DueItem,
+  type MonthlyDigestData,
 } from './templates'
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -76,3 +81,46 @@ export async function sendSubscriptionActiveEmail(
 export async function sendPasswordResetEmail(to: string, resetUrl: string) {
   return send(to, 'Redefina sua senha no SAOOZ', passwordResetEmail(resetUrl))
 }
+
+export async function sendDueDateReminderEmail(
+  to:    string,
+  name:  string,
+  items: DueItem[],
+  scope: 'pf' | 'pj',
+) {
+  const count = items.length
+  return send(
+    to,
+    `Você tem ${count} vencimento${count !== 1 ? 's' : ''} nos próximos dias ⏰`,
+    dueDateReminderEmail(name, items, scope),
+  )
+}
+
+export async function sendOverdueAlertEmail(
+  to:    string,
+  name:  string,
+  items: DueItem[],
+  scope: 'pf' | 'pj',
+) {
+  const count = items.length
+  return send(
+    to,
+    `Atenção: ${count} lançamento${count !== 1 ? 's' : ''} em atraso no SAOOZ ⚠️`,
+    overdueAlertEmail(name, items, scope),
+  )
+}
+
+export async function sendMonthlyDigestEmail(
+  to:   string,
+  name: string,
+  data: MonthlyDigestData,
+) {
+  return send(
+    to,
+    `Seu fechamento de ${data.month} está pronto 📊`,
+    monthlyDigestEmail(name, data),
+  )
+}
+
+// Re-export types for convenience
+export type { DueItem, MonthlyDigestData }

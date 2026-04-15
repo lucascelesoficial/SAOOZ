@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { Loader2, Eye, EyeOff } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
+import { trackEvent, identifyUser, EVENTS } from '@/lib/posthog/client'
 
 export default function LoginPage() {
   const router = useRouter()
@@ -31,6 +32,12 @@ export default function LoginPage() {
     if (error) {
       setErrors({ auth: 'Email ou senha incorretos. Verifique e tente novamente.' })
       return
+    }
+
+    const { data: userData } = await supabase.auth.getUser()
+    if (userData.user) {
+      identifyUser(userData.user.id, { email })
+      trackEvent(EVENTS.USER_LOGIN, { method: 'email' })
     }
 
     router.refresh()

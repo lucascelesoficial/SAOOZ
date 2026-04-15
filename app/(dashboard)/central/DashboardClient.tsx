@@ -8,6 +8,7 @@ import { CategoryList } from '@/components/dashboard/CategoryList'
 import { GaugeChart } from '@/components/dashboard/GaugeChart'
 import { InsightsPanel } from '@/components/dashboard/InsightsPanel'
 import { MetricCard } from '@/components/dashboard/MetricCard'
+import { OnboardingChecklist } from '@/components/dashboard/OnboardingChecklist'
 import { SaoozAI } from '@/components/dashboard/SaoozAI'
 import { WaveCashflowChart } from '@/components/dashboard/WaveCashflowChart'
 import { ExportPDFButton } from '@/components/pdf/ExportPDFButton'
@@ -39,6 +40,9 @@ export function DashboardClient({
 
   return (
     <>
+      {/* Onboarding checklist — shown until all steps done or dismissed */}
+      <OnboardingChecklist scope="pf" userId={userId} />
+
       <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-xl font-bold text-app">Central</h1>
