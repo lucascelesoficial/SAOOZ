@@ -1,10 +1,13 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { createOptionalAdminClient } from '@/lib/supabase/admin'
+import { requireSameOrigin, withSecurityHeaders } from '@/lib/server/security'
 
 export const dynamic = 'force-dynamic'
 
-export async function POST() {
+export async function POST(request: NextRequest) {
+  const originCheck = requireSameOrigin(request)
+  if (originCheck) return withSecurityHeaders(originCheck)
   try {
     const supabase = await createClient()
     const {

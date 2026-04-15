@@ -167,7 +167,7 @@ export async function POST(request: NextRequest) {
 
     const policy = await resolveUserAccessPolicy(auth.user.id)
 
-    const rate = enforceRateLimit({
+    const rate = await enforceRateLimit({
       scope: 'ai',
       user: auth.user,
       maxRequests: 30,

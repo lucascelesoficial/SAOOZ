@@ -9,7 +9,7 @@ export async function POST(req: NextRequest) {
   const auth = await requireUser()
   if (!auth.ok) return auth.response
 
-  const rate = enforceRateLimit({
+  const rate = await enforceRateLimit({
     scope: 'tts',
     user: auth.user,
     maxRequests: 20,

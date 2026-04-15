@@ -9,11 +9,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { sendMonthlyDigestEmail, type MonthlyDigestData } from '@/lib/email/sender'
-
-function verifyCronSecret(req: NextRequest): boolean {
-  const secret = req.headers.get('authorization')
-  return secret === `Bearer ${process.env.CRON_SECRET}`
-}
+import { verifyCronSecret } from '@/lib/server/security'
 
 /** Returns YYYY-MM-01 / YYYY-MM-31 for the previous calendar month */
 function previousMonthRange(): { start: string; end: string; label: string } {
@@ -47,9 +43,8 @@ function catLabel(cat: string) {
 }
 
 export async function GET(req: NextRequest) {
-  if (!verifyCronSecret(req)) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
+  const cronCheck = verifyCronSecret(req)
+  if (cronCheck) return cronCheck
 
   const supabase = createAdminClient()
   const { start, end, label } = previousMonthRange()

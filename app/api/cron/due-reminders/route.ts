@@ -14,16 +14,11 @@ import {
   sendOverdueAlertEmail,
   type DueItem,
 } from '@/lib/email/sender'
-
-function verifyCronSecret(req: NextRequest): boolean {
-  const secret = req.headers.get('authorization')
-  return secret === `Bearer ${process.env.CRON_SECRET}`
-}
+import { verifyCronSecret } from '@/lib/server/security'
 
 export async function GET(req: NextRequest) {
-  if (!verifyCronSecret(req)) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
+  const cronCheck = verifyCronSecret(req)
+  if (cronCheck) return cronCheck
 
   const supabase = createAdminClient()
   const today    = new Date()

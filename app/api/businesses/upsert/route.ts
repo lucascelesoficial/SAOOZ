@@ -8,6 +8,7 @@ import {
 } from '@/lib/business/active-business'
 import { createClient } from '@/lib/supabase/server'
 import type { BusinessActivity, BusinessTaxRegime, UserMode } from '@/types/database.types'
+import { requireSameOrigin, requireJsonContentType, rejectLargeBody, withSecurityHeaders } from '@/lib/server/security'
 
 export const dynamic = 'force-dynamic'
 
@@ -37,6 +38,15 @@ function normalizeCnpj(cnpj: string | null | undefined) {
 }
 
 export async function POST(request: NextRequest) {
+  const originCheck = requireSameOrigin(request)
+  if (originCheck) return withSecurityHeaders(originCheck)
+
+  const ctCheck = requireJsonContentType(request)
+  if (ctCheck) return withSecurityHeaders(ctCheck)
+
+  const bodyCheck = rejectLargeBody(request, 8192) // 8 KB
+  if (bodyCheck) return withSecurityHeaders(bodyCheck)
+
   try {
     const supabase = await createClient()
     const {

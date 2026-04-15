@@ -1158,6 +1158,28 @@ export interface Database {
         }
         Relationships: []
       }
+
+      rate_limit_buckets: {
+        Row: {
+          key: string
+          count: number
+          reset_at: string
+          updated_at: string
+        }
+        Insert: {
+          key: string
+          count?: number
+          reset_at: string
+          updated_at?: string
+        }
+        Update: {
+          key?: string
+          count?: number
+          reset_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: Record<string, never>
     Functions: {

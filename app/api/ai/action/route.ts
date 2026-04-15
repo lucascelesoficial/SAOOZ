@@ -92,7 +92,7 @@ export async function POST(request: NextRequest) {
     return auth.response
   }
 
-  const rate = enforceRateLimit({
+  const rate = await enforceRateLimit({
     scope: 'ai-action',
     user: auth.user,
     maxRequests: 20,

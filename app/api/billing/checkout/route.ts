@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
-import { createClient } from '@/lib/supabase/server'
 import { getPlanPriceForDuration, getDurationLabel } from '@/lib/billing/plans'
 import type { BillingDuration } from '@/lib/billing/plans'
 import type { BillingGateway } from '@/types/database.types'
 import { resolveCheckoutProvider } from '@/lib/billing/providers'
+import { requireUser, enforceRateLimit } from '@/lib/server/request-guard'
+import { requireSameOrigin, requireJsonContentType, rejectLargeBody, withSecurityHeaders } from '@/lib/server/security'
 
 export const dynamic = 'force-dynamic'
 
@@ -17,16 +18,29 @@ const checkoutSchema = z.object({
 })
 
 export async function POST(request: NextRequest) {
-  try {
-    const supabase = await createClient()
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser()
+  // ── Security guards ──────────────────────────────────────────────────────
+  const originCheck = requireSameOrigin(request)
+  if (originCheck) return withSecurityHeaders(originCheck)
 
-    if (authError || !user) {
-      return NextResponse.json({ error: 'Nao autenticado.' }, { status: 401 })
-    }
+  const ctCheck = requireJsonContentType(request)
+  if (ctCheck) return withSecurityHeaders(ctCheck)
+
+  const bodyCheck = rejectLargeBody(request, 4096) // 4 KB — checkout payload is tiny
+  if (bodyCheck) return withSecurityHeaders(bodyCheck)
+
+  try {
+    const auth = await requireUser()
+    if (!auth.ok) return withSecurityHeaders(auth.response)
+    const { user } = auth
+
+    // Rate limit: max 10 checkout attempts per 10 minutes (prevents checkout spam)
+    const rate = await enforceRateLimit({
+      scope: 'checkout',
+      user,
+      maxRequests: 10,
+      windowMs: 600_000,
+    })
+    if (!rate.ok) return withSecurityHeaders(rate.response)
 
     const body = await request.json().catch(() => null)
     const parsed = checkoutSchema.safeParse(body)
