@@ -1,6 +1,7 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
+import Link from 'next/link'
 import { MetricCard } from '@/components/dashboard/MetricCard'
 import { GaugeChart } from '@/components/dashboard/GaugeChart'
 import { SaoozAIPJ } from '@/components/dashboard/SaoozAIPJ'
@@ -8,9 +9,14 @@ import { createClient } from '@/lib/supabase/client'
 import { useBusinessData } from '@/lib/context/BusinessDataContext'
 import { formatCurrency, formatMonth } from '@/lib/utils/formatters'
 import { regimeLabel, activityLabel } from '@/lib/utils/taxes'
-import { Building2, TrendingUp, ShieldCheck, Scale, Zap, Receipt, ArrowUpRight, ArrowDownLeft, Clock } from 'lucide-react'
+import {
+  Building2, TrendingUp, ShieldCheck, Scale, Zap, Receipt,
+  ArrowUpRight, ArrowDownLeft, Clock, Users2, Handshake, Package,
+  BarChart3, RefreshCw, Target, ChevronRight, AlertTriangle,
+} from 'lucide-react'
 import { suggestProLabore } from '@/lib/utils/taxes'
 import { ExportPDFButton } from '@/components/pdf/ExportPDFButton'
+import type { BusinessExpCategory } from '@/types/database.types'
 
 // ── Business health insights ──────────────────────────────────────────────────
 interface Insight { label: string; value: string; status: 'good' | 'warn' | 'bad' | 'neutral' }
@@ -24,38 +30,29 @@ function buildInsights(
   taxRate: number,
 ): Insight[] {
   const insights: Insight[] = []
-
   if (totalRevenue === 0) return []
 
-  // Margin health
   insights.push({
     label: 'Margem líquida',
     value: `${(profitMargin * 100).toFixed(1)}%`,
     status: profitMargin >= 0.2 ? 'good' : profitMargin >= 0.1 ? 'warn' : 'bad',
   })
-
-  // Tax burden
   insights.push({
     label: 'Carga tributária',
     value: `${(taxRate * 100).toFixed(1)}%`,
     status: taxRate <= 0.10 ? 'good' : taxRate <= 0.20 ? 'warn' : 'bad',
   })
-
-  // Expenses vs revenue
   const expRatio = totalExpenses / totalRevenue
   insights.push({
     label: 'Despesas vs faturamento',
     value: `${(expRatio * 100).toFixed(1)}%`,
     status: expRatio <= 0.5 ? 'good' : expRatio <= 0.7 ? 'warn' : 'bad',
   })
-
-  // Net profit
   insights.push({
     label: 'Resultado líquido',
     value: formatCurrency(netProfit),
     status: netProfit > 0 ? 'good' : netProfit === 0 ? 'warn' : 'bad',
   })
-
   return insights
 }
 
@@ -67,11 +64,11 @@ function InsightRow({ insight }: { insight: Insight }) {
     neutral: { dot: '#6B6B6B', text: '#B3B3B3', bg: '#6B6B6B12' },
   }
   const c = colors[insight.status]
-
   return (
     <div className="flex items-center justify-between py-2.5 border-b border-[#2A2A2A] last:border-0">
       <div className="flex items-center gap-2">
-        <span className="h-1.5 w-1.5 rounded-full shrink-0" style={{ background: c.dot, boxShadow: `0 0 6px ${c.dot}` }} />
+        <span className="h-1.5 w-1.5 rounded-full shrink-0"
+          style={{ background: c.dot, boxShadow: `0 0 6px ${c.dot}` }} />
         <span className="text-sm text-[#B3B3B3]">{insight.label}</span>
       </div>
       <span className="text-sm font-bold tabular-nums" style={{ color: c.text }}>{insight.value}</span>
@@ -91,61 +88,150 @@ function healthScore(margin: number, taxRate: number, hasRevenue: boolean) {
   return              { score: total, label: 'Crítico',   color: '#f87171' }
 }
 
-// ── Main page ─────────────────────────────────────────────────────────────────
+// ── Expense group helpers ─────────────────────────────────────────────────────
+const EXPENSE_GROUPS: Array<{ prefix: string; label: string; color: string }> = [
+  { prefix: 'fixo_',          label: 'Custos Fixos',   color: '#f87171' },
+  { prefix: 'variavel_',      label: 'Variáveis',      color: '#f59e0b' },
+  { prefix: 'operacional_',   label: 'Operacional',    color: '#3b82f6' },
+  { prefix: 'investimento_',  label: 'Investimentos',  color: '#0ea5e9' },
+]
+
+// ── Supporting interfaces ─────────────────────────────────────────────────────
 interface ArApSummary {
   totalAReceber: number
-  totalAPagar: number
+  totalAPagar:   number
   overdueRevenues: number
   overdueExpenses: number
 }
 
-export default function EmpresaPage() {
-  const { business, totals, taxEstimate, currentMonth, isLoading } = useBusinessData()
-  const [userId, setUserId] = useState<string | null>(null)
-  const [arAp, setArAp] = useState<ArApSummary | null>(null)
+interface ComprehensiveData {
+  employeeCount:           number
+  totalPayroll:            number
+  clienteCount:            number
+  fornecedorCount:         number
+  budgetTotal:             number
+  budgetActual:            number
+}
 
+// ── Main page ─────────────────────────────────────────────────────────────────
+export default function EmpresaPage() {
+  const { business, revenues, expenses, totals, taxEstimate, currentMonth, isLoading } =
+    useBusinessData()
+
+  const [userId, setUserId]               = useState<string | null>(null)
+  const [arAp, setArAp]                   = useState<ArApSummary | null>(null)
+  const [comprehensive, setComprehensive] = useState<ComprehensiveData | null>(null)
+
+  // Auth
   useEffect(() => {
     createClient().auth.getUser().then(({ data }) => setUserId(data.user?.id ?? null))
   }, [])
 
+  // AR / AP — pending + overdue items
   useEffect(() => {
     if (!business) return
     const supabase = createClient()
     const today = new Date().toISOString().split('T')[0]
     Promise.all([
-      supabase
-        .from('business_revenues')
-        .select('amount, due_date, status')
-        .eq('business_id', business.id)
-        .in('status', ['pending', 'overdue']),
-      supabase
-        .from('business_expenses')
-        .select('amount, due_date, status')
-        .eq('business_id', business.id)
-        .in('status', ['pending', 'overdue']),
+      supabase.from('business_revenues').select('amount,due_date,status')
+        .eq('business_id', business.id).in('status', ['pending', 'overdue']),
+      supabase.from('business_expenses').select('amount,due_date,status')
+        .eq('business_id', business.id).in('status', ['pending', 'overdue']),
     ]).then(([revRes, expRes]) => {
       const revs = revRes.data ?? []
       const exps = expRes.data ?? []
       setArAp({
-        totalAReceber: revs.reduce((s, r) => s + r.amount, 0),
-        totalAPagar: exps.reduce((s, e) => s + e.amount, 0),
+        totalAReceber:   revs.reduce((s, r) => s + r.amount, 0),
+        totalAPagar:     exps.reduce((s, e) => s + e.amount, 0),
         overdueRevenues: revs.filter((r) => r.due_date && r.due_date < today).length,
         overdueExpenses: exps.filter((e) => e.due_date && e.due_date < today).length,
       })
     })
   }, [business])
 
+  // Comprehensive data — employees, clients, suppliers, budgets
+  useEffect(() => {
+    if (!business) return
+    const supabase = createClient()
+    const monthStr = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 1)
+      .toISOString().split('T')[0]
+
+    Promise.all([
+      // employees
+      supabase.from('business_employees')
+        .select('monthly_salary')
+        .eq('business_id', business.id)
+        .eq('is_active', true),
+      // clients
+      supabase.from('business_counterparties')
+        .select('id', { count: 'exact', head: true })
+        .eq('business_id', business.id)
+        .eq('type', 'cliente')
+        .eq('is_active', true),
+      // suppliers
+      supabase.from('business_counterparties')
+        .select('id', { count: 'exact', head: true })
+        .eq('business_id', business.id)
+        .eq('type', 'fornecedor')
+        .eq('is_active', true),
+      // budgets this month
+      supabase.from('business_budgets')
+        .select('planned_amount, category')
+        .eq('business_id', business.id)
+        .eq('month', monthStr),
+    ]).then(([empRes, cliRes, forRes, budRes]) => {
+      const emps = empRes.data ?? []
+      const buds = budRes.data ?? []
+
+      // Actual expense total for current month (from context)
+      const budgetActual = expenses.reduce((s, e) => s + e.amount, 0)
+
+      setComprehensive({
+        employeeCount:  emps.length,
+        totalPayroll:   emps.reduce((s, e) => s + (e.monthly_salary ?? 0), 0),
+        clienteCount:   cliRes.count ?? 0,
+        fornecedorCount: forRes.count ?? 0,
+        budgetTotal:    buds.reduce((s, b) => s + b.planned_amount, 0),
+        budgetActual,
+      })
+    })
+  }, [business, currentMonth, expenses])
+
+  // ── Derived (no extra fetch) ────────────────────────────────────────────────
+  const recurringRevenues = useMemo(
+    () => revenues.filter((r) => r.is_recurring),
+    [revenues],
+  )
+  const recurringExpenses = useMemo(
+    () => expenses.filter((e) => e.is_recurring),
+    [expenses],
+  )
+
+  const expenseGroups = useMemo(() => {
+    return EXPENSE_GROUPS.map((g) => {
+      const items = expenses.filter((e) =>
+        (e.category as BusinessExpCategory).startsWith(g.prefix),
+      )
+      return {
+        ...g,
+        total: items.reduce((s, e) => s + e.amount, 0),
+        count: items.length,
+      }
+    }).filter((g) => g.total > 0)
+  }, [expenses])
+
+  // ── Scores & insights ───────────────────────────────────────────────────────
   const { score, label: scoreLabel, color: scoreColor } = healthScore(
     totals.profitMargin, totals.taxRate, totals.totalRevenue > 0,
   )
-
   const insights = buildInsights(
     totals.totalRevenue, totals.totalExpenses, totals.taxAmount,
     totals.netProfit, totals.profitMargin, totals.taxRate,
   )
-
-  // Margin as 0-100 for gauge
   const marginPct = Math.min(100, Math.max(0, Math.round(totals.profitMargin * 100)))
+  const budgetPct = comprehensive && comprehensive.budgetTotal > 0
+    ? Math.round((comprehensive.budgetActual / comprehensive.budgetTotal) * 100)
+    : null
 
   if (isLoading) {
     return (
@@ -157,7 +243,7 @@ export default function EmpresaPage() {
 
   return (
     <>
-      {/* Header */}
+      {/* ── Header ─────────────────────────────────────────────────────────── */}
       <div className="flex items-center justify-between mb-6">
         <div>
           <div className="flex items-center gap-2 mb-1">
@@ -172,7 +258,6 @@ export default function EmpresaPage() {
           <p className="text-sm text-[#6B6B6B] mt-0.5">{formatMonth(currentMonth)}</p>
         </div>
 
-        {/* Right side: Export + Business Health Score */}
         <div className="flex items-center gap-3">
           <ExportPDFButton
             data={{
@@ -199,9 +284,9 @@ export default function EmpresaPage() {
                            : ins.status === 'bad'  ? 'red' as const
                            : 'gray' as const,
                     })),
-                    ...(totals.totalRevenue > 0 ? [
-                      { label: 'Business Score', value: `${score} — ${scoreLabel}`, bold: true },
-                    ] : []),
+                    ...(totals.totalRevenue > 0
+                      ? [{ label: 'Business Score', value: `${score} — ${scoreLabel}`, bold: true }]
+                      : []),
                   ],
                 },
               ],
@@ -225,50 +310,72 @@ export default function EmpresaPage() {
         </div>
       </div>
 
-      {/* Metric cards — same component as PF */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
-        <MetricCard
-          title="Faturamento Bruto"
-          value={totals.totalRevenue}
-          color="green"
-          trend="up"
-          loading={isLoading}
-        />
-        <MetricCard
-          title="Despesas Totais"
-          value={totals.totalExpenses}
-          color="red"
-          trend="down"
-          loading={isLoading}
-        />
-        <MetricCard
-          title="Lucro Líquido"
-          value={totals.netProfit}
+      {/* ── Metric cards ───────────────────────────────────────────────────── */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
+        <MetricCard title="Faturamento Bruto" value={totals.totalRevenue}
+          color="green" trend="up" loading={isLoading} />
+        <MetricCard title="Despesas Totais" value={totals.totalExpenses}
+          color="red" trend="down" loading={isLoading} />
+        <MetricCard title="Lucro Líquido" value={totals.netProfit}
           color={totals.netProfit >= 0 ? 'blue' : 'red'}
-          trend={totals.netProfit >= 0 ? 'up' : 'down'}
-          loading={isLoading}
+          trend={totals.netProfit >= 0 ? 'up' : 'down'} loading={isLoading} />
+      </div>
+
+      {/* ── Radar Empresarial — módulos ativos ─────────────────────────────── */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
+        <RadarCard
+          href="/empresa/funcionarios"
+          icon={Users2}
+          iconColor="#0ea5e9"
+          label="Equipe"
+          primary={comprehensive ? `${comprehensive.employeeCount} pessoa${comprehensive.employeeCount !== 1 ? 's' : ''}` : '—'}
+          secondary={comprehensive && comprehensive.totalPayroll > 0
+            ? `${formatCurrency(comprehensive.totalPayroll)}/mês`
+            : 'sem folha'}
+        />
+        <RadarCard
+          href="/empresa/clientes"
+          icon={Handshake}
+          iconColor="#22c55e"
+          label="Clientes"
+          primary={comprehensive ? `${comprehensive.clienteCount} ativo${comprehensive.clienteCount !== 1 ? 's' : ''}` : '—'}
+          secondary="Ver carteira"
+        />
+        <RadarCard
+          href="/empresa/fornecedores"
+          icon={Package}
+          iconColor="#f59e0b"
+          label="Fornecedores"
+          primary={comprehensive ? `${comprehensive.fornecedorCount} ativo${comprehensive.fornecedorCount !== 1 ? 's' : ''}` : '—'}
+          secondary="Ver cadastro"
+        />
+        <RadarCard
+          href="/empresa/orcamento"
+          icon={Target}
+          iconColor={budgetPct !== null ? (budgetPct <= 75 ? '#22c55e' : budgetPct <= 95 ? '#f59e0b' : '#f87171') : '#6B6B6B'}
+          label="Orçamento"
+          primary={budgetPct !== null ? `${budgetPct}% usado` : 'sem meta'}
+          secondary={comprehensive && comprehensive.budgetTotal > 0
+            ? `de ${formatCurrency(comprehensive.budgetTotal)}`
+            : 'definir metas'}
+          warning={budgetPct !== null && budgetPct > 95}
         />
       </div>
 
-      {/* Ritmo Empresarial — mirroring "Ritmo Financeiro" */}
+      {/* ── Saúde Empresarial ──────────────────────────────────────────────── */}
       <div className="card-premium rounded-[12px] p-5 mb-6">
         <h2 className="text-sm font-semibold text-[#B3B3B3] uppercase tracking-wider mb-4 flex items-center gap-2">
           Saúde Empresarial
           <span className="text-[#0ea5e9] opacity-60">›</span>
         </h2>
         <div className="flex flex-col md:flex-row gap-6 items-center">
-          {/* Margin gauge */}
           <div className="w-full md:w-[240px] shrink-0">
             <GaugeChart percentage={marginPct} loading={isLoading} label="MARGEM" />
           </div>
-
-          {/* Insights panel */}
           <div className="flex-1 w-full">
             {insights.length > 0 ? (
               <div className="space-y-0">
-                {insights.map((ins) => (
-                  <InsightRow key={ins.label} insight={ins} />
-                ))}
+                {insights.map((ins) => <InsightRow key={ins.label} insight={ins} />)}
               </div>
             ) : (
               <div className="flex flex-col items-center justify-center h-full py-8">
@@ -279,7 +386,6 @@ export default function EmpresaPage() {
               </div>
             )}
 
-            {/* Tax highlight */}
             {totals.totalRevenue > 0 && taxEstimate && (
               <div className="mt-4 flex items-center justify-between px-4 py-3 rounded-[10px]"
                 style={{ background: '#f59e0b08', border: '1px solid #f59e0b20' }}>
@@ -300,14 +406,12 @@ export default function EmpresaPage() {
         </div>
       </div>
 
-      {/* Revenue breakdown + SAOOZ AI PJ */}
+      {/* ── Composição do Faturamento | SAOOZ AI ───────────────────────────── */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {/* Faturamento por tipo */}
         <div className="card-premium rounded-[12px] p-5">
           <h2 className="text-sm font-semibold text-[#B3B3B3] uppercase tracking-wider mb-4">
             Composição do Faturamento
           </h2>
-
           {totals.totalRevenue === 0 ? (
             <div className="flex flex-col items-center justify-center py-10 text-center">
               <TrendingUp className="h-8 w-8 text-[#383838] mb-2" />
@@ -318,12 +422,11 @@ export default function EmpresaPage() {
             </div>
           ) : (
             <div className="space-y-4">
-              {/* Profit waterfall */}
               {[
-                { label: 'Faturamento bruto', value: totals.totalRevenue, color: '#22c55e', pct: 100 },
-                { label: 'Despesas', value: totals.totalExpenses, color: '#f87171', pct: totals.totalRevenue > 0 ? (totals.totalExpenses / totals.totalRevenue) * 100 : 0 },
-                { label: 'Impostos', value: totals.taxAmount, color: '#f59e0b', pct: totals.totalRevenue > 0 ? (totals.taxAmount / totals.totalRevenue) * 100 : 0 },
-                { label: 'Lucro líquido', value: Math.max(0, totals.netProfit), color: '#3b82f6', pct: totals.totalRevenue > 0 ? Math.max(0, (totals.netProfit / totals.totalRevenue) * 100) : 0 },
+                { label: 'Faturamento bruto', value: totals.totalRevenue,          color: '#22c55e', pct: 100 },
+                { label: 'Despesas',          value: totals.totalExpenses,         color: '#f87171', pct: totals.totalRevenue > 0 ? (totals.totalExpenses / totals.totalRevenue) * 100 : 0 },
+                { label: 'Impostos',          value: totals.taxAmount,             color: '#f59e0b', pct: totals.totalRevenue > 0 ? (totals.taxAmount / totals.totalRevenue) * 100 : 0 },
+                { label: 'Lucro líquido',     value: Math.max(0, totals.netProfit),color: '#3b82f6', pct: totals.totalRevenue > 0 ? Math.max(0, (totals.netProfit / totals.totalRevenue) * 100) : 0 },
               ].map((row) => (
                 <div key={row.label}>
                   <div className="flex items-center justify-between text-xs mb-1.5">
@@ -334,16 +437,30 @@ export default function EmpresaPage() {
                   </div>
                   <div className="h-2 bg-[#2A2A2A] rounded-full overflow-hidden">
                     <div className="h-full rounded-full transition-all duration-700"
-                      style={{ width: `${Math.min(100, row.pct)}%`, background: row.color, boxShadow: `0 0 8px ${row.color}66` }}
-                    />
+                      style={{ width: `${Math.min(100, row.pct)}%`, background: row.color, boxShadow: `0 0 8px ${row.color}66` }} />
                   </div>
                 </div>
               ))}
+
+              {/* Recurring revenue highlight */}
+              {recurringRevenues.length > 0 && (
+                <div className="mt-2 flex items-center justify-between px-3 py-2 rounded-[8px]"
+                  style={{ background: '#22c55e08', border: '1px solid #22c55e20' }}>
+                  <div className="flex items-center gap-1.5">
+                    <RefreshCw className="h-3 w-3 text-[#22c55e]" />
+                    <span className="text-xs text-[#6B6B6B]">
+                      Recorrente ({recurringRevenues.length}x)
+                    </span>
+                  </div>
+                  <span className="text-xs font-bold text-[#22c55e] tabular-nums">
+                    {formatCurrency(recurringRevenues.reduce((s, r) => s + r.amount, 0))}
+                  </span>
+                </div>
+              )}
             </div>
           )}
         </div>
 
-        {/* SAOOZ AI PJ */}
         <div>
           {userId ? (
             <SaoozAIPJ userId={userId} />
@@ -355,13 +472,11 @@ export default function EmpresaPage() {
         </div>
       </div>
 
-      {/* AR/AP Quick panel */}
+      {/* ── AR / AP Quick panel ────────────────────────────────────────────── */}
       {arAp && (arAp.totalAReceber > 0 || arAp.totalAPagar > 0) && (
         <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <a
-            href="/empresa/fluxo-de-caixa"
-            className="card-premium rounded-[12px] p-4 flex items-center justify-between transition-opacity hover:opacity-80"
-          >
+          <a href="/empresa/fluxo-de-caixa"
+            className="card-premium rounded-[12px] p-4 flex items-center justify-between transition-opacity hover:opacity-80">
             <div>
               <div className="flex items-center gap-1.5 mb-1">
                 <ArrowUpRight className="h-3.5 w-3.5 text-[#22c55e]" />
@@ -378,10 +493,8 @@ export default function EmpresaPage() {
             </div>
             <Clock className="h-8 w-8 text-[#22c55e] opacity-20" />
           </a>
-          <a
-            href="/empresa/fluxo-de-caixa"
-            className="card-premium rounded-[12px] p-4 flex items-center justify-between transition-opacity hover:opacity-80"
-          >
+          <a href="/empresa/fluxo-de-caixa"
+            className="card-premium rounded-[12px] p-4 flex items-center justify-between transition-opacity hover:opacity-80">
             <div>
               <div className="flex items-center gap-1.5 mb-1">
                 <ArrowDownLeft className="h-3.5 w-3.5 text-[#f87171]" />
@@ -401,11 +514,72 @@ export default function EmpresaPage() {
         </div>
       )}
 
-      {/* Tax breakdown + Pro-labore — only when there's revenue */}
+      {/* ── Distribuição de Despesas por Grupo ────────────────────────────── */}
+      {expenseGroups.length > 0 && (
+        <div className="mt-4 card-premium rounded-[12px] p-5">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-sm font-semibold text-[#B3B3B3] uppercase tracking-wider flex items-center gap-2">
+              <BarChart3 className="h-3.5 w-3.5 text-[#3b82f6]" />
+              Distribuição de Despesas
+            </h2>
+            <Link href="/empresa/despesas"
+              className="text-xs text-[#6B6B6B] hover:text-[#0ea5e9] flex items-center gap-0.5 transition-colors">
+              Ver todas <ChevronRight className="h-3 w-3" />
+            </Link>
+          </div>
+          <div className="space-y-3">
+            {expenseGroups
+              .sort((a, b) => b.total - a.total)
+              .map((g) => {
+                const pct = totals.totalExpenses > 0
+                  ? Math.round((g.total / totals.totalExpenses) * 100)
+                  : 0
+                return (
+                  <div key={g.prefix}>
+                    <div className="flex items-center justify-between text-xs mb-1.5">
+                      <div className="flex items-center gap-1.5">
+                        <span className="h-2 w-2 rounded-full" style={{ background: g.color }} />
+                        <span className="text-[#B3B3B3]">{g.label}</span>
+                        <span className="text-[#6B6B6B]">({g.count} item{g.count !== 1 ? 's' : ''})</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-[#6B6B6B]">{pct}%</span>
+                        <span className="font-semibold tabular-nums" style={{ color: g.color }}>
+                          {formatCurrency(g.total)}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="h-1.5 bg-[#2A2A2A] rounded-full overflow-hidden">
+                      <div className="h-full rounded-full transition-all duration-700"
+                        style={{ width: `${pct}%`, background: g.color, boxShadow: `0 0 6px ${g.color}55` }} />
+                    </div>
+                  </div>
+                )
+              })}
+          </div>
+
+          {/* Recurring expenses summary inside same card */}
+          {recurringExpenses.length > 0 && (
+            <div className="mt-4 pt-4 border-t border-[#2A2A2A] flex items-center justify-between">
+              <div className="flex items-center gap-1.5">
+                <RefreshCw className="h-3.5 w-3.5 text-[#f59e0b]" />
+                <span className="text-xs text-[#B3B3B3]">
+                  Despesas recorrentes
+                  <span className="text-[#6B6B6B] ml-1">({recurringExpenses.length} ativa{recurringExpenses.length !== 1 ? 's' : ''})</span>
+                </span>
+              </div>
+              <span className="text-xs font-bold text-[#f59e0b] tabular-nums">
+                {formatCurrency(recurringExpenses.reduce((s, e) => s + e.amount, 0))}/mês
+              </span>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* ── Imposto detalhado | Pró-labore ─────────────────────────────────── */}
       {totals.totalRevenue > 0 && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-
-          {/* ── Imposto detalhado ── */}
+          {/* Imposto detalhado */}
           <div className="card-premium rounded-[12px] p-5">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-sm font-semibold text-[#B3B3B3] uppercase tracking-wider flex items-center gap-2">
@@ -414,7 +588,6 @@ export default function EmpresaPage() {
               </h2>
               <span className="text-xs text-[#6B6B6B]">{taxEstimate?.regime ?? '—'}</span>
             </div>
-
             {taxEstimate && taxEstimate.breakdown.length > 0 ? (
               <div className="space-y-3">
                 {taxEstimate.breakdown.map((b) => {
@@ -441,12 +614,11 @@ export default function EmpresaPage() {
                 })}
                 <div className="border-t border-[#2A2A2A] pt-3 flex justify-between items-center">
                   <span className="text-sm font-bold text-white">Total · {taxEstimate.ratePct}</span>
-                  <span className="text-sm font-bold text-[#f59e0b] tabular-nums glow-red"
+                  <span className="text-sm font-bold text-[#f59e0b] tabular-nums"
                     style={{ textShadow: '0 0 12px #f59e0b99' }}>
                     {formatCurrency(totals.taxAmount)}
                   </span>
                 </div>
-                {/* Projeção anual */}
                 <div className="flex items-center justify-between px-3 py-2 rounded-[8px]"
                   style={{ background: '#f8717108', border: '1px solid #f8717118' }}>
                   <span className="text-xs text-[#6B6B6B]">Projeção anual (base atual × 12)</span>
@@ -460,7 +632,7 @@ export default function EmpresaPage() {
             )}
           </div>
 
-          {/* ── Pró-labore inteligente ── */}
+          {/* Pró-labore */}
           <ProLaboreCard
             totalRevenue={totals.totalRevenue}
             totalExpenses={totals.totalExpenses}
@@ -468,11 +640,84 @@ export default function EmpresaPage() {
           />
         </div>
       )}
+
+      {/* ── Atalhos rápidos para todos os módulos ──────────────────────────── */}
+      <div className="mt-6">
+        <h2 className="text-xs font-semibold text-[#6B6B6B] uppercase tracking-wider mb-3 flex items-center gap-2">
+          <ChevronRight className="h-3.5 w-3.5" />
+          Módulos da Empresa
+        </h2>
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+          {[
+            { href: '/empresa/financas',        label: 'Finanças',        desc: 'Faturamento',    color: '#22c55e' },
+            { href: '/empresa/despesas',         label: 'Despesas',        desc: 'Custos',         color: '#f87171' },
+            { href: '/empresa/dre',              label: 'DRE',             desc: 'Resultado',      color: '#3b82f6' },
+            { href: '/empresa/orcamento',        label: 'Orçamento',       desc: 'Metas',          color: '#f59e0b' },
+            { href: '/empresa/fluxo-de-caixa',   label: 'Fluxo de Caixa', desc: 'Entradas/Saídas',color: '#0ea5e9' },
+            { href: '/empresa/relatorio',        label: 'Relatório',       desc: 'Multi-período',  color: '#8b5cf6' },
+            { href: '/empresa/clientes',         label: 'Clientes',        desc: 'Carteira',       color: '#22c55e' },
+            { href: '/empresa/fornecedores',     label: 'Fornecedores',    desc: 'Cadastro',       color: '#f59e0b' },
+            { href: '/empresa/funcionarios',     label: 'Equipe',          desc: 'Colaboradores',  color: '#0ea5e9' },
+            { href: '/empresa/impostos',         label: 'Impostos',        desc: 'Tributação',     color: '#f87171' },
+            { href: '/empresa/pro-labore',       label: 'Pró-labore',      desc: 'Retiradas',      color: '#22c55e' },
+            { href: '/empresa/inteligencia',     label: 'Inteligência',    desc: 'Análises',       color: '#8b5cf6' },
+          ].map((item) => (
+            <Link
+              key={item.href}
+              href={item.href}
+              className="card-premium rounded-[10px] px-3 py-3 flex items-center justify-between group transition-all hover:opacity-80"
+            >
+              <div>
+                <p className="text-sm font-semibold text-white">{item.label}</p>
+                <p className="text-[11px] text-[#6B6B6B]">{item.desc}</p>
+              </div>
+              <ChevronRight className="h-4 w-4 text-[#383838] group-hover:text-[#6B6B6B] transition-colors"
+                style={{ color: item.color + '60' }} />
+            </Link>
+          ))}
+        </div>
+      </div>
     </>
   )
 }
 
-// ── Pro-labore card (inline) ──────────────────────────────────────────────────
+// ── Radar card (módulos mini-stat) ────────────────────────────────────────────
+function RadarCard({
+  href, icon: Icon, iconColor, label, primary, secondary, warning = false,
+}: {
+  href: string
+  icon: React.ElementType
+  iconColor: string
+  label: string
+  primary: string
+  secondary: string
+  warning?: boolean
+}) {
+  return (
+    <Link href={href}
+      className="card-premium rounded-[12px] p-4 flex flex-col gap-3 transition-all hover:opacity-80 relative overflow-hidden">
+      {warning && (
+        <span className="absolute top-2 right-2">
+          <AlertTriangle className="h-3.5 w-3.5 text-[#f87171]" />
+        </span>
+      )}
+      <div className="flex items-center justify-between">
+        <div className="h-8 w-8 rounded-[8px] flex items-center justify-center"
+          style={{ background: `${iconColor}18`, border: `1px solid ${iconColor}25` }}>
+          <Icon className="h-4 w-4" style={{ color: iconColor }} />
+        </div>
+        <ChevronRight className="h-3.5 w-3.5 text-[#383838]" />
+      </div>
+      <div>
+        <p className="text-[10px] text-[#6B6B6B] uppercase tracking-wider mb-0.5">{label}</p>
+        <p className="text-sm font-extrabold text-white leading-tight">{primary}</p>
+        <p className="text-[11px] text-[#6B6B6B] mt-0.5">{secondary}</p>
+      </div>
+    </Link>
+  )
+}
+
+// ── Pro-labore card ────────────────────────────────────────────────────────────
 function ProLaboreCard({
   totalRevenue, totalExpenses, taxAmount,
 }: { totalRevenue: number; totalExpenses: number; taxAmount: number }) {
@@ -490,20 +735,19 @@ function ProLaboreCard({
 
       {proLabore.balanced > 0 ? (
         <>
-          {/* Three scenarios */}
           <div className="grid grid-cols-3 gap-2 mb-4">
             {[
               { label: 'Conservador', value: proLabore.conservative, icon: ShieldCheck, color: '#3b82f6' },
               { label: 'Equilibrado', value: proLabore.balanced,     icon: Scale,        color: '#22c55e' },
               { label: 'Agressivo',   value: proLabore.aggressive,   icon: Zap,          color: '#f59e0b' },
             ].map((s) => {
-              const Icon = s.icon
+              const Icon2 = s.icon
               return (
                 <div key={s.label} className="rounded-[10px] p-3 text-center"
                   style={{ background: `${s.color}10`, border: `1px solid ${s.color}25` }}>
                   <div className="h-7 w-7 rounded-[8px] flex items-center justify-center mx-auto mb-2"
                     style={{ background: `${s.color}15` }}>
-                    <Icon className="h-3.5 w-3.5" style={{ color: s.color }} />
+                    <Icon2 className="h-3.5 w-3.5" style={{ color: s.color }} />
                   </div>
                   <p className="text-[10px] text-[#6B6B6B] mb-1">{s.label}</p>
                   <p className="text-sm font-extrabold tabular-nums leading-tight"
@@ -515,14 +759,14 @@ function ProLaboreCard({
             })}
           </div>
 
-          {/* Logic breakdown */}
           <div className="space-y-1.5">
             {[
-              { label: 'Faturamento bruto',  value: totalRevenue,    color: '#22c55e', sign: '+' },
-              { label: 'Despesas',           value: totalExpenses,   color: '#f87171', sign: '−' },
-              { label: 'Imposto estimado',   value: taxAmount,       color: '#f59e0b', sign: '−' },
+              { label: 'Faturamento bruto', value: totalRevenue,  color: '#22c55e', sign: '+' },
+              { label: 'Despesas',          value: totalExpenses, color: '#f87171', sign: '−' },
+              { label: 'Imposto estimado',  value: taxAmount,     color: '#f59e0b', sign: '−' },
             ].map((row) => (
-              <div key={row.label} className="flex items-center justify-between text-xs py-1.5 border-b border-[#2A2A2A]">
+              <div key={row.label}
+                className="flex items-center justify-between text-xs py-1.5 border-b border-[#2A2A2A]">
                 <div className="flex items-center gap-1.5">
                   <span className="font-bold w-3" style={{ color: row.color }}>{row.sign}</span>
                   <span className="text-[#B3B3B3]">{row.label}</span>
@@ -540,7 +784,6 @@ function ProLaboreCard({
               </span>
             </div>
           </div>
-
           <p className="text-[11px] text-app-soft mt-3 leading-relaxed">{proLabore.reason}</p>
         </>
       ) : (
