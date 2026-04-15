@@ -3,12 +3,14 @@
 import { useMemo, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 import {
+  AlertTriangle,
   BadgeCheck,
   CalendarClock,
   CreditCard,
   Crown,
   Layers3,
   QrCode,
+  XCircle,
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { formatCurrency } from '@/lib/utils/formatters'
@@ -81,10 +83,49 @@ function businessCapacityLabel(plan: SubscriptionPlanType, duration: BillingDura
   return `Até ${limit} conta(s) empresarial(is)`
 }
 
+function formatDate(dateStr: string | null) {
+  if (!dateStr) return null
+  try {
+    return new Intl.DateTimeFormat('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' }).format(new Date(dateStr))
+  } catch {
+    return null
+  }
+}
+
 export function PlanosClient({ snapshot }: PlanosClientProps) {
   const [duration, setDuration] = useState<BillingDuration>(6)
   const [checkingOut, setCheckingOut] = useState<string | null>(null)
+  const [canceling, setCanceling] = useState(false)
+  const [cancelConfirm, setCancelConfirm] = useState(false)
+  const [localCancelScheduled, setLocalCancelScheduled] = useState(
+    snapshot.subscription.cancel_at_period_end
+  )
   const searchParams = useSearchParams()
+
+  async function handleCancelSubscription() {
+    if (!cancelConfirm) {
+      setCancelConfirm(true)
+      return
+    }
+    setCanceling(true)
+    setCancelConfirm(false)
+    try {
+      const res = await fetch('/api/billing/cancel', { method: 'POST' })
+      const data = await res.json()
+      if (!res.ok) {
+        toast.error('Erro ao cancelar', { description: data.error })
+        return
+      }
+      setLocalCancelScheduled(true)
+      toast.success('Cancelamento agendado', {
+        description: 'Seu acesso continua ate o fim do periodo atual.',
+      })
+    } catch {
+      toast.error('Erro ao cancelar assinatura')
+    } finally {
+      setCanceling(false)
+    }
+  }
 
   async function handleCheckout(planCode: SubscriptionPlanType, paymentMethod: 'card' | 'pix' = 'card') {
     setCheckingOut(`${planCode}-${paymentMethod}`)
@@ -190,8 +231,25 @@ export function PlanosClient({ snapshot }: PlanosClientProps) {
               <p className="text-xs uppercase tracking-wider text-app-soft">Status atual</p>
               <p className="mt-2 text-lg font-bold text-app">{formatStatus(snapshot.subscription.status)}</p>
               <p className="mt-1 text-xs text-app-soft">
-                Plano atual: {snapshot.subscription.plan_type.toUpperCase()}
+                Plano: {snapshot.subscription.plan_type.toUpperCase()}
               </p>
+              {snapshot.subscription.current_period_end && (
+                <p className="mt-1 text-xs text-app-soft">
+                  Próx. cobrança: {formatDate(snapshot.subscription.current_period_end)}
+                </p>
+              )}
+              {localCancelScheduled && (
+                <div
+                  className="mt-2 flex items-center gap-1 rounded-[6px] px-2 py-1 text-[10px] font-semibold"
+                  style={{
+                    background: 'color-mix(in oklab, #f87171 12%, transparent)',
+                    color: '#f87171',
+                  }}
+                >
+                  <XCircle className="h-3 w-3 shrink-0" />
+                  Cancelamento agendado
+                </div>
+              )}
             </div>
             <div className="panel-card p-4">
               <p className="text-xs uppercase tracking-wider text-app-soft">Trial</p>
@@ -441,6 +499,90 @@ export function PlanosClient({ snapshot }: PlanosClientProps) {
           </div>
         </div>
       </section>
+
+      {snapshot.paidAccess && !localCancelScheduled && (
+        <section
+          className="panel-card p-5"
+          style={{
+            borderColor: 'color-mix(in oklab, #f87171 20%, transparent)',
+          }}
+        >
+          <h2 className="flex items-center gap-2 text-base font-semibold text-app">
+            <AlertTriangle className="h-4 w-4 text-[#f87171]" />
+            Cancelar assinatura
+          </h2>
+          <p className="mt-2 text-sm text-app-soft">
+            Ao cancelar, seu acesso continuará ativo até o fim do período atual já pago.
+            {snapshot.subscription.current_period_end
+              ? ` Sua assinatura expira em ${formatDate(snapshot.subscription.current_period_end)}.`
+              : ''}
+          </p>
+
+          {cancelConfirm ? (
+            <div className="mt-4 space-y-3">
+              <p
+                className="rounded-[8px] border px-3 py-2 text-sm"
+                style={{
+                  borderColor: 'color-mix(in oklab, #f87171 30%, transparent)',
+                  background: 'color-mix(in oklab, #f87171 8%, transparent)',
+                  color: '#f87171',
+                }}
+              >
+                Tem certeza? Esta ação agendará o cancelamento ao fim do período vigente.
+              </p>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setCancelConfirm(false)}
+                  className="flex-1 rounded-[8px] border px-3 py-2 text-sm text-app-base transition-colors hover:text-app"
+                  style={{ borderColor: 'var(--panel-border)' }}
+                >
+                  Manter assinatura
+                </button>
+                <button
+                  onClick={handleCancelSubscription}
+                  disabled={canceling}
+                  className="flex-1 rounded-[8px] px-3 py-2 text-sm font-semibold text-white transition-all disabled:opacity-60"
+                  style={{ background: '#dc2626' }}
+                >
+                  {canceling ? 'Cancelando...' : 'Confirmar cancelamento'}
+                </button>
+              </div>
+            </div>
+          ) : (
+            <button
+              onClick={() => setCancelConfirm(true)}
+              className="mt-4 rounded-[8px] border px-4 py-2 text-sm font-medium transition-colors"
+              style={{
+                borderColor: 'color-mix(in oklab, #f87171 30%, transparent)',
+                color: '#f87171',
+              }}
+            >
+              Cancelar assinatura
+            </button>
+          )}
+        </section>
+      )}
+
+      {localCancelScheduled && snapshot.paidAccess && (
+        <section
+          className="panel-card p-5"
+          style={{
+            borderColor: 'color-mix(in oklab, #f87171 20%, transparent)',
+          }}
+        >
+          <h2 className="flex items-center gap-2 text-base font-semibold text-app">
+            <XCircle className="h-4 w-4 text-[#f87171]" />
+            Cancelamento agendado
+          </h2>
+          <p className="mt-2 text-sm text-app-soft">
+            Seu acesso permanece ativo até o fim do período atual
+            {snapshot.subscription.current_period_end
+              ? ` (${formatDate(snapshot.subscription.current_period_end)})`
+              : ''}.
+            Para reativar, entre em contato com o suporte ou adquira um novo plano.
+          </p>
+        </section>
+      )}
     </div>
   )
 }

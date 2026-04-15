@@ -87,7 +87,7 @@ export default function EsqueciSenhaPage() {
             placeholder="seu@email.com"
             value={email}
             onChange={(e) => { setEmail(e.target.value); setError('') }}
-            className="w-full h-11 px-4 rounded-[10px] text-sm text-white placeholder:text-[#2a3860] outline-none transition-all"
+            className="w-full h-11 px-4 rounded-[10px] text-sm text-white placeholder:text-[#6B6B6B] outline-none transition-all"
             style={{
               background: '#0d1021',
               border: error ? '1px solid #f87171' : '1px solid #1e2847',

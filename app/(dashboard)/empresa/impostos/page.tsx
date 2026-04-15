@@ -221,8 +221,9 @@ export default function ImpostosPage() {
       )}
 
       {/* Disclaimer */}
-      <p className="text-xs text-[#2a3860] text-center leading-relaxed pb-2">
+      <p className="text-xs text-app-soft text-center leading-relaxed pb-2">
         ⚠️ Os valores são estimativas baseadas no regime tributário cadastrado. Consulte seu contador para apuração oficial.
+
       </p>
     </div>
   )

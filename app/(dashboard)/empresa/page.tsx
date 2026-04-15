@@ -8,7 +8,7 @@ import { createClient } from '@/lib/supabase/client'
 import { useBusinessData } from '@/lib/context/BusinessDataContext'
 import { formatCurrency, formatMonth } from '@/lib/utils/formatters'
 import { regimeLabel, activityLabel } from '@/lib/utils/taxes'
-import { Building2, TrendingUp, ShieldCheck, Scale, Zap, Receipt, ArrowUpRight } from 'lucide-react'
+import { Building2, TrendingUp, ShieldCheck, Scale, Zap, Receipt, ArrowUpRight, ArrowDownLeft, Clock } from 'lucide-react'
 import { suggestProLabore } from '@/lib/utils/taxes'
 import { ExportPDFButton } from '@/components/pdf/ExportPDFButton'
 
@@ -92,13 +92,48 @@ function healthScore(margin: number, taxRate: number, hasRevenue: boolean) {
 }
 
 // ── Main page ─────────────────────────────────────────────────────────────────
+interface ArApSummary {
+  totalAReceber: number
+  totalAPagar: number
+  overdueRevenues: number
+  overdueExpenses: number
+}
+
 export default function EmpresaPage() {
   const { business, totals, taxEstimate, currentMonth, isLoading } = useBusinessData()
   const [userId, setUserId] = useState<string | null>(null)
+  const [arAp, setArAp] = useState<ArApSummary | null>(null)
 
   useEffect(() => {
     createClient().auth.getUser().then(({ data }) => setUserId(data.user?.id ?? null))
   }, [])
+
+  useEffect(() => {
+    if (!business) return
+    const supabase = createClient()
+    const today = new Date().toISOString().split('T')[0]
+    Promise.all([
+      supabase
+        .from('business_revenues')
+        .select('amount, due_date, status')
+        .eq('business_id', business.id)
+        .in('status', ['pending', 'overdue']),
+      supabase
+        .from('business_expenses')
+        .select('amount, due_date, status')
+        .eq('business_id', business.id)
+        .in('status', ['pending', 'overdue']),
+    ]).then(([revRes, expRes]) => {
+      const revs = revRes.data ?? []
+      const exps = expRes.data ?? []
+      setArAp({
+        totalAReceber: revs.reduce((s, r) => s + r.amount, 0),
+        totalAPagar: exps.reduce((s, e) => s + e.amount, 0),
+        overdueRevenues: revs.filter((r) => r.due_date && r.due_date < today).length,
+        overdueExpenses: exps.filter((e) => e.due_date && e.due_date < today).length,
+      })
+    })
+  }, [business])
 
   const { score, label: scoreLabel, color: scoreColor } = healthScore(
     totals.profitMargin, totals.taxRate, totals.totalRevenue > 0,
@@ -319,6 +354,52 @@ export default function EmpresaPage() {
           )}
         </div>
       </div>
+
+      {/* AR/AP Quick panel */}
+      {arAp && (arAp.totalAReceber > 0 || arAp.totalAPagar > 0) && (
+        <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <a
+            href="/empresa/fluxo-de-caixa"
+            className="card-premium rounded-[12px] p-4 flex items-center justify-between transition-opacity hover:opacity-80"
+          >
+            <div>
+              <div className="flex items-center gap-1.5 mb-1">
+                <ArrowUpRight className="h-3.5 w-3.5 text-[#22c55e]" />
+                <span className="text-[10px] font-bold uppercase tracking-wider text-[#6B6B6B]">A Receber</span>
+                {arAp.overdueRevenues > 0 && (
+                  <span className="rounded-full bg-[#f87171] px-1.5 py-0.5 text-[9px] font-bold text-white">
+                    {arAp.overdueRevenues} atrasado{arAp.overdueRevenues > 1 ? 's' : ''}
+                  </span>
+                )}
+              </div>
+              <p className="text-xl font-extrabold tabular-nums text-[#22c55e]">
+                {formatCurrency(arAp.totalAReceber)}
+              </p>
+            </div>
+            <Clock className="h-8 w-8 text-[#22c55e] opacity-20" />
+          </a>
+          <a
+            href="/empresa/fluxo-de-caixa"
+            className="card-premium rounded-[12px] p-4 flex items-center justify-between transition-opacity hover:opacity-80"
+          >
+            <div>
+              <div className="flex items-center gap-1.5 mb-1">
+                <ArrowDownLeft className="h-3.5 w-3.5 text-[#f87171]" />
+                <span className="text-[10px] font-bold uppercase tracking-wider text-[#6B6B6B]">A Pagar</span>
+                {arAp.overdueExpenses > 0 && (
+                  <span className="rounded-full bg-[#f87171] px-1.5 py-0.5 text-[9px] font-bold text-white">
+                    {arAp.overdueExpenses} atrasado{arAp.overdueExpenses > 1 ? 's' : ''}
+                  </span>
+                )}
+              </div>
+              <p className="text-xl font-extrabold tabular-nums text-[#f87171]">
+                {formatCurrency(arAp.totalAPagar)}
+              </p>
+            </div>
+            <Clock className="h-8 w-8 text-[#f87171] opacity-20" />
+          </a>
+        </div>
+      )}
 
       {/* Tax breakdown + Pro-labore — only when there's revenue */}
       {totals.totalRevenue > 0 && (

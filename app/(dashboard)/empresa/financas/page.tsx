@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
-import { Plus, Loader2, Pencil, Trash2, TrendingUp } from 'lucide-react'
+import { Plus, Loader2, Pencil, Trash2, TrendingUp, Calendar, Repeat } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -11,12 +11,14 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Modal } from '@/components/ui/Modal'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { ExportPDFButton } from '@/components/pdf/ExportPDFButton'
+import { ExportCSVButton } from '@/components/csv/ExportCSVButton'
 import { createClient } from '@/lib/supabase/client'
 import { useBusinessData } from '@/lib/context/BusinessDataContext'
 import { formatCurrency, formatMonth } from '@/lib/utils/formatters'
-import type { BusinessRevCategory, Database } from '@/types/database.types'
+import type { BusinessRevCategory, BusinessRevenueStatus, Database } from '@/types/database.types'
 
 type Revenue = Database['public']['Tables']['business_revenues']['Row']
+type Counterparty = Database['public']['Tables']['business_counterparties']['Row']
 
 const CATEGORIES: Array<{ id: BusinessRevCategory; label: string }> = [
   { id: 'servico', label: 'Servico' },
@@ -26,27 +28,35 @@ const CATEGORIES: Array<{ id: BusinessRevCategory; label: string }> = [
   { id: 'outro', label: 'Outro' },
 ]
 
+const STATUS_OPTIONS: Array<{ id: BusinessRevenueStatus; label: string; color: string }> = [
+  { id: 'received', label: 'Recebido', color: '#22c55e' },
+  { id: 'pending', label: 'Pendente', color: '#f59e0b' },
+  { id: 'overdue', label: 'Atrasado', color: '#f87171' },
+  { id: 'canceled', label: 'Cancelado', color: '#6B7280' },
+]
+
+function statusLabel(status: BusinessRevenueStatus | null | undefined) {
+  return STATUS_OPTIONS.find((s) => s.id === status) ?? STATUS_OPTIONS[0]
+}
+
 interface FormValues {
   description: string
   amount: string
   category: string
+  status: BusinessRevenueStatus
+  due_date: string
+  counterparty_id: string
+  is_recurring: boolean
 }
 
 function mapMutationError(message: string) {
   const normalized = message.toLowerCase()
-
-  if (normalized.includes('transaction_limit_reached')) {
+  if (normalized.includes('transaction_limit_reached'))
     return 'Limite mensal de lancamentos atingido para seu plano.'
-  }
-
-  if (normalized.includes('business_scope_locked')) {
+  if (normalized.includes('business_scope_locked'))
     return 'Seu plano atual nao permite lancamentos no modulo empresarial.'
-  }
-
-  if (normalized.includes('personal_scope_locked')) {
+  if (normalized.includes('personal_scope_locked'))
     return 'Seu plano atual nao permite lancamentos no modulo pessoal.'
-  }
-
   return message
 }
 
@@ -57,6 +67,7 @@ function RevenueForm({
   editing,
   onSaved,
   currentMonth,
+  clientes,
 }: {
   onClose: () => void
   businessId: string
@@ -64,6 +75,7 @@ function RevenueForm({
   editing?: Revenue | null
   onSaved: () => void
   currentMonth: Date
+  clientes: Counterparty[]
 }) {
   const [loading, setLoading] = useState(false)
   const {
@@ -75,14 +87,39 @@ function RevenueForm({
     formState: { errors },
   } = useForm<FormValues>({
     defaultValues: editing
-      ? { description: editing.description ?? '', category: editing.category, amount: String(editing.amount) }
-      : { description: '', category: 'servico', amount: '' },
+      ? {
+          description: editing.description ?? '',
+          category: editing.category,
+          amount: String(editing.amount),
+          status: (editing.status as BusinessRevenueStatus) ?? 'received',
+          due_date: editing.due_date ?? '',
+          counterparty_id: editing.counterparty_id ?? '',
+          is_recurring: editing.is_recurring ?? false,
+        }
+      : {
+          description: '',
+          category: 'servico',
+          amount: '',
+          status: 'received',
+          due_date: '',
+          counterparty_id: '',
+          is_recurring: false,
+        },
   })
 
   const category = watch('category')
+  const status = watch('status')
+  const counterparty_id = watch('counterparty_id')
+  const is_recurring = watch('is_recurring')
   const monthStr = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 1)
     .toISOString()
     .split('T')[0]
+
+  const inputStyle = {
+    background: 'var(--panel-bg-soft)',
+    borderColor: 'var(--panel-border)',
+    color: 'var(--text-strong)',
+  }
 
   async function onSubmit(values: FormValues) {
     const parsed = parseFloat(values.amount.replace(',', '.'))
@@ -93,16 +130,21 @@ function RevenueForm({
 
     setLoading(true)
     const supabase = createClient()
+    const payload = {
+      description: values.description || null,
+      category: values.category as BusinessRevCategory,
+      amount: parsed,
+      month: monthStr,
+      status: values.status,
+      due_date: values.due_date || null,
+      counterparty_id: values.counterparty_id || null,
+      is_recurring: values.is_recurring,
+    }
 
     if (editing) {
       const { error } = await supabase
         .from('business_revenues')
-        .update({
-          description: values.description || null,
-          category: values.category as BusinessRevCategory,
-          amount: parsed,
-          month: monthStr,
-        })
+        .update(payload)
         .eq('id', editing.id)
       if (error) {
         toast.error('Erro ao atualizar', { description: mapMutationError(error.message) })
@@ -113,10 +155,7 @@ function RevenueForm({
       const { error } = await supabase.from('business_revenues').insert({
         user_id: userId,
         business_id: businessId,
-        description: values.description || null,
-        category: values.category as BusinessRevCategory,
-        amount: parsed,
-        month: monthStr,
+        ...payload,
       })
       if (error) {
         toast.error('Erro ao adicionar', { description: mapMutationError(error.message) })
@@ -150,67 +189,128 @@ function RevenueForm({
         <Input
           placeholder="Ex: Projeto site cliente X"
           className="rounded-[8px]"
-          style={{
-            background: 'var(--panel-bg-soft)',
-            borderColor: 'var(--panel-border)',
-            color: 'var(--text-strong)',
-          }}
+          style={inputStyle}
           {...register('description')}
         />
       </div>
 
-      <div className="space-y-2">
-        <Label className="text-app-base">Categoria</Label>
-        <Select onValueChange={(v) => v && setValue('category', v)} value={category ?? 'servico'}>
-          <SelectTrigger
-            className="rounded-[8px]"
-            style={{
-              background: 'var(--panel-bg-soft)',
-              borderColor: 'var(--panel-border)',
-              color: 'var(--text-strong)',
-            }}
-          >
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent
-            className="rounded-[8px]"
-            style={{
-              background: 'var(--panel-bg)',
-              borderColor: 'var(--panel-border)',
-              color: 'var(--text-strong)',
-            }}
-          >
-            {CATEGORIES.map((c) => (
-              <SelectItem key={c.id} value={c.id}>
-                {c.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+      <div className="grid gap-4 sm:grid-cols-2">
+        <div className="space-y-2">
+          <Label className="text-app-base">Categoria</Label>
+          <Select onValueChange={(v) => v && setValue('category', v)} value={category ?? 'servico'}>
+            <SelectTrigger className="rounded-[8px]" style={inputStyle}>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent
+              className="rounded-[8px]"
+              style={{ background: 'var(--panel-bg)', borderColor: 'var(--panel-border)', color: 'var(--text-strong)' }}
+            >
+              {CATEGORIES.map((c) => (
+                <SelectItem key={c.id} value={c.id}>{c.label}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div className="space-y-2">
+          <Label className="text-app-base">Status</Label>
+          <Select onValueChange={(v) => v && setValue('status', v as BusinessRevenueStatus)} value={status ?? 'received'}>
+            <SelectTrigger className="rounded-[8px]" style={inputStyle}>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent
+              className="rounded-[8px]"
+              style={{ background: 'var(--panel-bg)', borderColor: 'var(--panel-border)', color: 'var(--text-strong)' }}
+            >
+              {STATUS_OPTIONS.map((s) => (
+                <SelectItem key={s.id} value={s.id}>
+                  <span style={{ color: s.color }}>{s.label}</span>
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
       </div>
 
-      <div className="space-y-2">
-        <Label className="text-app-base">Valor (R$)</Label>
-        <Input
-          type="text"
-          inputMode="decimal"
-          placeholder="0,00"
-          className="rounded-[8px]"
-          style={{
-            background: 'var(--panel-bg-soft)',
-            borderColor: 'var(--panel-border)',
-            color: 'var(--text-strong)',
-          }}
-          {...register('amount')}
-        />
-        {errors.amount && <p className="text-xs text-[#f87171]">{errors.amount.message}</p>}
+      <div className="grid gap-4 sm:grid-cols-2">
+        <div className="space-y-2">
+          <Label className="text-app-base">Valor (R$)</Label>
+          <Input
+            type="text"
+            inputMode="decimal"
+            placeholder="0,00"
+            className="rounded-[8px]"
+            style={inputStyle}
+            {...register('amount')}
+          />
+          {errors.amount && <p className="text-xs text-[#f87171]">{errors.amount.message}</p>}
+        </div>
+
+        <div className="space-y-2">
+          <Label className="text-app-base">Vencimento</Label>
+          <Input
+            type="date"
+            className="rounded-[8px]"
+            style={inputStyle}
+            {...register('due_date')}
+          />
+        </div>
       </div>
+
+      {clientes.length > 0 && (
+        <div className="space-y-2">
+          <Label className="text-app-base">Cliente</Label>
+          <Select
+            onValueChange={(v) => setValue('counterparty_id', !v || v === '_none' ? '' : v)}
+            value={counterparty_id || '_none'}
+          >
+            <SelectTrigger className="rounded-[8px]" style={inputStyle}>
+              <SelectValue placeholder="Nenhum" />
+            </SelectTrigger>
+            <SelectContent
+              className="rounded-[8px]"
+              style={{ background: 'var(--panel-bg)', borderColor: 'var(--panel-border)', color: 'var(--text-strong)' }}
+            >
+              <SelectItem value="_none">Nenhum</SelectItem>
+              {clientes.map((c) => (
+                <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      )}
+
+      {/* Recurring toggle */}
+      <button
+        type="button"
+        onClick={() => setValue('is_recurring', !is_recurring)}
+        className="flex w-full items-center justify-between rounded-[8px] px-3 py-2.5 text-sm transition-all"
+        style={{
+          background: is_recurring
+            ? 'color-mix(in oklab, #3b82f6 10%, transparent)'
+            : 'var(--panel-bg-soft)',
+          border: `1px solid ${is_recurring ? 'color-mix(in oklab, #3b82f6 35%, transparent)' : 'var(--panel-border)'}`,
+          color: is_recurring ? '#3b82f6' : 'var(--text-soft)',
+        }}
+      >
+        <span className="flex items-center gap-2">
+          <Repeat className="h-4 w-4 shrink-0" />
+          <span className="font-medium">Recorrente</span>
+        </span>
+        <span className="text-xs">
+          {is_recurring ? 'Sim — repete todo mês' : 'Não — lançamento único'}
+        </span>
+      </button>
 
       <div className="flex gap-2 pt-2">
         <Button type="button" variant="outline" onClick={onClose} className="flex-1 rounded-[8px]">
           Cancelar
         </Button>
-        <Button type="submit" disabled={loading} className="flex-1 rounded-[8px] bg-[#22c55e] text-white hover:bg-[#16a34a]">
+        <Button
+          type="submit"
+          disabled={loading}
+          className="flex-1 rounded-[8px] bg-[#22c55e] text-white hover:bg-[#16a34a]"
+        >
           {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : editing ? 'Atualizar' : 'Adicionar'}
         </Button>
       </div>
@@ -221,6 +321,7 @@ function RevenueForm({
 export default function EmpresaFinancasPage() {
   const { revenues, totals, business, currentMonth, refresh } = useBusinessData()
   const [userId, setUserId] = useState<string | null>(null)
+  const [clientes, setClientes] = useState<Counterparty[]>([])
   const [modalOpen, setModalOpen] = useState(false)
   const [editing, setEditing] = useState<Revenue | null>(null)
   const [deleting, setDeleting] = useState<string | null>(null)
@@ -228,6 +329,18 @@ export default function EmpresaFinancasPage() {
   useEffect(() => {
     createClient().auth.getUser().then(({ data }) => setUserId(data.user?.id ?? null))
   }, [])
+
+  useEffect(() => {
+    if (!business) return
+    createClient()
+      .from('business_counterparties')
+      .select('*')
+      .eq('business_id', business.id)
+      .eq('type', 'cliente')
+      .eq('is_active', true)
+      .order('name')
+      .then(({ data }) => setClientes(data ?? []))
+  }, [business])
 
   async function handleDelete(id: string) {
     if (!confirm('Remover este lancamento?')) return
@@ -251,6 +364,14 @@ export default function EmpresaFinancasPage() {
     outro: 'Outro',
   }
 
+  function formatDate(d: string | null) {
+    if (!d) return null
+    try {
+      const [y, m, day] = d.split('-')
+      return `${day}/${m}/${y}`
+    } catch { return null }
+  }
+
   return (
     <div className="mx-auto max-w-2xl">
       <div className="mb-6 flex items-center justify-between">
@@ -261,6 +382,18 @@ export default function EmpresaFinancasPage() {
           </p>
         </div>
         <div className="flex items-center gap-2">
+          <ExportCSVButton
+            headers={['Descrição', 'Categoria', 'Status', 'Vencimento', 'Recorrente', 'Valor (R$)']}
+            rows={revenues.map((r) => ({
+              'Descrição': r.description ?? '',
+              'Categoria': catLabel[r.category] ?? r.category,
+              'Status': statusLabel(r.status as BusinessRevenueStatus | null).label,
+              'Vencimento': r.due_date ?? '',
+              'Recorrente': r.is_recurring ? 'Sim' : 'Não',
+              'Valor (R$)': r.amount.toFixed(2),
+            }))}
+            fileName={`saooz-receitas-${currentMonth.toISOString().slice(0, 7)}.csv`}
+          />
           <ExportPDFButton
             data={{
               title: 'Relatório de Receitas',
@@ -281,7 +414,7 @@ export default function EmpresaFinancasPage() {
                 date: r.created_at ? new Date(r.created_at).toLocaleDateString('pt-BR') : undefined,
               })),
             }}
-            fileName={`saooz-receitas-${currentMonth}.pdf`}
+            fileName={`saooz-receitas-${currentMonth.toISOString().slice(0, 7)}.pdf`}
           />
           <Button
             onClick={() => { setEditing(null); setModalOpen(true) }}
@@ -308,19 +441,49 @@ export default function EmpresaFinancasPage() {
         <div className="space-y-3">
           {revenues.map((r) => {
             const pct = totals.totalRevenue > 0 ? Math.round((r.amount / totals.totalRevenue) * 100) : 0
+            const st = statusLabel(r.status as BusinessRevenueStatus | null)
+            const clienteName = clientes.find((c) => c.id === r.counterparty_id)?.name
             return (
               <div key={r.id} className="panel-card p-4">
                 <div className="mb-2 flex items-start justify-between gap-2">
-                  <div className="min-w-0">
-                    <p className="truncate font-medium text-app">{r.description ?? '-'}</p>
-                    <p className="mt-0.5 text-xs text-app-soft">{catLabel[r.category] ?? r.category}</p>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <p className="truncate font-medium text-app">{r.description ?? '-'}</p>
+                      <span
+                        className="shrink-0 rounded-full px-2 py-0.5 text-[10px] font-semibold"
+                        style={{
+                          background: `color-mix(in oklab, ${st.color} 15%, transparent)`,
+                          color: st.color,
+                        }}
+                      >
+                        {st.label}
+                      </span>
+                      {r.is_recurring && (
+                        <span
+                          className="shrink-0 flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold"
+                          style={{ background: 'color-mix(in oklab, #3b82f6 12%, transparent)', color: '#3b82f6' }}
+                        >
+                          <Repeat className="h-2.5 w-2.5" />
+                          Recorrente
+                        </span>
+                      )}
+                    </div>
+                    <div className="mt-0.5 flex items-center gap-3">
+                      <p className="text-xs text-app-soft">{catLabel[r.category] ?? r.category}</p>
+                      {clienteName && (
+                        <p className="text-xs text-app-soft">· {clienteName}</p>
+                      )}
+                      {r.due_date && (
+                        <p className="flex items-center gap-1 text-xs text-app-soft">
+                          <Calendar className="h-3 w-3" />
+                          {formatDate(r.due_date)}
+                        </p>
+                      )}
+                    </div>
                   </div>
                   <div className="flex shrink-0 items-center gap-1">
                     <button
-                      onClick={() => {
-                        setEditing(r)
-                        setModalOpen(true)
-                      }}
+                      onClick={() => { setEditing(r); setModalOpen(true) }}
                       className="rounded-[6px] p-1.5 text-app-soft hover:text-app hover:opacity-80"
                     >
                       <Pencil className="h-3.5 w-3.5" />
@@ -350,22 +513,17 @@ export default function EmpresaFinancasPage() {
       {userId && business && (
         <Modal
           open={modalOpen}
-          onClose={() => {
-            setModalOpen(false)
-            setEditing(null)
-          }}
+          onClose={() => { setModalOpen(false); setEditing(null) }}
           title={editing ? 'Editar faturamento' : 'Lancar faturamento'}
         >
           <RevenueForm
-            onClose={() => {
-              setModalOpen(false)
-              setEditing(null)
-            }}
+            onClose={() => { setModalOpen(false); setEditing(null) }}
             businessId={business.id}
             userId={userId}
             editing={editing}
             onSaved={refresh}
             currentMonth={currentMonth}
+            clientes={clientes}
           />
         </Modal>
       )}

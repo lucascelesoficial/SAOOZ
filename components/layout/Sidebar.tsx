@@ -9,16 +9,23 @@ import {
   Briefcase,
   Building2,
   CreditCard,
+  FileBarChart2,
   LayoutDashboard,
   LineChart,
   LogOut,
   Receipt,
   Settings,
   ShieldCheck,
+  SlidersHorizontal,
+  Table2,
   TrendingDown,
   TrendingUp,
+  Truck,
+  Users,
+  Waves,
 } from 'lucide-react'
 import { SaoozLogo } from '@/components/ui/SaoozLogo'
+import { OverdueBadge } from '@/components/business/OverdueBadge'
 import { useAuth } from '@/lib/hooks/useAuth'
 import {
   MODULE_SCOPE_LABEL,
@@ -52,9 +59,16 @@ const PJ_NAV = [
   { href: '/empresa', label: 'Empresa', icon: Building2 },
   { href: '/empresa/financas', label: 'Finanças', icon: TrendingUp },
   { href: '/empresa/despesas', label: 'Despesas', icon: TrendingDown },
+  { href: '/empresa/clientes', label: 'Clientes', icon: Users },
+  { href: '/empresa/fornecedores', label: 'Fornecedores', icon: Truck },
   { href: '/empresa/reserva-emergencia', label: 'Reserva', icon: ShieldCheck },
   { href: '/empresa/investimentos', label: 'Investimentos', icon: LineChart },
   { href: '/empresa/impostos', label: 'Impostos', icon: Receipt },
+  { href: '/empresa/dre', label: 'DRE', icon: FileBarChart2 },
+  { href: '/empresa/fluxo-de-caixa', label: 'Fluxo de Caixa', icon: Waves },
+  { href: '/empresa/orcamento', label: 'Orçamento', icon: SlidersHorizontal },
+  { href: '/empresa/relatorio', label: 'Relatório', icon: Table2 },
+  { href: '/empresa/funcionarios', label: 'Funcionários', icon: Users },
   { href: '/empresa/pro-labore', label: 'Pró-labore', icon: ArrowUpRight },
   { href: '/empresa/inteligencia', label: 'Inteligência', icon: BarChart2 },
   { href: '/empresa/assistente', label: 'Assistente', icon: Bot },
@@ -139,6 +153,11 @@ export function Sidebar({
                 ? pathname === '/empresa'
                 : pathname === href || pathname.startsWith(`${href}/`)
 
+          const showOverdueBadge =
+            href === '/empresa/fluxo-de-caixa' &&
+            isBusinessScope &&
+            !!profile?.active_business_id
+
           return (
             <Link
               key={href}
@@ -160,10 +179,13 @@ export function Sidebar({
                 style={{ color: isActive ? 'var(--accent-blue)' : undefined }}
                 aria-hidden
               />
-              <span>{label}</span>
-              {isActive && (
+              <span className="flex-1">{label}</span>
+              {showOverdueBadge && (
+                <OverdueBadge businessId={profile.active_business_id!} />
+              )}
+              {isActive && !showOverdueBadge && (
                 <span
-                  className="absolute right-3 h-1.5 w-1.5 rounded-full"
+                  className="h-1.5 w-1.5 rounded-full shrink-0"
                   style={{ background: 'var(--accent-blue)' }}
                 />
               )}

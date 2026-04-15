@@ -112,6 +112,9 @@ export type InvestmentMovementType =
   | 'taxa'
   | 'ajuste'
 export type CounterpartyType = 'fornecedor' | 'cliente' | 'ambos'
+export type BusinessRevenueStatus = 'pending' | 'received' | 'overdue' | 'canceled'
+export type BusinessExpenseStatus = 'pending' | 'paid' | 'overdue' | 'canceled'
+export type EmployeeStatus = 'active' | 'on_leave' | 'terminated'
 
 export interface Database {
   public: {
@@ -286,6 +289,37 @@ export interface Database {
         Relationships: []
       }
 
+      business_budgets: {
+        Row: {
+          id: string
+          business_id: string
+          month: string
+          category: string
+          planned_amount: number
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          business_id: string
+          month: string
+          category: string
+          planned_amount: number
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          business_id?: string
+          month?: string
+          category?: string
+          planned_amount?: number
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+
       business_profiles: {
         Row: {
           id: string
@@ -340,6 +374,11 @@ export interface Database {
           amount: number
           month: string
           category: BusinessRevCategory
+          status: BusinessRevenueStatus
+          due_date: string | null
+          paid_at: string | null
+          counterparty_id: string | null
+          is_recurring: boolean
           created_at: string
         }
         Insert: {
@@ -350,6 +389,11 @@ export interface Database {
           amount: number
           month: string
           category?: BusinessRevCategory
+          status?: BusinessRevenueStatus
+          due_date?: string | null
+          paid_at?: string | null
+          counterparty_id?: string | null
+          is_recurring?: boolean
           created_at?: string
         }
         Update: {
@@ -360,6 +404,11 @@ export interface Database {
           amount?: number
           month?: string
           category?: BusinessRevCategory
+          status?: BusinessRevenueStatus
+          due_date?: string | null
+          paid_at?: string | null
+          counterparty_id?: string | null
+          is_recurring?: boolean
           created_at?: string
         }
         Relationships: []
@@ -374,6 +423,11 @@ export interface Database {
           amount: number
           month: string
           category: BusinessExpCategory
+          status: BusinessExpenseStatus
+          due_date: string | null
+          paid_at: string | null
+          counterparty_id: string | null
+          is_recurring: boolean
           created_at: string
         }
         Insert: {
@@ -384,6 +438,11 @@ export interface Database {
           amount: number
           month: string
           category?: BusinessExpCategory
+          status?: BusinessExpenseStatus
+          due_date?: string | null
+          paid_at?: string | null
+          counterparty_id?: string | null
+          is_recurring?: boolean
           created_at?: string
         }
         Update: {
@@ -394,6 +453,11 @@ export interface Database {
           amount?: number
           month?: string
           category?: BusinessExpCategory
+          status?: BusinessExpenseStatus
+          due_date?: string | null
+          paid_at?: string | null
+          counterparty_id?: string | null
+          is_recurring?: boolean
           created_at?: string
         }
         Relationships: []
@@ -726,6 +790,64 @@ export interface Database {
           occurred_on?: string
           description?: string | null
           created_at?: string
+        }
+        Relationships: []
+      }
+
+      business_employees: {
+        Row: {
+          id: string
+          user_id: string
+          business_id: string
+          name: string
+          cpf: string | null
+          role: string | null
+          monthly_salary: number
+          hire_date: string | null
+          termination_date: string | null
+          status: EmployeeStatus
+          email: string | null
+          phone: string | null
+          notes: string | null
+          is_active: boolean
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          business_id: string
+          name: string
+          cpf?: string | null
+          role?: string | null
+          monthly_salary?: number
+          hire_date?: string | null
+          termination_date?: string | null
+          status?: EmployeeStatus
+          email?: string | null
+          phone?: string | null
+          notes?: string | null
+          is_active?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          business_id?: string
+          name?: string
+          cpf?: string | null
+          role?: string | null
+          monthly_salary?: number
+          hire_date?: string | null
+          termination_date?: string | null
+          status?: EmployeeStatus
+          email?: string | null
+          phone?: string | null
+          notes?: string | null
+          is_active?: boolean
+          created_at?: string
+          updated_at?: string
         }
         Relationships: []
       }

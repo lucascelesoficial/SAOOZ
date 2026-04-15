@@ -9,7 +9,7 @@ import { createClient } from '@/lib/supabase/client'
 function Req({ met, label }: { met: boolean; label: string }) {
   return (
     <span className="flex items-center gap-1 text-xs">
-      {met ? <Check className="h-3 w-3 text-[#22c55e]" /> : <X className="h-3 w-3 text-[#2a3860]" />}
+      {met ? <Check className="h-3 w-3 text-[#22c55e]" /> : <X className="h-3 w-3 text-[#6B6B6B]" />}
       <span className={met ? 'text-[#22c55e]' : 'text-[#4a6080]'}>{label}</span>
     </span>
   )
@@ -86,7 +86,7 @@ export default function RedefinirSenhaPage() {
               placeholder="••••••••"
               value={password}
               onChange={(e) => { setPassword(e.target.value); setError('') }}
-              className="w-full h-11 px-4 pr-11 rounded-[10px] text-sm text-white placeholder:text-[#2a3860] outline-none transition-all"
+              className="w-full h-11 px-4 pr-11 rounded-[10px] text-sm text-white placeholder:text-[#6B6B6B] outline-none transition-all"
               style={{
                 background: '#0d1021',
                 border: error ? '1px solid #f87171' : '1px solid #1e2847',
@@ -122,7 +122,7 @@ export default function RedefinirSenhaPage() {
               placeholder="••••••••"
               value={confirm}
               onChange={(e) => { setConfirm(e.target.value); setError('') }}
-              className="w-full h-11 px-4 pr-11 rounded-[10px] text-sm text-white placeholder:text-[#2a3860] outline-none transition-all"
+              className="w-full h-11 px-4 pr-11 rounded-[10px] text-sm text-white placeholder:text-[#6B6B6B] outline-none transition-all"
               style={{
                 background: '#0d1021',
                 border: error ? '1px solid #f87171' : '1px solid #1e2847',

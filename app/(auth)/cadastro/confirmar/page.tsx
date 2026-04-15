@@ -25,7 +25,7 @@ function ConfirmarContent() {
           {email && <span className="text-[#8899bb]">{email}</span>}.
           Clique no link para ativar sua conta.
         </p>
-        <p className="mt-3 text-xs text-[#2a3860]">
+        <p className="mt-3 text-xs text-[#6B6B6B]">
           Não recebeu? Verifique a pasta de spam ou{' '}
           <Link href="/cadastro" className="text-[#60a5fa] hover:text-white transition-colors">
             tente novamente

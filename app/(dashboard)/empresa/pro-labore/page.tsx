@@ -134,7 +134,7 @@ export default function ProLaborePage() {
                 <p className="text-base font-extrabold tabular-nums" style={{ color: scenario.color }}>
                   {formatCurrency(scenario.value)}
                 </p>
-                <p className="text-[10px] text-[#2a3860] mt-1.5 leading-tight">{scenario.desc}</p>
+                <p className="text-[10px] text-app-soft mt-1.5 leading-tight">{scenario.desc}</p>
               </div>
             )
           })}
@@ -210,7 +210,7 @@ export default function ProLaborePage() {
         </div>
       )}
 
-      <p className="text-xs text-[#2a3860] text-center pb-2">
+      <p className="text-xs text-app-soft text-center pb-2">
         ⚠️ Sugestão baseada em estimativas. Consulte seu contador para decisões de retirada.
       </p>
     </div>
