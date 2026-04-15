@@ -7,6 +7,8 @@ import {
 import { Sidebar } from '@/components/layout/Sidebar'
 import { BottomNav } from '@/components/layout/BottomNav'
 import { Topbar } from '@/components/layout/Topbar'
+import { SidebarOffset } from '@/components/layout/SidebarOffset'
+import { SidebarProvider } from '@/lib/context/SidebarContext'
 import { FinancialDataProvider } from '@/lib/context/FinancialDataContext'
 
 function formatPlanStatusLabel(
@@ -106,36 +108,38 @@ export default async function DashboardLayout({
   }
 
   return (
-    <div className="app-shell flex min-h-screen">
-      <Sidebar
-        profile={profile}
-        planLabel={
-          snapshot.paidAccess
-            ? snapshot.subscription.plan_type.toUpperCase()
-            : snapshot.trialDaysRemaining > 0
-              ? 'TRIAL'
-              : 'GRATIS'
-        }
-        planStatusLabel={formatPlanStatusLabel(snapshot.lifecycleStatus, snapshot.trialDaysRemaining)}
-        canAccessPersonalModule={policy.modules.personal}
-        canAccessBusinessModule={policy.modules.business}
-      />
-      <div className="flex min-w-0 flex-1 flex-col md:ml-[240px]">
-        <Topbar
+    <SidebarProvider>
+      <div className="app-shell flex min-h-screen">
+        <Sidebar
           profile={profile}
-          businesses={businesses ?? []}
+          planLabel={
+            snapshot.paidAccess
+              ? snapshot.subscription.plan_type.toUpperCase()
+              : snapshot.trialDaysRemaining > 0
+                ? 'TRIAL'
+                : 'GRATIS'
+          }
+          planStatusLabel={formatPlanStatusLabel(snapshot.lifecycleStatus, snapshot.trialDaysRemaining)}
           canAccessPersonalModule={policy.modules.personal}
           canAccessBusinessModule={policy.modules.business}
-          canCreateBusiness={canCreateBusiness}
-          businessLimitReached={businessLimitReached}
         />
-        <main className="flex-1 p-4 pb-24 md:p-6 md:pb-6">
-          <FinancialDataProvider userId={user.id}>
-            {children}
-          </FinancialDataProvider>
-        </main>
+        <SidebarOffset>
+          <Topbar
+            profile={profile}
+            businesses={businesses ?? []}
+            canAccessPersonalModule={policy.modules.personal}
+            canAccessBusinessModule={policy.modules.business}
+            canCreateBusiness={canCreateBusiness}
+            businessLimitReached={businessLimitReached}
+          />
+          <main className="flex-1 p-4 pb-24 md:p-6 md:pb-6">
+            <FinancialDataProvider userId={user.id}>
+              {children}
+            </FinancialDataProvider>
+          </main>
+        </SidebarOffset>
+        <BottomNav />
       </div>
-      <BottomNav />
-    </div>
+    </SidebarProvider>
   )
 }
