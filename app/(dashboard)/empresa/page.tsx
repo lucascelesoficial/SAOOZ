@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useMemo } from 'react'
 import Link from 'next/link'
-import { MetricCard } from '@/components/dashboard/MetricCard'
 import { GaugeChart } from '@/components/dashboard/GaugeChart'
 import { SaoozAIPJ } from '@/components/dashboard/SaoozAIPJ'
 import { createClient } from '@/lib/supabase/client'
@@ -21,7 +20,6 @@ import {
   BadgeCheck, TriangleAlert, Lightbulb, Rocket,
 } from 'lucide-react'
 
-type BusinessProfile = Database['public']['Tables']['business_profiles']['Row']
 type BusinessRevenue  = Database['public']['Tables']['business_revenues']['Row']
 type BusinessExpense  = Database['public']['Tables']['business_expenses']['Row']
 
