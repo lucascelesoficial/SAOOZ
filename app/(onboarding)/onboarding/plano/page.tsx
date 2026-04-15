@@ -3,9 +3,10 @@
 import { useState } from 'react'
 import {
   BadgeCheck, CalendarClock, CreditCard, Crown,
-  Layers3, QrCode, Zap,
+  Layers3, QrCode, Check, X,
 } from 'lucide-react'
 import { Loader2 } from 'lucide-react'
+import { SaoozWordmark } from '@/components/ui/SaoozLogo'
 import { toast } from 'sonner'
 import { formatCurrency } from '@/lib/utils/formatters'
 import {
@@ -52,28 +53,22 @@ export default function OnboardingPlanoPage() {
     /* Fixed overlay — escapes the onboarding layout max-w-lg */
     <div
       className="fixed inset-0 overflow-y-auto"
-      style={{ zIndex: 100, background: 'radial-gradient(ellipse at 50% 0%, #0d1a3a 0%, #07091a 60%)' }}
+      style={{ zIndex: 100, background: 'var(--bg, #06080f)' }}
     >
-      {/* Subtle grid (same as onboarding layout) */}
+      {/* Dot grid */}
       <div
-        className="pointer-events-none fixed inset-0 opacity-[0.03]"
+        className="pointer-events-none fixed inset-0 opacity-[0.025]"
         style={{
-          backgroundImage: 'linear-gradient(#3b82f6 1px,transparent 1px),linear-gradient(90deg,#3b82f6 1px,transparent 1px)',
-          backgroundSize: '48px 48px',
+          backgroundImage: 'radial-gradient(circle, #3b82f6 1px, transparent 1px)',
+          backgroundSize: '32px 32px',
         }}
       />
 
       <div className="relative z-10 mx-auto max-w-6xl px-5 pt-12 pb-24">
 
-        {/* ── Logo ── */}
+        {/* ── Logo real ── */}
         <div className="flex justify-center mb-8">
-          <div className="flex items-center gap-2.5">
-            <div className="h-8 w-8 rounded-xl flex items-center justify-center"
-              style={{ background: 'linear-gradient(135deg, #3b82f6, #60a5fa)' }}>
-              <Zap className="h-4 w-4 text-white" />
-            </div>
-            <span className="text-xl font-black tracking-tight text-white">SAOOZ</span>
-          </div>
+          <SaoozWordmark size="lg" />
         </div>
 
         {/* ── Trial banner ── */}

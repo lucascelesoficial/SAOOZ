@@ -376,6 +376,7 @@ export interface Database {
           category: BusinessRevCategory
           status: BusinessRevenueStatus
           due_date: string | null
+          closing_date: string | null
           paid_at: string | null
           counterparty_id: string | null
           is_recurring: boolean
@@ -391,6 +392,7 @@ export interface Database {
           category?: BusinessRevCategory
           status?: BusinessRevenueStatus
           due_date?: string | null
+          closing_date?: string | null
           paid_at?: string | null
           counterparty_id?: string | null
           is_recurring?: boolean
@@ -406,6 +408,7 @@ export interface Database {
           category?: BusinessRevCategory
           status?: BusinessRevenueStatus
           due_date?: string | null
+          closing_date?: string | null
           paid_at?: string | null
           counterparty_id?: string | null
           is_recurring?: boolean

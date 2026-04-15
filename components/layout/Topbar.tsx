@@ -17,6 +17,123 @@ import {
 import { formatMonth } from '@/lib/utils/formatters'
 import type { Database } from '@/types/database.types'
 
+// ── Month Picker ──────────────────────────────────────────────────────────────
+
+const MONTH_SHORT = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez']
+
+function MonthPicker({
+  currentMonth,
+  onSelect,
+  onClose,
+}: {
+  currentMonth: Date
+  onSelect: (date: Date) => void
+  onClose: () => void
+}) {
+  const today = new Date()
+  const [pickerYear, setPickerYear] = useState(currentMonth.getFullYear())
+  const containerRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    function handleClick(e: MouseEvent) {
+      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+        onClose()
+      }
+    }
+    document.addEventListener('mousedown', handleClick)
+    return () => document.removeEventListener('mousedown', handleClick)
+  }, [onClose])
+
+  function isFuture(year: number, monthIndex: number) {
+    return year > today.getFullYear() || (year === today.getFullYear() && monthIndex > today.getMonth())
+  }
+
+  function isSelected(year: number, monthIndex: number) {
+    return year === currentMonth.getFullYear() && monthIndex === currentMonth.getMonth()
+  }
+
+  function isToday(year: number, monthIndex: number) {
+    return year === today.getFullYear() && monthIndex === today.getMonth()
+  }
+
+  return (
+    <div
+      ref={containerRef}
+      className="absolute top-full mt-2 z-50 rounded-[14px] border p-3 shadow-2xl"
+      style={{
+        background: 'var(--panel-bg)',
+        borderColor: 'var(--panel-border)',
+        minWidth: '220px',
+        left: '50%',
+        transform: 'translateX(-50%)',
+        boxShadow: '0 16px 48px rgba(0,0,0,0.4)',
+      }}
+    >
+      {/* Year navigation */}
+      <div className="flex items-center justify-between mb-3 px-1">
+        <button
+          onClick={() => setPickerYear((y) => y - 1)}
+          className="rounded-[6px] p-1 text-app-soft transition-colors hover:text-app"
+          aria-label="Ano anterior"
+        >
+          <ChevronLeft className="h-4 w-4" />
+        </button>
+        <span className="text-sm font-bold text-app select-none">{pickerYear}</span>
+        <button
+          onClick={() => setPickerYear((y) => y + 1)}
+          disabled={pickerYear >= today.getFullYear()}
+          className="rounded-[6px] p-1 text-app-soft transition-colors hover:text-app disabled:opacity-30 disabled:cursor-not-allowed"
+          aria-label="Próximo ano"
+        >
+          <ChevronRight className="h-4 w-4" />
+        </button>
+      </div>
+
+      {/* Month grid */}
+      <div className="grid grid-cols-4 gap-1">
+        {MONTH_SHORT.map((label, index) => {
+          const future = isFuture(pickerYear, index)
+          const selected = isSelected(pickerYear, index)
+          const todayMonth = isToday(pickerYear, index)
+
+          return (
+            <button
+              key={label}
+              disabled={future}
+              onClick={() => {
+                onSelect(new Date(pickerYear, index, 1))
+                onClose()
+              }}
+              className="rounded-[8px] px-1 py-2 text-xs font-medium transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+              style={
+                selected
+                  ? {
+                      background: 'color-mix(in oklab, var(--accent-blue) 18%, transparent)',
+                      color: 'var(--accent-blue)',
+                      border: '1px solid color-mix(in oklab, var(--accent-blue) 40%, transparent)',
+                    }
+                  : todayMonth
+                  ? {
+                      background: 'var(--panel-bg-soft)',
+                      color: 'var(--accent-blue)',
+                      border: '1px solid var(--panel-border)',
+                    }
+                  : {
+                      background: 'transparent',
+                      color: 'var(--text-soft)',
+                      border: '1px solid transparent',
+                    }
+              }
+            >
+              {label}
+            </button>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
+
 type Profile = Database['public']['Tables']['profiles']['Row']
 type BusinessSummary = Pick<Database['public']['Tables']['business_profiles']['Row'], 'id' | 'name'>
 
@@ -79,9 +196,10 @@ export function Topbar({
 }: TopbarProps) {
   const pathname = usePathname()
   const router = useRouter()
-  const { currentMonth, prevMonth, nextMonth, isCurrentMonth } = useAppState()
+  const { currentMonth, setMonth, prevMonth, nextMonth, isCurrentMonth } = useAppState()
   const [isSwitchingBusiness, setIsSwitchingBusiness] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
+  const [pickerOpen, setPickerOpen] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -183,7 +301,7 @@ export function Topbar({
         <span className="truncate text-sm font-semibold text-app md:hidden">SAOOZ</span>
       </div>
 
-      <div className="flex items-center gap-0.5">
+      <div className="flex items-center gap-0.5 relative">
         <button
           onClick={prevMonth}
           className="rounded-[6px] p-1.5 text-app-soft transition-colors hover:text-app"
@@ -191,9 +309,14 @@ export function Topbar({
         >
           <ChevronLeft className="h-4 w-4" />
         </button>
-        <span className="min-w-[90px] md:min-w-[110px] text-center text-xs md:text-sm font-medium capitalize text-app">
+        <button
+          onClick={() => setPickerOpen((v) => !v)}
+          className="min-w-[90px] md:min-w-[110px] rounded-[6px] px-2 py-1 text-center text-xs md:text-sm font-medium capitalize text-app transition-colors hover:bg-[color-mix(in_oklab,var(--accent-blue)_8%,transparent)]"
+          aria-label="Selecionar mês"
+          title="Clique para escolher o mês"
+        >
           {formatMonth(currentMonth)}
-        </span>
+        </button>
         <button
           onClick={nextMonth}
           disabled={isCurrentMonth}
@@ -202,6 +325,14 @@ export function Topbar({
         >
           <ChevronRight className="h-4 w-4" />
         </button>
+
+        {pickerOpen && (
+          <MonthPicker
+            currentMonth={currentMonth}
+            onSelect={setMonth}
+            onClose={() => setPickerOpen(false)}
+          />
+        )}
       </div>
 
       <div className="flex items-center gap-2">

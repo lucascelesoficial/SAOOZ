@@ -44,6 +44,7 @@ interface FormValues {
   amount: string
   category: string
   status: BusinessRevenueStatus
+  closing_date: string
   due_date: string
   counterparty_id: string
   is_recurring: boolean
@@ -92,6 +93,7 @@ function RevenueForm({
           category: editing.category,
           amount: String(editing.amount),
           status: (editing.status as BusinessRevenueStatus) ?? 'received',
+          closing_date: (editing as Revenue & { closing_date?: string | null }).closing_date ?? '',
           due_date: editing.due_date ?? '',
           counterparty_id: editing.counterparty_id ?? '',
           is_recurring: editing.is_recurring ?? false,
@@ -101,6 +103,7 @@ function RevenueForm({
           category: 'servico',
           amount: '',
           status: 'received',
+          closing_date: '',
           due_date: '',
           counterparty_id: '',
           is_recurring: false,
@@ -136,6 +139,7 @@ function RevenueForm({
       amount: parsed,
       month: monthStr,
       status: values.status,
+      closing_date: values.closing_date || null,
       due_date: values.due_date || null,
       counterparty_id: values.counterparty_id || null,
       is_recurring: values.is_recurring,
@@ -255,6 +259,23 @@ function RevenueForm({
             {...register('due_date')}
           />
         </div>
+      </div>
+
+      {/* Datas de medição/fechamento */}
+      <div className="space-y-2">
+        <Label className="text-app-base flex items-center gap-1.5">
+          Data de Fechamento / Medição
+          <span className="text-[10px] font-normal text-app-soft">(opcional)</span>
+        </Label>
+        <Input
+          type="date"
+          className="rounded-[8px]"
+          style={inputStyle}
+          {...register('closing_date')}
+        />
+        <p className="text-[11px] text-app-soft">
+          Quando o serviço foi medido ou o contrato foi fechado. O dinheiro pode entrar em outra data.
+        </p>
       </div>
 
       {clientes.length > 0 && (
@@ -473,10 +494,16 @@ export default function EmpresaFinancasPage() {
                       {clienteName && (
                         <p className="text-xs text-app-soft">· {clienteName}</p>
                       )}
-                      {r.due_date && (
+                      {(r as Revenue & { closing_date?: string | null }).closing_date && (
                         <p className="flex items-center gap-1 text-xs text-app-soft">
                           <Calendar className="h-3 w-3" />
-                          {formatDate(r.due_date)}
+                          Med: {formatDate((r as Revenue & { closing_date?: string | null }).closing_date!)}
+                        </p>
+                      )}
+                      {r.due_date && (
+                        <p className="flex items-center gap-1 text-xs text-app-soft">
+                          <Calendar className="h-3 w-3" style={{ color: '#f59e0b' }} />
+                          Venc: {formatDate(r.due_date)}
                         </p>
                       )}
                     </div>

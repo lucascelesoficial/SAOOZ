@@ -2,13 +2,25 @@
 
 import { useCallback, useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { CheckCircle2, Loader2, CalendarDays, Shield, ArrowRight } from 'lucide-react'
+import {
+  ArrowRight,
+  BadgeCheck,
+  CalendarDays,
+  CheckCircle2,
+  Loader2,
+  Shield,
+  Sparkles,
+} from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
+import { SaoozWordmark } from '@/components/ui/SaoozLogo'
+import { PLAN_CATALOG, TRIAL_DAYS } from '@/lib/billing/plans'
+import type { SubscriptionPlanType } from '@/types/database.types'
 
 const MAX_ATTEMPTS = 10
 const POLL_MS = 2000
 
 interface SubInfo {
+  planType: SubscriptionPlanType | null
   planName: string
   trialEnd: string | null
 }
@@ -16,7 +28,7 @@ interface SubInfo {
 export default function TrialAtivoPage() {
   const router = useRouter()
   const [phase, setPhase] = useState<'polling' | 'ready'>('polling')
-  const [info, setInfo] = useState<SubInfo>({ planName: '', trialEnd: null })
+  const [info, setInfo] = useState<SubInfo>({ planType: null, planName: '', trialEnd: null })
   const [attempts, setAttempts] = useState(0)
 
   const check = useCallback(async (): Promise<boolean> => {
@@ -49,6 +61,7 @@ export default function TrialAtivoPage() {
         : null
 
       setInfo({
+        planType: sub.plan_type as SubscriptionPlanType,
         planName: planLabels[sub.plan_type as string] ?? (sub.plan_type as string)?.toUpperCase() ?? '',
         trialEnd,
       })
@@ -74,8 +87,6 @@ export default function TrialAtivoPage() {
       if (count < MAX_ATTEMPTS) {
         setTimeout(run, POLL_MS)
       } else {
-        // Webhook may still be processing — show ready state anyway.
-        // The middleware + dashboard will handle the subscription guard.
         if (mounted) setPhase('ready')
       }
     }
@@ -86,94 +97,164 @@ export default function TrialAtivoPage() {
     }
   }, [check])
 
+  // ── Polling state ──────────────────────────────────────────────────────────
   if (phase === 'polling') {
     return (
-      <div className="panel-card rounded-2xl p-8 flex flex-col items-center gap-5 text-center">
-        <Loader2 className="h-10 w-10 animate-spin" style={{ color: 'var(--accent-blue)' }} />
-        <div className="space-y-1.5">
-          <p className="text-base font-semibold text-app">Confirmando seu pagamento…</p>
-          <p className="text-sm text-app-soft">Isso leva apenas alguns segundos.</p>
+      <div
+        className="fixed inset-0 overflow-y-auto"
+        style={{ zIndex: 100, background: 'var(--bg, #06080f)' }}
+      >
+        {/* Dot grid */}
+        <div
+          className="pointer-events-none fixed inset-0 opacity-[0.025]"
+          style={{
+            backgroundImage: 'radial-gradient(circle, #3b82f6 1px, transparent 1px)',
+            backgroundSize: '32px 32px',
+          }}
+        />
+        <div className="relative z-10 flex min-h-screen flex-col items-center justify-center px-5">
+          <div className="mb-10">
+            <SaoozWordmark size="lg" />
+          </div>
+          <div className="panel-card w-full max-w-sm rounded-2xl p-8 flex flex-col items-center gap-5 text-center">
+            <Loader2 className="h-10 w-10 animate-spin" style={{ color: 'var(--accent-blue)' }} />
+            <div className="space-y-1.5">
+              <p className="text-base font-semibold text-app">Confirmando seu pagamento…</p>
+              <p className="text-sm text-app-soft">Isso leva apenas alguns segundos.</p>
+            </div>
+            {attempts > 3 && (
+              <p className="text-xs text-app-soft opacity-60">
+                Aguardando confirmação do provedor de pagamento.
+              </p>
+            )}
+          </div>
         </div>
-        {attempts > 3 && (
-          <p className="text-xs text-app-soft opacity-60">
-            Aguardando confirmação do provedor de pagamento.
-          </p>
-        )}
       </div>
     )
   }
 
+  const plan = info.planType ? PLAN_CATALOG[info.planType] : null
+
+  // ── Ready state ────────────────────────────────────────────────────────────
   return (
-    <div className="panel-card rounded-2xl p-8 space-y-7">
-      {/* Icon */}
-      <div className="flex justify-center">
-        <div
-          className="h-16 w-16 rounded-full flex items-center justify-center"
-          style={{
-            background: 'color-mix(in oklab, #22c55e 14%, transparent)',
-            border: '1px solid color-mix(in oklab, #22c55e 30%, transparent)',
-          }}
-        >
-          <CheckCircle2 className="h-8 w-8" style={{ color: '#22c55e' }} />
+    <div
+      className="fixed inset-0 overflow-y-auto"
+      style={{ zIndex: 100, background: 'var(--bg, #06080f)' }}
+    >
+      {/* Dot grid */}
+      <div
+        className="pointer-events-none fixed inset-0 opacity-[0.025]"
+        style={{
+          backgroundImage: 'radial-gradient(circle, #3b82f6 1px, transparent 1px)',
+          backgroundSize: '32px 32px',
+        }}
+      />
+
+      <div className="relative z-10 mx-auto max-w-lg px-5 pt-12 pb-24">
+
+        {/* Logo */}
+        <div className="flex justify-center mb-10">
+          <SaoozWordmark size="lg" />
         </div>
-      </div>
 
-      {/* Title */}
-      <div className="text-center space-y-2">
-        <h1 className="text-2xl font-extrabold text-app">Trial ativado!</h1>
-        <p className="text-sm text-app-soft">
-          Você tem 7 dias gratuitos para explorar o SAOOZ
-          {info.planName ? ` no plano ${info.planName}` : ''}.
-        </p>
-      </div>
+        {/* Success badge */}
+        <div className="flex justify-center mb-6">
+          <div
+            className="h-20 w-20 rounded-full flex items-center justify-center"
+            style={{
+              background: 'color-mix(in oklab, #22c55e 12%, transparent)',
+              border: '1px solid color-mix(in oklab, #22c55e 28%, transparent)',
+              boxShadow: '0 0 40px color-mix(in oklab, #22c55e 10%, transparent)',
+            }}
+          >
+            <CheckCircle2 className="h-10 w-10" style={{ color: '#22c55e' }} />
+          </div>
+        </div>
 
-      {/* Info blocks */}
-      <div className="grid gap-3">
-        <div
-          className="rounded-[12px] border p-4 flex items-start gap-3"
-          style={{ borderColor: 'var(--panel-border)' }}
-        >
-          <CalendarDays className="h-4 w-4 mt-0.5 shrink-0" style={{ color: 'var(--accent-blue)' }} />
-          <div>
-            <p className="text-xs uppercase tracking-wider text-app-soft mb-0.5">Período gratuito</p>
-            <p className="text-sm font-semibold text-app">7 dias a partir de hoje</p>
+        {/* Title */}
+        <div className="text-center mb-8 space-y-2">
+          <h1 className="text-3xl font-extrabold text-app">
+            {TRIAL_DAYS} dias grátis ativados!
+          </h1>
+          <p className="text-sm text-app-soft">
+            Você tem acesso completo ao plano
+            {info.planName ? <strong className="text-app"> {info.planName}</strong> : ''} por {TRIAL_DAYS} dias.
+            Explore tudo sem nenhuma cobrança agora.
+          </p>
+        </div>
+
+        {/* Trial info blocks */}
+        <div className="grid grid-cols-2 gap-3 mb-6">
+          <div
+            className="rounded-[14px] border p-4"
+            style={{
+              borderColor: 'color-mix(in oklab, var(--accent-blue) 25%, transparent)',
+              background: 'color-mix(in oklab, var(--accent-blue) 6%, transparent)',
+            }}
+          >
+            <CalendarDays className="h-4 w-4 mb-2" style={{ color: 'var(--accent-blue)' }} />
+            <p className="text-xs uppercase tracking-wider text-app-soft mb-0.5">Período grátis</p>
+            <p className="text-sm font-bold text-app">{TRIAL_DAYS} dias a partir de hoje</p>
             {info.trialEnd && (
-              <p className="text-xs text-app-soft mt-0.5">Termina em {info.trialEnd}</p>
+              <p className="text-xs text-app-soft mt-0.5">Até {info.trialEnd}</p>
             )}
           </div>
-        </div>
 
-        <div
-          className="rounded-[12px] border p-4 flex items-start gap-3"
-          style={{ borderColor: 'var(--panel-border)' }}
-        >
-          <Shield className="h-4 w-4 mt-0.5 shrink-0" style={{ color: '#22c55e' }} />
-          <div>
+          <div
+            className="rounded-[14px] border p-4"
+            style={{
+              borderColor: 'color-mix(in oklab, #22c55e 25%, transparent)',
+              background: 'color-mix(in oklab, #22c55e 6%, transparent)',
+            }}
+          >
+            <Shield className="h-4 w-4 mb-2 text-green-400" />
             <p className="text-xs uppercase tracking-wider text-app-soft mb-0.5">Cobrança</p>
-            <p className="text-sm font-semibold text-app">Somente após o período de teste</p>
-            <p className="text-xs text-app-soft mt-0.5">
-              Cancele antes{info.trialEnd ? ` de ${info.trialEnd}` : ''} e não paga nada.
-            </p>
+            <p className="text-sm font-bold text-app">Somente após o teste</p>
+            <p className="text-xs text-app-soft mt-0.5">Cancele antes e não paga nada.</p>
           </div>
         </div>
+
+        {/* What's included */}
+        {plan && (
+          <div className="panel-card rounded-[16px] p-5 mb-6">
+            <div className="flex items-center gap-2 mb-4">
+              <Sparkles className="h-4 w-4 shrink-0" style={{ color: 'var(--accent-blue)' }} />
+              <p className="text-sm font-semibold text-app">
+                O que está incluso no plano {plan.name}
+              </p>
+            </div>
+            <div className="space-y-2.5">
+              {plan.features.map((feature) => (
+                <div key={feature} className="flex items-start gap-2.5 text-sm text-app-soft">
+                  <BadgeCheck
+                    className="h-4 w-4 shrink-0 mt-0.5"
+                    style={{ color: 'var(--accent-blue)' }}
+                  />
+                  {feature}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* CTA */}
+        <button
+          onClick={() => router.push('/onboarding')}
+          className="w-full h-13 rounded-[12px] text-sm font-bold text-white flex items-center justify-center gap-2 transition-all"
+          style={{
+            height: '52px',
+            background: 'linear-gradient(135deg, var(--accent-blue), var(--accent-cyan))',
+            boxShadow: '0 4px 24px color-mix(in oklab, var(--accent-blue) 30%, transparent)',
+          }}
+        >
+          Configurar minha conta
+          <ArrowRight className="h-4 w-4" />
+        </button>
+
+        <p className="mt-4 text-center text-xs text-app-soft">
+          Você pode cancelar a qualquer momento nas configurações da conta.
+        </p>
       </div>
-
-      {/* CTA */}
-      <button
-        onClick={() => router.push('/onboarding')}
-        className="w-full h-12 rounded-[12px] text-sm font-bold text-white flex items-center justify-center gap-2 transition-all"
-        style={{
-          background: 'linear-gradient(135deg, var(--accent-blue), var(--accent-cyan))',
-          boxShadow: '0 4px 20px color-mix(in oklab, var(--accent-blue) 25%, transparent)',
-        }}
-      >
-        Configurar minha conta
-        <ArrowRight className="h-4 w-4" />
-      </button>
-
-      <p className="text-center text-xs text-app-soft">
-        Você pode cancelar a qualquer momento nas configurações da conta.
-      </p>
     </div>
   )
 }

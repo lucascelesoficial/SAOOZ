@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { Building2, ChevronRight, Loader2, User } from 'lucide-react'
+import { ArrowLeft, Building2, ChevronRight, Loader2, User } from 'lucide-react'
 import { toast } from 'sonner'
 import { createClient } from '@/lib/supabase/client'
 import type {
@@ -299,6 +299,16 @@ export function OnboardingEmpresaClient({
 
   return (
     <div className="panel-card rounded-2xl p-8">
+      {/* Back button */}
+      <button
+        type="button"
+        onClick={() => router.back()}
+        className="mb-5 flex items-center gap-1.5 text-xs font-medium text-app-soft transition-colors hover:text-app"
+      >
+        <ArrowLeft className="h-3.5 w-3.5" />
+        Voltar
+      </button>
+
       <div className="mb-7 flex items-center gap-3">
         <div
           className="flex h-10 w-10 items-center justify-center rounded-xl"
