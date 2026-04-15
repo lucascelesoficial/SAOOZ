@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import {
   BadgeCheck, CalendarClock, CreditCard, Crown,
-  Layers3, QrCode, Check, X,
+  Layers3, QrCode,
 } from 'lucide-react'
 import { Loader2 } from 'lucide-react'
 import { SaoozWordmark } from '@/components/ui/SaoozLogo'
