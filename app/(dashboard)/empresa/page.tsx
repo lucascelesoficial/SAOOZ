@@ -7,14 +7,14 @@ import { SaoozAIPJ } from '@/components/dashboard/SaoozAIPJ'
 import { createClient } from '@/lib/supabase/client'
 import { useBusinessData } from '@/lib/context/BusinessDataContext'
 import { formatCurrency, formatCurrencyShort, formatMonth } from '@/lib/utils/formatters'
-import { regimeLabel, activityLabel, suggestProLabore } from '@/lib/utils/taxes'
+import { regimeLabel, activityLabel } from '@/lib/utils/taxes'
 import { ExportPDFButton } from '@/components/pdf/ExportPDFButton'
 import type { BusinessExpCategory, Database } from '@/types/database.types'
 import type { TaxEstimate } from '@/lib/utils/taxes'
 import type { BusinessTotals } from '@/lib/context/BusinessDataContext'
 import {
   Building2, ArrowUpRight, ArrowDownLeft, Clock,
-  Users2, Handshake, Package, ChevronRight, Sparkles,
+  Users2, Handshake, ChevronRight, Sparkles,
   BrainCircuit, BadgeCheck, TriangleAlert, Lightbulb, Rocket,
 } from 'lucide-react'
 
