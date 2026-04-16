@@ -93,7 +93,11 @@ export default function CadastroPage() {
     setLoading(false)
 
     if (error) {
-      toast.error('Erro ao criar conta', { description: error.message })
+      // Never expose raw Supabase error messages — they reveal account existence
+      // ("User already registered", "Email rate limit exceeded", etc.)
+      toast.error('Erro ao criar conta', {
+        description: 'Verifique os dados e tente novamente. Se o problema persistir, entre em contato com o suporte.',
+      })
       return
     }
 

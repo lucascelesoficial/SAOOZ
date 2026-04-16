@@ -44,10 +44,11 @@ export default function EsqueciSenhaPage() {
           </div>
         </div>
         <div>
-          <h1 className="text-2xl font-extrabold text-white">Email enviado!</h1>
+          <h1 className="text-2xl font-extrabold text-white">Verifique seu e-mail</h1>
+          {/* NOTE: Never show the email address or confirm it exists — prevents account enumeration */}
           <p className="mt-2 text-sm text-[#4a6080]">
-            Enviamos um link de redefinição para <span className="text-[#8899bb]">{email}</span>.
-            Verifique sua caixa de entrada (e a pasta de spam).
+            Se existe uma conta com esse endereço, você receberá um link de redefinição em breve.
+            Verifique sua caixa de entrada e a pasta de spam.
           </p>
         </div>
         <Link href="/login"

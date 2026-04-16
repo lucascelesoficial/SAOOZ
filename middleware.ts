@@ -2,8 +2,42 @@ import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
 // ── Security: blocked HTTP methods ───────────────────────────────────────────
-// TRACE / TRACK allow header reflection attacks; CONNECT is a proxy method.
 const BLOCKED_METHODS = new Set(['TRACE', 'TRACK', 'CONNECT'])
+
+// ── IP-based rate limiting for auth API routes ────────────────────────────────
+// Edge-compatible: uses a Map (per-instance memory).
+// Not distributed, but provides meaningful friction against single-source attacks.
+// Distributed rate limiting for auth is handled server-side in the route handlers.
+type RateBucket = { count: number; resetAt: number }
+const authRateMap = new Map<string, RateBucket>()
+
+const AUTH_RATE_LIMIT = {
+  maxRequests: 10,    // per IP per window
+  windowMs: 60_000,   // 1 minute
+}
+
+function checkAuthRateLimit(ip: string): boolean {
+  const now = Date.now()
+  const bucket = authRateMap.get(ip)
+
+  if (!bucket || bucket.resetAt <= now) {
+    authRateMap.set(ip, { count: 1, resetAt: now + AUTH_RATE_LIMIT.windowMs })
+    return true // allowed
+  }
+  if (bucket.count >= AUTH_RATE_LIMIT.maxRequests) {
+    return false // blocked
+  }
+  bucket.count++
+  return true // allowed
+}
+
+function getIpFromRequest(request: NextRequest): string {
+  return (
+    request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ??
+    request.headers.get('x-real-ip') ??
+    'unknown'
+  )
+}
 
 // ── Security headers injected on every response ───────────────────────────────
 // (next.config.mjs handles the full set via `headers()`; middleware adds them
@@ -25,6 +59,28 @@ export async function middleware(request: NextRequest) {
   // ── Block dangerous HTTP methods ──────────────────────────────────────────
   if (BLOCKED_METHODS.has(request.method.toUpperCase())) {
     return new NextResponse(null, { status: 405, headers: { Allow: 'GET, POST, PUT, PATCH, DELETE, OPTIONS, HEAD' } })
+  }
+
+  // ── IP rate limit on auth API routes ──────────────────────────────────────
+  const { pathname } = request.nextUrl
+  const isAuthApiRoute = (
+    pathname === '/api/auth/callback' ||
+    // Supabase GoTrue routes handled by next.js
+    pathname.startsWith('/api/auth/')
+  )
+  const isSensitivePagePost = request.method === 'POST' && (
+    pathname === '/login' || pathname === '/cadastro' || pathname === '/esqueci-senha'
+  )
+  if (isAuthApiRoute || isSensitivePagePost) {
+    const ip = getIpFromRequest(request)
+    if (!checkAuthRateLimit(ip)) {
+      return applySecurityHeaders(
+        new NextResponse(
+          JSON.stringify({ error: 'Muitas tentativas. Aguarde um momento.' }),
+          { status: 429, headers: { 'Content-Type': 'application/json', 'Retry-After': '60' } }
+        )
+      )
+    }
   }
 
   // ── Supabase session refresh ──────────────────────────────────────────────
@@ -51,8 +107,7 @@ export async function middleware(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser()
 
-  const { pathname } = request.nextUrl
-
+  // pathname already extracted above for rate limiting
   // ── Route classification ──────────────────────────────────────────────────
   const isAuthRoute             = pathname.startsWith('/login') || pathname.startsWith('/cadastro')
   const isPasswordRoute         = pathname.startsWith('/esqueci-senha') || pathname.startsWith('/redefinir-senha') || pathname.startsWith('/auth/callback')

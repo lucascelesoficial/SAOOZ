@@ -5,6 +5,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import type { Database } from '@/types/database.types'
 import { requireUser, enforceRateLimit } from '@/lib/server/request-guard'
 import { requireSameOrigin, rejectLargeBody, withSecurityHeaders } from '@/lib/server/security'
+import { logAuditEvent, getClientIp } from '@/lib/server/audit'
 
 export const dynamic = 'force-dynamic'
 
@@ -71,6 +72,16 @@ export async function POST(request: NextRequest) {
     } catch {
       // Ignore storage cleanup failures; user deletion is the source of truth
     }
+
+    // ── Audit log BEFORE deletion (user_id becomes invalid after) ───────────
+    await logAuditEvent({
+      userId: user.id,
+      actorType: 'user',
+      actionType: 'account.delete',
+      resourceType: 'profile',
+      resourceId: user.id,
+      metadata: { ip: getClientIp(request), email: user.email },
+    })
 
     const { error: deleteError } = await admin.auth.admin.deleteUser(user.id)
     if (deleteError) {

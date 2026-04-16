@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { createOptionalAdminClient } from '@/lib/supabase/admin'
 import { requireSameOrigin, withSecurityHeaders } from '@/lib/server/security'
+import { logAuditEvent, getClientIp } from '@/lib/server/audit'
 
 export const dynamic = 'force-dynamic'
 
@@ -69,6 +70,20 @@ export async function POST(request: NextRequest) {
       console.error('Cancel update error:', updateError.message)
       return NextResponse.json({ error: 'Erro ao registrar cancelamento.' }, { status: 500 })
     }
+
+    await logAuditEvent({
+      userId: user.id,
+      actorType: 'user',
+      actionType: 'subscription.canceled',
+      resourceType: 'subscription',
+      resourceId: sub.id,
+      metadata: {
+        gateway: sub.gateway,
+        gateway_subscription_id: sub.gateway_subscription_id,
+        cancel_at_period_end: true,
+        ip: getClientIp(request),
+      },
+    })
 
     return NextResponse.json({ success: true })
   } catch (error) {

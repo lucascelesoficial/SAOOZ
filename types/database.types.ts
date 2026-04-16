@@ -334,6 +334,8 @@ export interface Database {
           founded_at: string | null
           created_at: string
           updated_at: string
+          deleted_at: string | null
+          deleted_by: string | null
         }
         Insert: {
           id?: string
@@ -348,6 +350,8 @@ export interface Database {
           founded_at?: string | null
           created_at?: string
           updated_at?: string
+          deleted_at?: string | null
+          deleted_by?: string | null
         }
         Update: {
           id?: string
@@ -361,6 +365,8 @@ export interface Database {
           state?: string | null
           founded_at?: string | null
           updated_at?: string
+          deleted_at?: string | null
+          deleted_by?: string | null
         }
         Relationships: []
       }
