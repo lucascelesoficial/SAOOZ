@@ -132,9 +132,19 @@ export async function POST(request: NextRequest) {
     } catch (stripeErr) {
       const msg = stripeErr instanceof Error ? stripeErr.message : String(stripeErr)
       log('stripe API error:', msg)
-      // Common Stripe errors surfaced verbatim so user knows what to fix
+
+      // Translate known Stripe errors into actionable messages
+      let friendly = `Stripe rejeitou a requisição: ${msg}`
+      if (/recurring price/i.test(msg)) {
+        friendly = `O preço ${envKey} (${priceId.substring(0, 18)}...) foi criado como "One-time" no Stripe. Para assinaturas, recrie-o como "Recurring" no dashboard do Stripe e atualize a env var.`
+      } else if (/No such price/i.test(msg)) {
+        friendly = `Price ID ${priceId} não existe no modo ${keyMode}. Verifique se foi criado em Test mode (se a chave é sk_test_) ou Live mode (se é sk_live_).`
+      } else if (/Invalid API Key/i.test(msg)) {
+        friendly = `STRIPE_SECRET_KEY inválida ou expirada. Gere uma nova em https://dashboard.stripe.com/apikeys`
+      }
+
       return NextResponse.json(
-        { error: `Stripe rejeitou a requisição: ${msg}`, envKey, keyMode },
+        { error: friendly, envKey, keyMode, stripeMessage: msg },
         { status: 502 }
       )
     }
