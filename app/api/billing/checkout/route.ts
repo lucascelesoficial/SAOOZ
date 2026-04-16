@@ -1,11 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
-import { getPlanPriceForDuration, getDurationLabel } from '@/lib/billing/plans'
-import type { BillingDuration } from '@/lib/billing/plans'
-import type { BillingGateway } from '@/types/database.types'
-import { resolveCheckoutProvider } from '@/lib/billing/providers'
-import { requireUser, enforceRateLimit } from '@/lib/server/request-guard'
-import { requireSameOrigin, requireJsonContentType, rejectLargeBody, withSecurityHeaders } from '@/lib/server/security'
+import { requireUser } from '@/lib/server/request-guard'
 
 export const dynamic = 'force-dynamic'
 
@@ -13,109 +8,95 @@ const checkoutSchema = z.object({
   planType: z.enum(['pf', 'pj', 'pro']),
   duration: z.union([z.literal(1), z.literal(3), z.literal(6), z.literal(12)]),
   paymentMethod: z.enum(['card']),
-  gateway: z.enum(['stripe', 'kiwify', 'cakto']).optional(),
   trialDays: z.number().int().min(0).max(30).optional(),
 })
 
+const DURATION_KEY: Record<number, string> = { 1: '1M', 3: '3M', 6: '6M', 12: '12M' }
+
+function getPriceId(planType: string, duration: number): string {
+  const key = `STRIPE_PRICE_${planType.toUpperCase()}_${DURATION_KEY[duration]}`
+  const id = process.env[key]
+  if (!id) throw new Error(`Preço não configurado: ${key}`)
+  return id
+}
+
 export async function POST(request: NextRequest) {
-  // ── Security guards ──────────────────────────────────────────────────────
-  const originCheck = requireSameOrigin(request)
-  if (originCheck) return withSecurityHeaders(originCheck)
-
-  const ctCheck = requireJsonContentType(request)
-  if (ctCheck) return withSecurityHeaders(ctCheck)
-
-  const bodyCheck = rejectLargeBody(request, 4096) // 4 KB — checkout payload is tiny
-  if (bodyCheck) return withSecurityHeaders(bodyCheck)
-
   try {
+    // ── Auth ──────────────────────────────────────────────────────────────
     const auth = await requireUser()
-    if (!auth.ok) return withSecurityHeaders(auth.response)
+    if (!auth.ok) return NextResponse.json({ error: 'Não autenticado.' }, { status: 401 })
     const { user } = auth
 
-    // Rate limit: max 10 checkout attempts per 10 minutes (prevents checkout spam)
-    const rate = await enforceRateLimit({
-      scope: 'checkout',
-      user,
-      maxRequests: 10,
-      windowMs: 600_000,
-    })
-    if (!rate.ok) return withSecurityHeaders(rate.response)
+    // ── Parse body ────────────────────────────────────────────────────────
+    let body: unknown
+    try { body = await request.json() } catch { body = null }
 
-    const body = await request.json().catch(() => null)
     const parsed = checkoutSchema.safeParse(body)
-
     if (!parsed.success) {
-      return NextResponse.json({ error: 'Dados invalidos.' }, { status: 400 })
+      return NextResponse.json({ error: 'Dados inválidos.' }, { status: 400 })
     }
 
-    const { planType, duration, paymentMethod, gateway, trialDays } = parsed.data
-    const pricing = getPlanPriceForDuration(planType, duration as BillingDuration)
+    const { planType, duration, trialDays } = parsed.data
 
-    // Resolve base URL: env var → request origin → fallback
-    let appUrl = process.env.NEXT_PUBLIC_APP_URL?.trim() ?? ''
+    // ── Stripe key ────────────────────────────────────────────────────────
+    const secretKey = process.env.STRIPE_SECRET_KEY?.trim()
+    if (!secretKey) {
+      return NextResponse.json({ error: 'Stripe não configurado (chave ausente).' }, { status: 503 })
+    }
+    if (!secretKey.startsWith('sk_')) {
+      return NextResponse.json({ error: 'Stripe não configurado (chave inválida).' }, { status: 503 })
+    }
+
+    // ── Price ID ──────────────────────────────────────────────────────────
+    const priceId = getPriceId(planType, duration)
+
+    // ── App URL ───────────────────────────────────────────────────────────
+    const appUrl = (process.env.NEXT_PUBLIC_APP_URL ?? '').replace(/\/$/, '')
     if (!appUrl) {
-      try {
-        appUrl = new URL(request.url).origin
-      } catch {
-        appUrl = ''
-      }
-    }
-    if (!appUrl || !appUrl.startsWith('http')) {
-      return NextResponse.json(
-        { error: 'URL do app não configurada. Defina NEXT_PUBLIC_APP_URL nas variáveis de ambiente.' },
-        { status: 500 }
-      )
+      return NextResponse.json({ error: 'URL do app não configurada.' }, { status: 500 })
     }
 
-    const runtimeProvider = resolveCheckoutProvider({
-      requestedProvider: (gateway ?? undefined) as BillingGateway | undefined,
-      paymentMethod,
+    // ── Stripe client ─────────────────────────────────────────────────────
+    const StripeModule = await import('stripe')
+    const Stripe = StripeModule.default
+    const stripe = new Stripe(secretKey, {
+      apiVersion: '2026-03-25.dahlia' as const,
+      httpClient: Stripe.createNodeHttpClient(),
     })
 
-    if (gateway && !runtimeProvider) {
-      return NextResponse.json(
-        {
-          error: `Provider "${gateway}" nao esta configurado para o metodo ${paymentMethod}.`,
-        },
-        { status: 400 }
-      )
+    // ── Create session ────────────────────────────────────────────────────
+    const session = await stripe.checkout.sessions.create({
+      mode: 'subscription',
+      customer_email: user.email ?? undefined,
+      payment_method_types: ['card'],
+      line_items: [{ price: priceId, quantity: 1 }],
+      subscription_data: trialDays && trialDays > 0
+        ? { trial_period_days: trialDays }
+        : undefined,
+      metadata: {
+        user_id: user.id,
+        plan_type: planType,
+        duration: String(duration),
+        payment_method: 'card',
+      },
+      success_url: trialDays
+        ? `${appUrl}/onboarding/trial-ativo`
+        : `${appUrl}/central`,
+      cancel_url: `${appUrl}/onboarding/plano`,
+    })
+
+    if (!session.url) {
+      return NextResponse.json({ error: 'Stripe não retornou URL de checkout.' }, { status: 500 })
     }
 
-    if (runtimeProvider) {
-      // A configured provider is available — attempt checkout. Do NOT fall
-      // through to manual PIX if this fails: a provider error means the
-      // payment flow is broken, not that we should silently downgrade.
-      const checkout = await runtimeProvider.createCheckout({
-        userId: user.id,
-        userEmail: user.email ?? null,
-        planType,
-        durationMonths: duration,
-        paymentMethod,
-        amountCents: Math.round(pricing.totalPrice * 100),
-        currency: 'BRL',
-        productName: `SAOOZ ${planType.toUpperCase()} - ${getDurationLabel(duration)}`,
-        successUrl: trialDays
-          ? `${appUrl}/onboarding/trial-ativo`
-          : `${appUrl}/onboarding/documento?plan=${planType}&redirect=${encodeURIComponent(planType === 'pj' ? '/empresa' : '/central')}`,
-        cancelUrl: `${appUrl}/onboarding/plano?payment=cancelled`,
-        trialDays,
-      })
+    return NextResponse.json({
+      checkoutUrl: session.url,
+      provider: 'stripe',
+    })
 
-      return NextResponse.json({
-        checkoutUrl: checkout.checkoutUrl,
-        provider: checkout.gateway,
-        references: checkout.references,
-      })
-    }
-
-    return NextResponse.json(
-      { error: 'Método de pagamento não configurado. Entre em contato com o suporte.' },
-      { status: 503 }
-    )
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Erro interno.'
-    console.error('Checkout error:', message)
+    console.error('[checkout] Erro:', message)
     return NextResponse.json({ error: message }, { status: 500 })
   }
 }
