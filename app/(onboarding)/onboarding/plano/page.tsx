@@ -31,21 +31,17 @@ export default function OnboardingPlanoPage() {
     window.location.href = '/login'
   }
 
-  async function handleCheckout(planCode: SubscriptionPlanType, paymentMethod: 'card' | 'pix' = 'card') {
-    setCheckingOut(`${planCode}-${paymentMethod}`)
+  async function handleCheckout(planCode: SubscriptionPlanType) {
+    setCheckingOut(`${planCode}-card`)
     try {
       const res = await fetch('/api/billing/checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ planType: planCode, duration, paymentMethod, trialDays: TRIAL_DAYS }),
+        body: JSON.stringify({ planType: planCode, duration, paymentMethod: 'card', trialDays: TRIAL_DAYS }),
       })
       const data = await res.json()
       if (!res.ok) {
-        const description =
-          paymentMethod === 'pix' && data.error?.toLowerCase().includes('pix')
-            ? 'PIX ainda não está ativo nesta conta.'
-            : data.error
-        toast.error('Erro ao iniciar checkout', { description })
+        toast.error('Erro ao iniciar checkout', { description: data.error ?? 'Tente novamente.' })
         return
       }
       if (data.checkoutUrl) window.location.href = data.checkoutUrl
@@ -234,7 +230,7 @@ export default function OnboardingPlanoPage() {
                 </div>
 
                 <button
-                  onClick={() => handleCheckout(planCode, 'card')}
+                  onClick={() => handleCheckout(planCode)}
                   disabled={!!checkingOut}
                   className="flex h-11 w-full items-center justify-center rounded-[10px] text-sm font-semibold text-white transition-all disabled:opacity-60"
                   style={{

@@ -51,7 +51,11 @@ export function requireSameOrigin(request: NextRequest): NextResponse | null {
     const originUrl = safeParseUrl(origin)
     const isAllowed = allowedOrigins.some((allowed) => {
       const allowedUrl = safeParseUrl(allowed)
-      return allowedUrl && originUrl && allowedUrl.hostname === originUrl.hostname
+      if (!allowedUrl || !originUrl) return false
+      // Strip www. prefix before comparing so www.saooz.com matches saooz.com
+      const rootAllowed = allowedUrl.hostname.replace(/^www\./, '')
+      const rootOrigin  = originUrl.hostname.replace(/^www\./, '')
+      return rootAllowed === rootOrigin
     })
 
     if (!isAllowed) {
@@ -65,12 +69,16 @@ export function requireSameOrigin(request: NextRequest): NextResponse | null {
     // No Origin but has Referer — check it
     const refUrl = safeParseUrl(referer)
     const appUrlParsed = safeParseUrl(APP_URL)
-    if (refUrl && appUrlParsed && refUrl.hostname !== appUrlParsed.hostname) {
-      console.warn(`[security] Blocked cross-referer request: referer=${referer} path=${request.nextUrl.pathname}`)
-      return NextResponse.json(
-        { error: 'Referer não permitido.' },
-        { status: 403 }
-      )
+    if (refUrl && appUrlParsed) {
+      const rootRef = refUrl.hostname.replace(/^www\./, '')
+      const rootApp = appUrlParsed.hostname.replace(/^www\./, '')
+      if (rootRef !== rootApp) {
+        console.warn(`[security] Blocked cross-referer request: referer=${referer} path=${request.nextUrl.pathname}`)
+        return NextResponse.json(
+          { error: 'Referer não permitido.' },
+          { status: 403 }
+        )
+      }
     }
   }
 
