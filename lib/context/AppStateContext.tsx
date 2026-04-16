@@ -17,12 +17,19 @@ import {
   shiftActiveMonth,
 } from '@/lib/modules/_shared/month'
 
+/** How many months ahead the user is allowed to navigate for forecasting */
+export const MAX_FORECAST_MONTHS = 12
+
 interface AppStateContextValue {
   currentMonth: Date
   setMonth: (date: Date) => void
   prevMonth: () => void
   nextMonth: () => void
   isCurrentMonth: boolean
+  /** True when the selected month is in the future — used to show "Previsão" UI */
+  isFutureMonth: boolean
+  /** True when at the maximum allowed future month (navigation cap) */
+  isMaxFutureMonth: boolean
 }
 
 const AppStateContext = createContext<AppStateContextValue>({
@@ -31,6 +38,8 @@ const AppStateContext = createContext<AppStateContextValue>({
   prevMonth: () => {},
   nextMonth: () => {},
   isCurrentMonth: true,
+  isFutureMonth: false,
+  isMaxFutureMonth: false,
 })
 
 export function useAppState() {
@@ -71,6 +80,9 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
 
   const currentDate = normalizeActiveMonth(new Date())
   const isCurrentMonth = isSameMonth(currentMonth, currentDate)
+  const isFutureMonth = currentMonth > currentDate
+  const maxFutureDate = shiftActiveMonth(currentDate, MAX_FORECAST_MONTHS)
+  const isMaxFutureMonth = currentMonth >= maxFutureDate
 
   const value = useMemo(
     () => ({
@@ -79,8 +91,10 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
       prevMonth,
       nextMonth,
       isCurrentMonth,
+      isFutureMonth,
+      isMaxFutureMonth,
     }),
-    [currentMonth, isCurrentMonth, nextMonth, prevMonth, setMonth]
+    [currentMonth, isCurrentMonth, isFutureMonth, isMaxFutureMonth, nextMonth, prevMonth, setMonth]
   )
 
   return <AppStateContext.Provider value={value}>{children}</AppStateContext.Provider>

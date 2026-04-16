@@ -7,7 +7,7 @@ import { usePathname, useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import { ThemeToggle } from '@/components/theme/ThemeToggle'
 import { createClient } from '@/lib/supabase/client'
-import { useAppState } from '@/lib/context/AppStateContext'
+import { MAX_FORECAST_MONTHS, useAppState } from '@/lib/context/AppStateContext'
 import { getModuleErrorMessage } from '@/lib/modules/_shared/errors'
 import {
   getModuleScopeRoot,
@@ -31,6 +31,9 @@ function MonthPicker({
   onClose: () => void
 }) {
   const today = new Date()
+  const todayYear = today.getFullYear()
+  const todayMonth = today.getMonth()
+  const maxYear = todayYear + 1  // allow browsing into next year
   const [pickerYear, setPickerYear] = useState(currentMonth.getFullYear())
   const containerRef = useRef<HTMLDivElement>(null)
 
@@ -44,8 +47,18 @@ function MonthPicker({
     return () => document.removeEventListener('mousedown', handleClick)
   }, [onClose])
 
-  function isFuture(year: number, monthIndex: number) {
-    return year > today.getFullYear() || (year === today.getFullYear() && monthIndex > today.getMonth())
+  /** Month is beyond the MAX_FORECAST_MONTHS cap → disabled */
+  function isBeyondCap(year: number, monthIndex: number) {
+    const targetMs = new Date(year, monthIndex, 1).getTime()
+    const capDate  = new Date(todayYear, todayMonth + MAX_FORECAST_MONTHS, 1)
+    return targetMs >= capDate.getTime()
+  }
+
+  /** Month is in the future (but within cap) → forecast style */
+  function isForecast(year: number, monthIndex: number) {
+    if (year > todayYear) return true
+    if (year === todayYear && monthIndex > todayMonth) return true
+    return false
   }
 
   function isSelected(year: number, monthIndex: number) {
@@ -53,7 +66,7 @@ function MonthPicker({
   }
 
   function isToday(year: number, monthIndex: number) {
-    return year === today.getFullYear() && monthIndex === today.getMonth()
+    return year === todayYear && monthIndex === todayMonth
   }
 
   return (
@@ -63,7 +76,7 @@ function MonthPicker({
       style={{
         background: 'var(--panel-bg)',
         borderColor: 'var(--panel-border)',
-        minWidth: '220px',
+        minWidth: '236px',
         left: '50%',
         transform: 'translateX(-50%)',
         boxShadow: '0 16px 48px rgba(0,0,0,0.4)',
@@ -81,7 +94,7 @@ function MonthPicker({
         <span className="text-sm font-bold text-app select-none">{pickerYear}</span>
         <button
           onClick={() => setPickerYear((y) => y + 1)}
-          disabled={pickerYear >= today.getFullYear()}
+          disabled={pickerYear >= maxYear}
           className="rounded-[6px] p-1 text-app-soft transition-colors hover:text-app disabled:opacity-30 disabled:cursor-not-allowed"
           aria-label="Próximo ano"
         >
@@ -92,31 +105,45 @@ function MonthPicker({
       {/* Month grid */}
       <div className="grid grid-cols-4 gap-1">
         {MONTH_SHORT.map((label, index) => {
-          const future = isFuture(pickerYear, index)
+          const beyond   = isBeyondCap(pickerYear, index)
+          const forecast = isForecast(pickerYear, index)
           const selected = isSelected(pickerYear, index)
-          const todayMonth = isToday(pickerYear, index)
+          const todayMth = isToday(pickerYear, index)
 
           return (
             <button
               key={label}
-              disabled={future}
+              disabled={beyond}
               onClick={() => {
                 onSelect(new Date(pickerYear, index, 1))
                 onClose()
               }}
-              className="rounded-[8px] px-1 py-2 text-xs font-medium transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+              className="rounded-[8px] px-1 py-2 text-xs font-medium transition-all disabled:opacity-20 disabled:cursor-not-allowed"
               style={
                 selected
-                  ? {
-                      background: 'color-mix(in oklab, var(--accent-blue) 18%, transparent)',
-                      color: 'var(--accent-blue)',
-                      border: '1px solid color-mix(in oklab, var(--accent-blue) 40%, transparent)',
-                    }
-                  : todayMonth
+                  ? forecast
+                    ? {
+                        background: 'color-mix(in oklab, #f59e0b 18%, transparent)',
+                        color: '#f59e0b',
+                        border: '1px solid color-mix(in oklab, #f59e0b 40%, transparent)',
+                      }
+                    : {
+                        background: 'color-mix(in oklab, var(--accent-blue) 18%, transparent)',
+                        color: 'var(--accent-blue)',
+                        border: '1px solid color-mix(in oklab, var(--accent-blue) 40%, transparent)',
+                      }
+                  : todayMth
                   ? {
                       background: 'var(--panel-bg-soft)',
                       color: 'var(--accent-blue)',
                       border: '1px solid var(--panel-border)',
+                    }
+                  : forecast
+                  ? {
+                      background: 'transparent',
+                      color: '#f59e0b',
+                      opacity: 0.7,
+                      border: '1px dashed color-mix(in oklab, #f59e0b 30%, transparent)',
                     }
                   : {
                       background: 'transparent',
@@ -129,6 +156,18 @@ function MonthPicker({
             </button>
           )
         })}
+      </div>
+
+      {/* Legend */}
+      <div className="mt-2.5 pt-2 border-t flex items-center gap-3 px-1" style={{ borderColor: 'var(--panel-border)' }}>
+        <span className="flex items-center gap-1 text-[10px] text-app-soft">
+          <span className="h-2 w-2 rounded-full" style={{ background: 'var(--accent-blue)' }} />
+          Atual
+        </span>
+        <span className="flex items-center gap-1 text-[10px]" style={{ color: '#f59e0b' }}>
+          <span className="h-2 w-2 rounded-full" style={{ background: '#f59e0b' }} />
+          Previsão
+        </span>
       </div>
     </div>
   )
@@ -196,7 +235,7 @@ export function Topbar({
 }: TopbarProps) {
   const pathname = usePathname()
   const router = useRouter()
-  const { currentMonth, setMonth, prevMonth, nextMonth, isCurrentMonth } = useAppState()
+  const { currentMonth, setMonth, prevMonth, nextMonth, isFutureMonth, isMaxFutureMonth } = useAppState()
   const [isSwitchingBusiness, setIsSwitchingBusiness] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
   const [pickerOpen, setPickerOpen] = useState(false)
@@ -315,17 +354,29 @@ export function Topbar({
         >
           <ChevronLeft className="h-4 w-4" />
         </button>
+
         <button
           onClick={() => setPickerOpen((v) => !v)}
-          className="min-w-[90px] md:min-w-[110px] rounded-[6px] px-2 py-1 text-center text-xs md:text-sm font-medium capitalize text-app transition-colors hover:bg-[color-mix(in_oklab,var(--accent-blue)_8%,transparent)]"
+          className="relative flex flex-col items-center rounded-[6px] px-2 py-1 transition-colors hover:bg-[color-mix(in_oklab,var(--accent-blue)_8%,transparent)]"
           aria-label="Selecionar mês"
           title="Clique para escolher o mês"
         >
-          {formatMonth(currentMonth)}
+          <span className="min-w-[90px] md:min-w-[110px] text-center text-xs md:text-sm font-medium capitalize text-app">
+            {formatMonth(currentMonth)}
+          </span>
+          {isFutureMonth && (
+            <span
+              className="text-[9px] font-bold uppercase tracking-widest leading-none"
+              style={{ color: '#f59e0b' }}
+            >
+              previsão
+            </span>
+          )}
         </button>
+
         <button
           onClick={nextMonth}
-          disabled={isCurrentMonth}
+          disabled={isMaxFutureMonth}
           className="rounded-[6px] p-1.5 text-app-soft transition-colors hover:text-app disabled:cursor-not-allowed disabled:opacity-30"
           aria-label="Próximo mês"
         >
