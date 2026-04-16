@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import {
   BadgeCheck, CalendarClock, CreditCard, Crown,
-  Layers3,
+  Layers3, LogOut,
 } from 'lucide-react'
 import { Loader2 } from 'lucide-react'
 import { SaoozWordmark } from '@/components/ui/SaoozLogo'
@@ -19,10 +19,17 @@ import {
 } from '@/lib/billing/plans'
 import type { BillingDuration } from '@/lib/billing/plans'
 import type { SubscriptionPlanType } from '@/types/database.types'
+import { createClient } from '@/lib/supabase/client'
 
 export default function OnboardingPlanoPage() {
   const [duration, setDuration]   = useState<BillingDuration>(1)
   const [checkingOut, setCheckingOut] = useState<string | null>(null)
+
+  async function handleSignOut() {
+    const supabase = createClient()
+    await supabase.auth.signOut()
+    window.location.href = '/login'
+  }
 
   async function handleCheckout(planCode: SubscriptionPlanType, paymentMethod: 'card' | 'pix' = 'card') {
     setCheckingOut(`${planCode}-${paymentMethod}`)
@@ -66,9 +73,20 @@ export default function OnboardingPlanoPage() {
 
       <div className="relative z-10 mx-auto max-w-6xl px-5 pt-12 pb-24">
 
-        {/* ── Logo real ── */}
-        <div className="flex justify-center mb-8">
+        {/* ── Header row: logo + sair ── */}
+        <div className="flex items-center justify-between mb-8">
+          <div className="flex-1" />
           <SaoozWordmark size="lg" />
+          <div className="flex-1 flex justify-end">
+            <button
+              onClick={handleSignOut}
+              className="flex items-center gap-1.5 text-sm font-medium transition-colors hover:text-white"
+              style={{ color: 'var(--text-soft)' }}
+            >
+              <LogOut className="h-4 w-4" />
+              Sair
+            </button>
+          </div>
         </div>
 
         {/* ── Trial banner ── */}
