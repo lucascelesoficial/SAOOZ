@@ -1,5 +1,3 @@
-import { withSentryConfig } from '@sentry/nextjs'
-
 // ── Security Headers ─────────────────────────────────────────────────────────
 // Applied to every response via next.config headers array.
 // These are the first layer of defense — enforce at CDN/edge level.
@@ -115,10 +113,7 @@ const nextConfig = {
     ]
   },
 
-  // Required for Sentry instrumentation hook
-  experimental: {
-    instrumentationHook: true,
-  },
+  experimental: {},
 
   // ── Security headers on all routes ────────────────────────────────────
   async headers() {
@@ -167,13 +162,6 @@ const nextConfig = {
   },
 }
 
-export default withSentryConfig(nextConfig, {
-  org: process.env.SENTRY_ORG,
-  project: process.env.SENTRY_PROJECT,
-  authToken: process.env.SENTRY_AUTH_TOKEN,
-  silent: !process.env.CI,
-  disableClientWebpackPlugin: !process.env.NEXT_PUBLIC_SENTRY_DSN,
-  disableServerWebpackPlugin: !process.env.NEXT_PUBLIC_SENTRY_DSN,
-  disableLogger: true,
-  hideSourceMaps: true,
-})
+// Sentry desabilitado até DSN ser configurado — withSentryConfig com
+// instrumentationHook travava todas as serverless functions em produção.
+export default nextConfig
