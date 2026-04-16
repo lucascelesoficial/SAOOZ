@@ -1,4 +1,5 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
+import { z } from 'zod'
 import { getPolicyBlock, resolveUserAccessPolicy } from '@/lib/billing/policy'
 import {
   ACTIVE_BUSINESS_COOKIE,
@@ -6,56 +7,72 @@ import {
   isMissingActiveBusinessColumnError,
 } from '@/lib/business/active-business'
 import { createClient } from '@/lib/supabase/server'
+import { requireSameOrigin, requireJsonContentType, rejectLargeBody, withSecurityHeaders } from '@/lib/server/security'
 
 export const dynamic = 'force-dynamic'
 
-export async function POST(request: Request) {
+const activateSchema = z.object({
+  businessId: z.string().uuid('businessId deve ser um UUID válido'),
+})
+
+export async function POST(request: NextRequest) {
+  const originCheck = requireSameOrigin(request)
+  if (originCheck) return withSecurityHeaders(originCheck)
+
+  const ctCheck = requireJsonContentType(request)
+  if (ctCheck) return withSecurityHeaders(ctCheck)
+
+  const bodyCheck = rejectLargeBody(request, 512)
+  if (bodyCheck) return withSecurityHeaders(bodyCheck)
+
   try {
     const supabase = await createClient()
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser()
-
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
     if (authError || !user) {
-      return NextResponse.json({ error: 'Não autenticado.' }, { status: 401 })
+      return withSecurityHeaders(NextResponse.json({ error: 'Não autenticado.' }, { status: 401 }))
     }
 
     const policy = await resolveUserAccessPolicy(user.id)
     const businessLock = getPolicyBlock(policy, 'business_module_locked')
 
     if (!policy.modules.business) {
-      return NextResponse.json(
-        {
-          error: 'Seu plano atual não libera a operação empresarial.',
-          code: 'business_locked',
-          upgradeRequired: true,
-          upgradeHref: businessLock?.upgradeHref ?? '/planos?feature=business',
-        },
-        { status: 403 }
+      return withSecurityHeaders(
+        NextResponse.json(
+          {
+            error: 'Seu plano atual não libera a operação empresarial.',
+            code: 'business_locked',
+            upgradeRequired: true,
+            upgradeHref: businessLock?.upgradeHref ?? '/planos?feature=business',
+          },
+          { status: 403 }
+        )
       )
     }
 
-    const body = (await request.json().catch(() => null)) as { businessId?: string } | null
-    const businessId = body?.businessId?.trim()
-
-    if (!businessId) {
-      return NextResponse.json({ error: 'businessId é obrigatório.' }, { status: 400 })
+    const body = await request.json().catch(() => null)
+    const parsed = activateSchema.safeParse(body)
+    if (!parsed.success) {
+      return withSecurityHeaders(
+        NextResponse.json({ error: 'businessId é obrigatório e deve ser um UUID válido.' }, { status: 400 })
+      )
     }
+
+    const { businessId } = parsed.data
 
     const { data: business, error: businessError } = await supabase
       .from('business_profiles')
       .select('id')
       .eq('id', businessId)
       .eq('user_id', user.id)
+      .is('deleted_at', null)
       .maybeSingle()
 
     if (businessError) {
-      return NextResponse.json({ error: businessError.message }, { status: 500 })
+      return withSecurityHeaders(NextResponse.json({ error: 'Erro ao verificar empresa.' }, { status: 500 }))
     }
 
     if (!business) {
-      return NextResponse.json({ error: 'Empresa não encontrada.' }, { status: 404 })
+      return withSecurityHeaders(NextResponse.json({ error: 'Empresa não encontrada.' }, { status: 404 }))
     }
 
     const { data: profile, error: profileError } = await supabase
@@ -65,17 +82,14 @@ export async function POST(request: Request) {
       .single()
 
     if (profileError) {
-      return NextResponse.json({ error: profileError.message }, { status: 500 })
+      return withSecurityHeaders(NextResponse.json({ error: 'Erro ao carregar perfil.' }, { status: 500 }))
     }
 
     const nextMode = profile.mode === 'pf' ? 'both' : profile.mode ?? 'pj'
 
     const { error: updateError } = await supabase
       .from('profiles')
-      .update({
-        active_business_id: business.id,
-        mode: nextMode,
-      })
+      .update({ active_business_id: business.id, mode: nextMode })
       .eq('id', user.id)
 
     if (updateError) {
@@ -86,14 +100,14 @@ export async function POST(request: Request) {
           .eq('id', user.id)
 
         if (fallbackModeError) {
-          return NextResponse.json({ error: fallbackModeError.message }, { status: 500 })
+          return withSecurityHeaders(NextResponse.json({ error: 'Erro ao atualizar perfil.' }, { status: 500 }))
         }
       } else {
-        return NextResponse.json({ error: updateError.message }, { status: 500 })
+        return withSecurityHeaders(NextResponse.json({ error: 'Erro ao atualizar perfil.' }, { status: 500 }))
       }
     }
 
-    const response = NextResponse.json({ ok: true, businessId: business.id })
+    const response = withSecurityHeaders(NextResponse.json({ ok: true, businessId: business.id }))
     response.cookies.set(ACTIVE_BUSINESS_COOKIE, business.id, {
       path: '/',
       maxAge: ACTIVE_BUSINESS_COOKIE_MAX_AGE_SECONDS,
@@ -103,6 +117,6 @@ export async function POST(request: Request) {
     return response
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Erro interno.'
-    return NextResponse.json({ error: message }, { status: 500 })
+    return withSecurityHeaders(NextResponse.json({ error: message }, { status: 500 }))
   }
 }

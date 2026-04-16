@@ -10,6 +10,7 @@ import { Topbar } from '@/components/layout/Topbar'
 import { SidebarOffset } from '@/components/layout/SidebarOffset'
 import { SidebarProvider } from '@/lib/context/SidebarContext'
 import { FinancialDataProvider } from '@/lib/context/FinancialDataContext'
+import { SessionTimeoutGuard } from '@/components/security/SessionTimeoutGuard'
 
 function formatPlanStatusLabel(
   lifecycleStatus: 'trialing' | 'active' | 'past_due' | 'canceled' | 'expired' | 'inactive',
@@ -137,6 +138,8 @@ export default async function DashboardLayout({
               {children}
             </FinancialDataProvider>
           </main>
+          {/* Client island — fires idle logout after 30 min inactivity */}
+          <SessionTimeoutGuard />
         </SidebarOffset>
         <BottomNav />
       </div>

@@ -7,6 +7,7 @@ import { toast } from 'sonner'
 import { Loader2, Eye, EyeOff, Check, X } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { trackEvent, identifyUser, EVENTS } from '@/lib/posthog/client'
+import { TurnstileWidget } from '@/components/security/TurnstileWidget'
 
 function Req({ met, label }: { met: boolean; label: string }) {
   return (
@@ -64,6 +65,7 @@ export default function CadastroPage() {
   const [showPass, setShowPass]           = useState(false)
   const [showConfirm, setShowConfirm]     = useState(false)
   const [errors, setErrors]               = useState<Record<string, string>>({})
+  const [cfToken, setCfToken]             = useState('')
 
   const hasLength = password.length >= 8
   const hasNumber = /[0-9]/.test(password)
@@ -172,6 +174,13 @@ export default function CadastroPage() {
           value={confirmPassword} onChange={setConfirm} error={errors.confirm}>
           <EyeBtn show={showConfirm} toggle={() => setShowConfirm(!showConfirm)} />
         </Field>
+
+        {/* Turnstile — invisible bot protection */}
+        <TurnstileWidget
+          onVerify={setCfToken}
+          onError={() => setCfToken('')}
+          onExpire={() => setCfToken('')}
+        />
 
         <button
           type="submit" disabled={loading}

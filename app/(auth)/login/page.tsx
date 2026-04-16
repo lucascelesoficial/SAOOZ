@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation'
 import { Loader2, Eye, EyeOff } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { trackEvent, identifyUser, EVENTS } from '@/lib/posthog/client'
+import { TurnstileWidget } from '@/components/security/TurnstileWidget'
 
 export default function LoginPage() {
   const router = useRouter()
@@ -14,6 +15,7 @@ export default function LoginPage() {
   const [password, setPassword]     = useState('')
   const [showPass, setShowPass]     = useState(false)
   const [errors, setErrors]         = useState<Record<string, string>>({})
+  const [cfToken, setCfToken]       = useState('')
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -127,6 +129,13 @@ export default function LoginPage() {
           </div>
           {errors.password && <p className="text-[#f87171] text-xs">{errors.password}</p>}
         </div>
+
+        {/* Turnstile — invisible, fires onVerify when ready */}
+        <TurnstileWidget
+          onVerify={setCfToken}
+          onError={() => setCfToken('')}
+          onExpire={() => setCfToken('')}
+        />
 
         {/* Submit */}
         <button

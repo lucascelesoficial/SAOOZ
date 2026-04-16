@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { canAccessScope, getPolicyBlock, resolveUserAccessPolicy } from '@/lib/billing/policy'
 import { investmentMovementMutationSchema, investmentQuerySchema } from '@/lib/modules/investments/schema'
 import {
@@ -7,18 +7,21 @@ import {
   InvestmentServiceError,
 } from '@/lib/modules/investments/service'
 import { createClient } from '@/lib/supabase/server'
+import { requireSameOrigin, requireJsonContentType, rejectLargeBody, withSecurityHeaders } from '@/lib/server/security'
 
 export const dynamic = 'force-dynamic'
 
 function normalizeError(error: unknown, fallback: string) {
   if (error instanceof InvestmentServiceError) {
-    return NextResponse.json({ error: error.message, code: error.code }, { status: error.status })
+    return withSecurityHeaders(
+      NextResponse.json({ error: error.message, code: error.code }, { status: error.status })
+    )
   }
   const message = error instanceof Error ? error.message : fallback
-  return NextResponse.json({ error: message }, { status: 500 })
+  return withSecurityHeaders(NextResponse.json({ error: message }, { status: 500 }))
 }
 
-export async function GET(request: Request) {
+export async function GET(request: NextRequest) {
   try {
     const url = new URL(request.url)
     const queryResult = investmentQuerySchema.safeParse({
@@ -26,53 +29,70 @@ export async function GET(request: Request) {
       businessId: url.searchParams.get('businessId') ?? undefined,
     })
     if (!queryResult.success) {
-      return NextResponse.json({ error: 'Parâmetros inválidos.' }, { status: 400 })
+      return withSecurityHeaders(
+        NextResponse.json({ error: 'Parâmetros inválidos.' }, { status: 400 })
+      )
     }
 
     const supabase = await createClient()
     const { data: { user }, error: authError } = await supabase.auth.getUser()
     if (authError || !user) {
-      return NextResponse.json({ error: 'Não autenticado.' }, { status: 401 })
+      return withSecurityHeaders(NextResponse.json({ error: 'Não autenticado.' }, { status: 401 }))
     }
 
     const { scope, businessId } = queryResult.data
     const policy = await resolveUserAccessPolicy(user.id)
     if (!canAccessScope(policy, scope)) {
       const block = getPolicyBlock(policy, scope === 'business' ? 'business_module_locked' : 'personal_module_locked')
-      return NextResponse.json(
-        { error: block?.message ?? 'Módulo bloqueado.', code: block?.code ?? 'scope_locked', upgradeRequired: true },
-        { status: 403 }
+      return withSecurityHeaders(
+        NextResponse.json(
+          { error: block?.message ?? 'Módulo bloqueado.', code: block?.code ?? 'scope_locked', upgradeRequired: true },
+          { status: 403 }
+        )
       )
     }
 
     const snapshot = await getInvestmentModuleSnapshot({ supabase, userId: user.id, scope, businessId })
-    return NextResponse.json({ movements: snapshot.recentMovements })
+    return withSecurityHeaders(NextResponse.json({ movements: snapshot.recentMovements }))
   } catch (error) {
     return normalizeError(error, 'Falha ao carregar movimentações.')
   }
 }
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
+  const originCheck = requireSameOrigin(request)
+  if (originCheck) return withSecurityHeaders(originCheck)
+
+  const ctCheck = requireJsonContentType(request)
+  if (ctCheck) return withSecurityHeaders(ctCheck)
+
+  const bodyCheck = rejectLargeBody(request, 8192)
+  if (bodyCheck) return withSecurityHeaders(bodyCheck)
+
   try {
     const body = await request.json().catch(() => null)
     const payloadResult = investmentMovementMutationSchema.safeParse(body)
     if (!payloadResult.success) {
-      return NextResponse.json({ error: 'Dados inválidos para movimentação.' }, { status: 400 })
+      return withSecurityHeaders(
+        NextResponse.json({ error: 'Dados inválidos para movimentação.' }, { status: 400 })
+      )
     }
 
     const supabase = await createClient()
     const { data: { user }, error: authError } = await supabase.auth.getUser()
     if (authError || !user) {
-      return NextResponse.json({ error: 'Não autenticado.' }, { status: 401 })
+      return withSecurityHeaders(NextResponse.json({ error: 'Não autenticado.' }, { status: 401 }))
     }
 
     const payload = payloadResult.data
     const policy = await resolveUserAccessPolicy(user.id)
     if (!canAccessScope(policy, payload.scope)) {
       const block = getPolicyBlock(policy, payload.scope === 'business' ? 'business_module_locked' : 'personal_module_locked')
-      return NextResponse.json(
-        { error: block?.message ?? 'Módulo bloqueado.', code: block?.code ?? 'scope_locked', upgradeRequired: true },
-        { status: 403 }
+      return withSecurityHeaders(
+        NextResponse.json(
+          { error: block?.message ?? 'Módulo bloqueado.', code: block?.code ?? 'scope_locked', upgradeRequired: true },
+          { status: 403 }
+        )
       )
     }
 
@@ -98,7 +118,7 @@ export async function POST(request: Request) {
       businessId: payload.businessId,
     })
 
-    return NextResponse.json({ snapshot }, { status: 201 })
+    return withSecurityHeaders(NextResponse.json({ snapshot }, { status: 201 }))
   } catch (error) {
     return normalizeError(error, 'Falha ao registrar movimentação.')
   }
