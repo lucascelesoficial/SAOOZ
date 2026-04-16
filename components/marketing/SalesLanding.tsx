@@ -2,7 +2,7 @@ import Link from 'next/link'
 import {
   ArrowRight, BadgeCheck, Brain, Briefcase, Building2,
   Clock3, CreditCard, Layers,
-  Shield, TrendingUp, User, Zap, CircleAlert, BarChart3,
+  Shield, TrendingUp, User, CircleAlert, BarChart3,
   CheckCircle2, Star,
   Mail, ChevronRight,
 } from 'lucide-react'
@@ -465,19 +465,19 @@ export function SalesLanding() {
             <OrbitalSystem />
 
             <div className="mx-auto max-w-4xl text-center space-y-6 relative">
-              {/* Badge */}
-              <div
-                className="inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-semibold uppercase tracking-wider"
-                style={{
-                  borderColor: 'color-mix(in oklab, var(--accent-blue) 40%, transparent)',
-                  background: 'color-mix(in oklab, var(--accent-blue) 10%, transparent)',
-                  color: 'var(--accent-blue)',
-                  backdropFilter: 'blur(8px)',
-                  animation: 'saooz-pulse 3s ease-in-out infinite',
-                }}
-              >
-                <Zap className="h-3 w-3" />
-                Sistema financeiro premium com IA · PF e PJ
+              {/* Social proof strip — sem badge, sem ícone, sem pill */}
+              <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2">
+                {[
+                  { num: '1.200+', label: 'usuários ativos' },
+                  { num: 'R$ 2,1 bi', label: 'em movimentações' },
+                  { num: '4.8 / 5',  label: 'avaliação média' },
+                ].map((s, i) => (
+                  <div key={i} className="flex items-baseline gap-1.5">
+                    <span style={{ fontSize: 15, fontWeight: 800, color: 'var(--text-strong)', letterSpacing: '-0.02em' }}>{s.num}</span>
+                    <span style={{ fontSize: 12, color: 'var(--text-soft)' }}>{s.label}</span>
+                    {i < 2 && <span style={{ marginLeft: 6, color: 'var(--panel-border)', fontSize: 16, lineHeight: 1 }}>·</span>}
+                  </div>
+                ))}
               </div>
 
               {/* H1 */}
