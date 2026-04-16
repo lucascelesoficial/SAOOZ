@@ -10,6 +10,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Modal } from '@/components/ui/Modal'
 import { StepUpDialog } from '@/components/security/StepUpDialog'
+import { MfaSection } from '@/components/security/MfaSection'
 import { createClient } from '@/lib/supabase/client'
 import type { Database } from '@/types/database.types'
 
@@ -388,6 +389,15 @@ export default function ConfiguracoesPage() {
       <div className="panel-card p-6">
         <h2 className="text-sm font-semibold text-app-base uppercase tracking-wider mb-4">Segurança</h2>
 
+        {/* MFA / Two-factor authentication */}
+        <div className="mb-6">
+          <p className="text-xs font-semibold text-app-soft uppercase tracking-wider mb-3">Autenticação em dois fatores</p>
+          <MfaSection />
+        </div>
+
+        <div className="border-t mb-6" style={{ borderColor: 'var(--panel-border)' }} />
+
+        <p className="text-xs font-semibold text-app-soft uppercase tracking-wider mb-3">Alterar senha</p>
         <form onSubmit={passwordForm.handleSubmit(onChangePassword)} className="space-y-4">
           <div className="space-y-2">
             <Label className="text-app-base">Nova senha</Label>

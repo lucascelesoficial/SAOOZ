@@ -38,6 +38,12 @@ export default function LoginPage() {
     if (userData.user) {
       identifyUser(userData.user.id, { email })
       trackEvent(EVENTS.USER_LOGIN, { method: 'email' })
+      // Fire-and-forget audit log — never await in the auth critical path
+      fetch('/api/auth/log-event', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ eventType: 'auth.login', metadata: { method: 'email' } }),
+      }).catch(() => undefined)
     }
 
     router.refresh()

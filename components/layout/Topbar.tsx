@@ -214,6 +214,12 @@ export function Topbar({
 
   async function handleSignOut() {
     const supabase = createClient()
+    // Audit log before signOut so session cookie is still valid server-side
+    await fetch('/api/auth/log-event', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ eventType: 'auth.logout' }),
+    }).catch(() => undefined)
     await supabase.auth.signOut()
     router.push('/login')
   }

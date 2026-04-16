@@ -105,6 +105,11 @@ export default function CadastroPage() {
     if (data.user && !data.session) {
       identifyUser(data.user.id, { name, email })
       trackEvent(EVENTS.USER_SIGNUP, { method: 'email', confirmed: false })
+      fetch('/api/auth/log-event', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ eventType: 'auth.signup', metadata: { method: 'email', confirmed: false } }),
+      }).catch(() => undefined)
       router.push(`/cadastro/confirmar?email=${encodeURIComponent(email)}`)
       return
     }
@@ -114,6 +119,11 @@ export default function CadastroPage() {
       await supabase.from('profiles').upsert({ id: data.user.id, name, email })
       identifyUser(data.user.id, { name, email })
       trackEvent(EVENTS.USER_SIGNUP, { method: 'email' })
+      fetch('/api/auth/log-event', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ eventType: 'auth.signup', metadata: { method: 'email' } }),
+      }).catch(() => undefined)
     }
     toast.success('Conta criada!', { description: 'Bem-vindo ao SAOOZ.' })
     router.refresh()

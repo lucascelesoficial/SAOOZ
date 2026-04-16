@@ -53,6 +53,12 @@ export function useAuth() {
   const signOut = useCallback(async () => {
     const supabase = createClient()
     trackEvent(EVENTS.USER_LOGOUT)
+    // Audit log BEFORE signOut so the session cookie is still valid server-side
+    await fetch('/api/auth/log-event', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ eventType: 'auth.logout' }),
+    }).catch(() => undefined)
     resetUser()
     await supabase.auth.signOut()
     router.push('/login')
