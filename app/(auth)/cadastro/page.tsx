@@ -84,6 +84,23 @@ export default function CadastroPage() {
 
     setErrors({})
     setLoading(true)
+
+    // Verify Turnstile token server-side before calling Supabase
+    if (cfToken) {
+      const cfRes = await fetch('/api/auth/verify-turnstile', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token: cfToken }),
+      }).catch(() => null)
+      if (cfRes && !cfRes.ok) {
+        setLoading(false)
+        toast.error('Verificação de segurança falhou', {
+          description: 'Recarregue a página e tente novamente.',
+        })
+        return
+      }
+    }
+
     const supabase = createClient()
     const { data, error } = await supabase.auth.signUp({
       email, password,

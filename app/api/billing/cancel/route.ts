@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { createOptionalAdminClient } from '@/lib/supabase/admin'
-import { requireSameOrigin, withSecurityHeaders } from '@/lib/server/security'
+import { requireSameOrigin, requireJsonContentType, withSecurityHeaders } from '@/lib/server/security'
 import { logAuditEvent, getClientIp } from '@/lib/server/audit'
 
 export const dynamic = 'force-dynamic'
@@ -9,6 +9,10 @@ export const dynamic = 'force-dynamic'
 export async function POST(request: NextRequest) {
   const originCheck = requireSameOrigin(request)
   if (originCheck) return withSecurityHeaders(originCheck)
+
+  const ctCheck = requireJsonContentType(request)
+  if (ctCheck) return withSecurityHeaders(ctCheck)
+
   try {
     const supabase = await createClient()
     const {
@@ -17,7 +21,7 @@ export async function POST(request: NextRequest) {
     } = await supabase.auth.getUser()
 
     if (authError || !user) {
-      return NextResponse.json({ error: 'Nao autenticado.' }, { status: 401 })
+      return withSecurityHeaders(NextResponse.json({ error: 'Nao autenticado.' }, { status: 401 }))
     }
 
     const { data: sub, error: subError } = await supabase
@@ -27,15 +31,15 @@ export async function POST(request: NextRequest) {
       .maybeSingle()
 
     if (subError || !sub) {
-      return NextResponse.json({ error: 'Assinatura nao encontrada.' }, { status: 404 })
+      return withSecurityHeaders(NextResponse.json({ error: 'Assinatura nao encontrada.' }, { status: 404 }))
     }
 
     if (sub.cancel_at_period_end) {
-      return NextResponse.json({ error: 'Cancelamento ja agendado para o fim do periodo.' }, { status: 400 })
+      return withSecurityHeaders(NextResponse.json({ error: 'Cancelamento ja agendado para o fim do periodo.' }, { status: 400 }))
     }
 
     if (sub.status === 'canceled' || sub.status === 'expired' || sub.status === 'inactive') {
-      return NextResponse.json({ error: 'Assinatura ja encerrada.' }, { status: 400 })
+      return withSecurityHeaders(NextResponse.json({ error: 'Assinatura ja encerrada.' }, { status: 400 }))
     }
 
     // Schedule Stripe cancel at period end (not immediate)
@@ -68,7 +72,7 @@ export async function POST(request: NextRequest) {
 
     if (updateError) {
       console.error('Cancel update error:', updateError.message)
-      return NextResponse.json({ error: 'Erro ao registrar cancelamento.' }, { status: 500 })
+      return withSecurityHeaders(NextResponse.json({ error: 'Erro ao registrar cancelamento.' }, { status: 500 }))
     }
 
     await logAuditEvent({
@@ -85,10 +89,10 @@ export async function POST(request: NextRequest) {
       },
     })
 
-    return NextResponse.json({ success: true })
+    return withSecurityHeaders(NextResponse.json({ success: true }))
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Erro interno.'
     console.error('Cancel subscription error:', message)
-    return NextResponse.json({ error: message }, { status: 500 })
+    return withSecurityHeaders(NextResponse.json({ error: message }, { status: 500 }))
   }
 }

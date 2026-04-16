@@ -27,6 +27,21 @@ export default function LoginPage() {
 
     setErrors({})
     setLoading(true)
+
+    // Verify Turnstile token server-side before calling Supabase
+    if (cfToken) {
+      const cfRes = await fetch('/api/auth/verify-turnstile', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token: cfToken }),
+      }).catch(() => null)
+      if (cfRes && !cfRes.ok) {
+        setLoading(false)
+        setErrors({ auth: 'Verificação de segurança falhou. Recarregue a página e tente novamente.' })
+        return
+      }
+    }
+
     const supabase = createClient()
     const { error } = await supabase.auth.signInWithPassword({ email, password })
     setLoading(false)
