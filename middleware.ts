@@ -146,18 +146,26 @@ export async function middleware(request: NextRequest) {
   }
 
   if (user) {
-    // Check subscription
-    const { data: sub } = await supabase
-      .from('subscriptions')
-      .select('id, status')
-      .eq('user_id', user.id)
-      .in('status', ['active', 'trialing'])
-      .limit(1)
-      .maybeSingle()
+    // Fetch subscription + onboarding state in parallel (one round-trip)
+    const [{ data: sub }, { data: profile }] = await Promise.all([
+      supabase
+        .from('subscriptions')
+        .select('id, status')
+        .eq('user_id', user.id)
+        .in('status', ['active', 'trialing'])
+        .limit(1)
+        .maybeSingle(),
+      supabase
+        .from('profiles')
+        .select('mode, onboarding_completed_at')
+        .eq('id', user.id)
+        .maybeSingle(),
+    ])
 
-    const hasSubscription = !!sub
+    const hasSubscription        = !!sub
+    const hasCompletedOnboarding = !!profile?.onboarding_completed_at
 
-    // No subscription → force plan selection
+    // ── No subscription → force plan selection ───────────────────────────
     if (!hasSubscription && !isOnboardingPlano && !isTrialConfirmRoute) {
       if (isAuthRoute || isProtectedRoute || isOnboardingRoute) {
         return applySecurityHeaders(
@@ -166,10 +174,19 @@ export async function middleware(request: NextRequest) {
       }
     }
 
-    // Subscribed user on auth route → dashboard
-    if (isAuthRoute && hasSubscription) {
+    // ── Has subscription but onboarding incomplete → block dashboard ─────
+    // This closes the "change URL to /central" bypass completely.
+    if (hasSubscription && !hasCompletedOnboarding && isProtectedRoute) {
       return applySecurityHeaders(
-        NextResponse.redirect(new URL('/central', request.url))
+        NextResponse.redirect(new URL('/onboarding', request.url))
+      )
+    }
+
+    // ── Auth route (login/cadastro) for already-onboarded user → dash ────
+    if (isAuthRoute && hasSubscription) {
+      const dest = hasCompletedOnboarding ? '/central' : '/onboarding'
+      return applySecurityHeaders(
+        NextResponse.redirect(new URL(dest, request.url))
       )
     }
   }

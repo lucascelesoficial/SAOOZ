@@ -1,0 +1,260 @@
+'use client'
+
+import { useState } from 'react'
+import { ArrowLeft, ArrowRight, Loader2, User } from 'lucide-react'
+import { useRouter } from 'next/navigation'
+import { toast } from 'sonner'
+import { createClient } from '@/lib/supabase/client'
+
+const BR_STATES = [
+  'AC','AL','AP','AM','BA','CE','DF','ES','GO','MA',
+  'MT','MS','MG','PA','PB','PR','PE','PI','RJ','RN',
+  'RS','RO','RR','SC','SP','SE','TO',
+]
+
+function maskCPF(v: string) {
+  return v.replace(/\D/g, '')
+    .replace(/(\d{3})(\d)/, '$1.$2')
+    .replace(/(\d{3})(\d)/, '$1.$2')
+    .replace(/(\d{3})(\d{1,2})$/, '$1-$2')
+    .slice(0, 14)
+}
+function validateCPF(raw: string): boolean {
+  const cpf = raw.replace(/\D/g, '')
+  if (cpf.length !== 11 || /^(.)\1+$/.test(cpf)) return false
+  let sum = 0
+  for (let i = 0; i < 9; i++) sum += parseInt(cpf[i]) * (10 - i)
+  let rest = (sum * 10) % 11
+  if (rest === 10 || rest === 11) rest = 0
+  if (rest !== parseInt(cpf[9])) return false
+  sum = 0
+  for (let i = 0; i < 10; i++) sum += parseInt(cpf[i]) * (11 - i)
+  rest = (sum * 10) % 11
+  if (rest === 10 || rest === 11) rest = 0
+  return rest === parseInt(cpf[10])
+}
+function maskPhone(v: string) {
+  const d = v.replace(/\D/g, '').slice(0, 11)
+  if (d.length <= 10) return d.replace(/(\d{2})(\d{4})(\d{0,4})/, '($1) $2-$3').replace(/-$/, '')
+  return d.replace(/(\d{2})(\d{5})(\d{0,4})/, '($1) $2-$3').replace(/-$/, '')
+}
+
+interface Props {
+  initialName: string
+  initialCpf: string
+  initialPhone: string
+  initialCity: string
+  initialState: string
+}
+
+export function OnboardingPfClient({
+  initialName,
+  initialCpf,
+  initialPhone,
+  initialCity,
+  initialState,
+}: Props) {
+  const router = useRouter()
+  const [loading, setLoading] = useState(false)
+
+  const [name,   setName]   = useState(initialName)
+  const [cpf,    setCpf]    = useState(initialCpf ? maskCPF(initialCpf) : '')
+  const [phone,  setPhone]  = useState(initialPhone ? maskPhone(initialPhone) : '')
+  const [city,   setCity]   = useState(initialCity)
+  const [state,  setState]  = useState(initialState)
+
+  const [errors, setErrors] = useState<Record<string, string>>({})
+
+  function validate() {
+    const e: Record<string, string> = {}
+    if (!name.trim() || name.trim().length < 2) e.name = 'Nome deve ter ao menos 2 caracteres'
+    if (cpf && !validateCPF(cpf)) e.cpf = 'CPF inválido'
+    return e
+  }
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault()
+    const errs = validate()
+    if (Object.keys(errs).length) { setErrors(errs); return }
+
+    setErrors({})
+    setLoading(true)
+
+    const supabase = createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) { window.location.href = '/login'; return }
+
+    const { error } = await supabase
+      .from('profiles')
+      .update({
+        name: name.trim(),
+        cpf: cpf ? cpf.replace(/\D/g, '') : null,
+        phone: phone ? phone.replace(/\D/g, '') : null,
+        city: city.trim() || null,
+        state: state || null,
+        // ── This is the gate key: only set here after real user action ──
+        onboarding_completed_at: new Date().toISOString(),
+      })
+      .eq('id', user.id)
+
+    if (error) {
+      toast.error('Erro ao salvar perfil. Tente novamente.')
+      setLoading(false)
+      return
+    }
+
+    // Hard navigation clears Next.js Router Cache so layout reads fresh data
+    window.location.href = '/central'
+  }
+
+  const inputStyle = (hasError?: boolean): React.CSSProperties => ({
+    width: '100%',
+    height: 44,
+    padding: '0 14px',
+    borderRadius: 10,
+    fontSize: 14,
+    color: 'var(--text-strong)',
+    background: 'var(--panel-bg-soft)',
+    border: `1px solid ${hasError ? '#f87171' : 'var(--panel-border)'}`,
+    outline: 'none',
+    boxSizing: 'border-box',
+  })
+
+  return (
+    <div className="panel-card rounded-2xl p-8 space-y-7">
+      {/* Header */}
+      <div className="space-y-1.5">
+        <div
+          className="h-12 w-12 rounded-[14px] flex items-center justify-center mb-4"
+          style={{ background: 'color-mix(in oklab, #3b82f6 15%, transparent)', border: '1px solid color-mix(in oklab, #3b82f6 30%, transparent)' }}
+        >
+          <User className="h-6 w-6" style={{ color: '#3b82f6' }} />
+        </div>
+        <h1 className="text-2xl font-extrabold text-app">Perfil Pessoal</h1>
+        <p className="text-sm text-app-soft">
+          Complete seu cadastro PF para personalizar sua experiência financeira.
+          Os campos marcados como opcionais podem ser preenchidos depois.
+        </p>
+      </div>
+
+      <form onSubmit={handleSubmit} className="space-y-5">
+
+        {/* Name */}
+        <div className="space-y-1.5">
+          <label className="text-xs font-semibold uppercase tracking-wider text-app-soft">
+            Nome completo
+          </label>
+          <input
+            type="text"
+            placeholder="Seu nome completo"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            style={inputStyle(!!errors.name)}
+            onFocus={(e) => { if (!errors.name) e.currentTarget.style.border = '1px solid #3b82f6' }}
+            onBlur={(e) => { if (!errors.name) e.currentTarget.style.border = '1px solid var(--panel-border)' }}
+          />
+          {errors.name && <p className="text-xs text-red-400">{errors.name}</p>}
+        </div>
+
+        {/* CPF + Phone */}
+        <div className="grid grid-cols-2 gap-4">
+          <div className="space-y-1.5">
+            <label className="text-xs font-semibold uppercase tracking-wider text-app-soft">
+              CPF <span className="normal-case font-normal opacity-60">(opcional)</span>
+            </label>
+            <input
+              type="text"
+              inputMode="numeric"
+              placeholder="000.000.000-00"
+              value={cpf}
+              onChange={(e) => setCpf(maskCPF(e.target.value))}
+              style={inputStyle(!!errors.cpf)}
+              onFocus={(e) => { if (!errors.cpf) e.currentTarget.style.border = '1px solid #3b82f6' }}
+              onBlur={(e) => { if (!errors.cpf) e.currentTarget.style.border = '1px solid var(--panel-border)' }}
+            />
+            {errors.cpf && <p className="text-xs text-red-400">{errors.cpf}</p>}
+          </div>
+
+          <div className="space-y-1.5">
+            <label className="text-xs font-semibold uppercase tracking-wider text-app-soft">
+              Celular <span className="normal-case font-normal opacity-60">(opcional)</span>
+            </label>
+            <input
+              type="tel"
+              placeholder="(00) 00000-0000"
+              value={phone}
+              onChange={(e) => setPhone(maskPhone(e.target.value))}
+              style={inputStyle()}
+              onFocus={(e) => { e.currentTarget.style.border = '1px solid #3b82f6' }}
+              onBlur={(e) => { e.currentTarget.style.border = '1px solid var(--panel-border)' }}
+            />
+          </div>
+        </div>
+
+        {/* City + State */}
+        <div className="grid grid-cols-2 gap-4">
+          <div className="space-y-1.5">
+            <label className="text-xs font-semibold uppercase tracking-wider text-app-soft">
+              Cidade <span className="normal-case font-normal opacity-60">(opcional)</span>
+            </label>
+            <input
+              type="text"
+              placeholder="Sua cidade"
+              value={city}
+              onChange={(e) => setCity(e.target.value)}
+              style={inputStyle()}
+              onFocus={(e) => { e.currentTarget.style.border = '1px solid #3b82f6' }}
+              onBlur={(e) => { e.currentTarget.style.border = '1px solid var(--panel-border)' }}
+            />
+          </div>
+
+          <div className="space-y-1.5">
+            <label className="text-xs font-semibold uppercase tracking-wider text-app-soft">
+              Estado <span className="normal-case font-normal opacity-60">(opcional)</span>
+            </label>
+            <select
+              value={state}
+              onChange={(e) => setState(e.target.value)}
+              style={{ ...inputStyle(), cursor: 'pointer' }}
+              onFocus={(e) => { e.currentTarget.style.border = '1px solid #3b82f6' }}
+              onBlur={(e) => { e.currentTarget.style.border = '1px solid var(--panel-border)' }}
+            >
+              <option value="">Selecione</option>
+              {BR_STATES.map((s) => (
+                <option key={s} value={s}>{s}</option>
+              ))}
+            </select>
+          </div>
+        </div>
+
+        {/* Actions */}
+        <div className="flex items-center gap-3 pt-2">
+          <button
+            type="button"
+            onClick={() => router.back()}
+            className="flex items-center gap-1.5 h-11 px-4 rounded-[10px] text-sm font-medium text-app-soft transition-colors hover:text-app"
+            style={{ border: '1px solid var(--panel-border)', background: 'transparent' }}
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Voltar
+          </button>
+
+          <button
+            type="submit"
+            disabled={loading}
+            className="flex-1 h-11 rounded-[10px] text-sm font-bold text-white flex items-center justify-center gap-2 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            style={{
+              background: 'linear-gradient(135deg, #3b82f6, #0ea5e9)',
+              boxShadow: '0 4px 20px color-mix(in oklab, #3b82f6 30%, transparent)',
+            }}
+          >
+            {loading
+              ? <Loader2 className="h-4 w-4 animate-spin" />
+              : <>Acessar o painel <ArrowRight className="h-4 w-4" /></>
+            }
+          </button>
+        </div>
+      </form>
+    </div>
+  )
+}

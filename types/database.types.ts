@@ -133,6 +133,7 @@ export interface Database {
           birth_date: string | null
           city: string | null
           state: string | null
+          onboarding_completed_at: string | null
         }
         Insert: {
           id: string
@@ -147,6 +148,7 @@ export interface Database {
           birth_date?: string | null
           city?: string | null
           state?: string | null
+          onboarding_completed_at?: string | null
         }
         Update: {
           id?: string
@@ -161,6 +163,7 @@ export interface Database {
           birth_date?: string | null
           city?: string | null
           state?: string | null
+          onboarding_completed_at?: string | null
         }
         Relationships: []
       }

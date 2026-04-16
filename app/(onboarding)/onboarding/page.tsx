@@ -100,7 +100,8 @@ export default function OnboardingPage() {
     if (selected === 'pj' || selected === 'both') {
       window.location.href = '/onboarding/empresa'
     } else {
-      window.location.href = '/central'
+      // PF: must complete profile setup before entering the dashboard
+      window.location.href = '/onboarding/pf'
     }
   }
 

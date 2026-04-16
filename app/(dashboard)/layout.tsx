@@ -71,8 +71,19 @@ export default async function DashboardLayout({
 
   let profile = profileData
 
+  // ── Layer 2 guard (middleware is layer 1) ──────────────────────────────────
+  // Belt-and-suspenders: even if middleware is bypassed, the layout re-validates.
   if (!profile?.mode) {
     redirect('/onboarding')
+  }
+
+  if (!profile?.onboarding_completed_at) {
+    // Route user to the correct incomplete step instead of generic /onboarding
+    if (profile.mode === 'pf') {
+      redirect('/onboarding/pf')
+    } else {
+      redirect('/onboarding/empresa')
+    }
   }
 
   if (profile.mode === 'pf' && (businesses?.length ?? 0) > 0) {

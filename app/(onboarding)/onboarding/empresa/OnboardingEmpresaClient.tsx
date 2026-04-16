@@ -281,12 +281,14 @@ export function OnboardingEmpresaClient({
     }
 
     // Save responsible partner data to the user's profile
+    // Also marks onboarding as complete — prevents dashboard bypass
     await supabase.from('profiles').update({
       cpf: socioCpf.replace(/\D/g, '') || null,
       phone: socioPhone.replace(/\D/g, '') || null,
       birth_date: socioBirthDate || null,
       city: socioCity.trim() || null,
       state: socioBrazilState || null,
+      onboarding_completed_at: new Date().toISOString(),
     }).eq('id', user.id)
 
     toast.success(isEditing ? 'Empresa atualizada' : 'Empresa cadastrada', {
