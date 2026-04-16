@@ -147,13 +147,10 @@ export async function middleware(request: NextRequest) {
 
   if (user) {
     // Fetch subscription + profile mode in parallel (one round-trip).
-    // NOTE: onboarding_completed_at is intentionally NOT selected here because
-    // migration 023 may not have been applied yet. Once the migration runs and
-    // backfills the column, add it back. Until then, profile.mode is the gate.
     const [{ data: sub }, { data: profile }] = await Promise.all([
       supabase
         .from('subscriptions')
-        .select('id, status')
+        .select('id, status, gateway_subscription_id, payment_method')
         .eq('user_id', user.id)
         .in('status', ['active', 'trialing'])
         .limit(1)
@@ -165,12 +162,20 @@ export async function middleware(request: NextRequest) {
         .maybeSingle(),
     ])
 
-    const hasSubscription = !!sub
-    // mode being set means the user completed at least the mode-selection step.
+    // A REAL subscription was created through Stripe checkout and always has
+    // gateway_subscription_id set. The billing system auto-creates a fallback
+    // row via ensureSubscription() with gateway_subscription_id=null and
+    // payment_method='none' — that must NOT count as "has chosen a plan".
+    const hasRealSubscription = !!sub && (
+      sub.gateway_subscription_id !== null ||
+      (sub.payment_method !== null && sub.payment_method !== 'none')
+    )
+
+    // mode being set means the user completed the mode-selection onboarding step.
     const hasCompletedOnboarding = !!profile?.mode
 
-    // ── No subscription → force plan selection ───────────────────────────
-    if (!hasSubscription && !isOnboardingPlano && !isTrialConfirmRoute) {
+    // ── No real subscription → force plan selection ──────────────────────
+    if (!hasRealSubscription && !isOnboardingPlano && !isTrialConfirmRoute) {
       if (isAuthRoute || isProtectedRoute || isOnboardingRoute) {
         return applySecurityHeaders(
           NextResponse.redirect(new URL('/onboarding/plano', request.url))
@@ -178,15 +183,15 @@ export async function middleware(request: NextRequest) {
       }
     }
 
-    // ── Has subscription but onboarding incomplete → block dashboard ─────
-    if (hasSubscription && !hasCompletedOnboarding && isProtectedRoute) {
+    // ── Has real subscription but onboarding incomplete → block dashboard ─
+    if (hasRealSubscription && !hasCompletedOnboarding && isProtectedRoute) {
       return applySecurityHeaders(
         NextResponse.redirect(new URL('/onboarding', request.url))
       )
     }
 
-    // ── Auth route (login/cadastro) for already-onboarded user → dash ────
-    if (isAuthRoute && hasSubscription) {
+    // ── Auth route for user who already finished onboarding → dash ────────
+    if (isAuthRoute && hasRealSubscription) {
       const dest = hasCompletedOnboarding ? '/central' : '/onboarding'
       return applySecurityHeaders(
         NextResponse.redirect(new URL(dest, request.url))
