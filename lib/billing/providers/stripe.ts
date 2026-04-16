@@ -45,20 +45,27 @@ function toStringId(value: string | { id: string } | null | undefined) {
   return value.id
 }
 
-function resolveProductLabel(planType: string, durationMonths: BillingDurationMonths) {
-  if (durationMonths === 1) {
-    return `SAOOZ ${planType.toUpperCase()} - Mensal`
+/**
+ * Resolves the pre-created Stripe Price ID from environment variables.
+ * Env var format: STRIPE_PRICE_<PLAN>_<DURATION>M
+ * e.g. STRIPE_PRICE_PF_1M, STRIPE_PRICE_PJ_12M
+ */
+function resolvePriceId(planType: string, durationMonths: BillingDurationMonths): string {
+  const durationKey =
+    durationMonths === 1  ? '1M'  :
+    durationMonths === 3  ? '3M'  :
+    durationMonths === 6  ? '6M'  : '12M'
+
+  const envKey = `STRIPE_PRICE_${planType.toUpperCase()}_${durationKey}`
+  const priceId = process.env[envKey]
+
+  if (!priceId) {
+    throw new Error(
+      `Stripe Price ID not configured. Set ${envKey} in your environment variables.`
+    )
   }
 
-  if (durationMonths === 3) {
-    return `SAOOZ ${planType.toUpperCase()} - Trimestral`
-  }
-
-  if (durationMonths === 6) {
-    return `SAOOZ ${planType.toUpperCase()} - Semestral`
-  }
-
-  return `SAOOZ ${planType.toUpperCase()} - Anual`
+  return priceId
 }
 
 export class StripeProvider implements PaymentProvider {
@@ -77,7 +84,7 @@ export class StripeProvider implements PaymentProvider {
   }
 
   supportsPaymentMethod(method: 'card' | 'pix') {
-    return method === 'card' || method === 'pix'
+    return method === 'card'  // PIX removed — card only
   }
 
   resolvePaymentReferences(input: ResolvePaymentReferencesInput): ProviderPaymentReferences {
@@ -95,9 +102,13 @@ export class StripeProvider implements PaymentProvider {
       throw new Error('Stripe provider is not configured.')
     }
 
-    if (input.paymentMethod !== 'card' && input.paymentMethod !== 'pix') {
-      throw new Error('Stripe checkout supports card and pix only.')
+    if (input.paymentMethod !== 'card') {
+      throw new Error('Stripe checkout supports card only.')
     }
+
+    // Look up the pre-created price ID from environment variables.
+    // Every plan × duration combination must have a corresponding STRIPE_PRICE_* var.
+    const priceId = resolvePriceId(input.planType, input.durationMonths)
 
     const stripe = await this.getStripeClient()
 
@@ -108,60 +119,20 @@ export class StripeProvider implements PaymentProvider {
       payment_method: input.paymentMethod,
     }
 
-    let session: Awaited<ReturnType<typeof stripe.checkout.sessions.create>>
-
-    if (input.trialDays && input.trialDays > 0) {
-      // Subscription mode with free trial — card required upfront, no charge until trial ends
-      session = await stripe.checkout.sessions.create({
-        mode: 'subscription',
-        customer_email: input.userEmail ?? undefined,
-        payment_method_types: ['card'],
-        line_items: [
-          {
-            price_data: {
-              currency: input.currency.toLowerCase(),
-              product_data: {
-                name: input.productName || resolveProductLabel(input.planType, input.durationMonths),
-              },
-              unit_amount: input.amountCents,
-              recurring: { interval: 'month', interval_count: input.durationMonths },
-            },
-            quantity: 1,
-          },
-        ],
-        subscription_data: { trial_period_days: input.trialDays },
-        metadata,
-        success_url: input.successUrl,
-        cancel_url: input.cancelUrl,
-      })
-    } else {
-      const commonParams = {
-        mode: 'payment' as const,
-        customer_email: input.userEmail ?? undefined,
-        line_items: [
-          {
-            price_data: {
-              currency: input.currency.toLowerCase(),
-              product_data: {
-                name: input.productName || resolveProductLabel(input.planType, input.durationMonths),
-              },
-              unit_amount: input.amountCents,
-            },
-            quantity: 1,
-          },
-        ],
-        metadata,
-        success_url: input.successUrl,
-        cancel_url: input.cancelUrl,
-      }
-
-      // Card: restrict explicitly to card only
-      // PIX: omit payment_method_types → Stripe uses all methods active in the dashboard
-      session =
-        input.paymentMethod === 'pix'
-          ? await stripe.checkout.sessions.create({ ...commonParams })
-          : await stripe.checkout.sessions.create({ ...commonParams, payment_method_types: ['card'] })
-    }
+    // Always subscription mode — uses the pre-created recurring price.
+    // Trial: card is required upfront but not charged until trial ends.
+    const session = await stripe.checkout.sessions.create({
+      mode: 'subscription',
+      customer_email: input.userEmail ?? undefined,
+      payment_method_types: ['card'],
+      line_items: [{ price: priceId, quantity: 1 }],
+      subscription_data: input.trialDays && input.trialDays > 0
+        ? { trial_period_days: input.trialDays }
+        : undefined,
+      metadata,
+      success_url: input.successUrl,
+      cancel_url: input.cancelUrl,
+    })
 
     if (!session.url) {
       throw new Error('Stripe checkout session URL is missing.')

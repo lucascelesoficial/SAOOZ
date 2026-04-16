@@ -12,7 +12,7 @@ export const dynamic = 'force-dynamic'
 const checkoutSchema = z.object({
   planType: z.enum(['pf', 'pj', 'pro']),
   duration: z.union([z.literal(1), z.literal(3), z.literal(6), z.literal(12)]),
-  paymentMethod: z.enum(['card', 'pix']),
+  paymentMethod: z.enum(['card']),
   gateway: z.enum(['stripe', 'kiwify', 'cakto']).optional(),
   trialDays: z.number().int().min(0).max(30).optional(),
 })

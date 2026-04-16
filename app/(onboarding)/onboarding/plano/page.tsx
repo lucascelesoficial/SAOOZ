@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import {
   BadgeCheck, CalendarClock, CreditCard, Crown,
-  Layers3, QrCode,
+  Layers3,
 } from 'lucide-react'
 import { Loader2 } from 'lucide-react'
 import { SaoozWordmark } from '@/components/ui/SaoozLogo'
@@ -215,38 +215,21 @@ export default function OnboardingPlanoPage() {
                   <p className="mt-1 text-xs text-app-soft">{businessCapacityLabel(planCode, duration)}</p>
                 </div>
 
-                <div className="space-y-2">
-                  <button
-                    onClick={() => handleCheckout(planCode, 'card')}
-                    disabled={!!checkingOut}
-                    className="flex h-11 w-full items-center justify-center rounded-[10px] text-sm font-semibold text-white transition-all disabled:opacity-60"
-                    style={{
-                      background: plan.highlight
-                        ? 'linear-gradient(135deg, var(--accent-blue), var(--accent-cyan))'
-                        : 'linear-gradient(135deg, #334155, #1e293b)',
-                    }}
-                  >
-                    {checkingOut === `${planCode}-card`
-                      ? <Loader2 className="h-4 w-4 animate-spin" />
-                      : <><CreditCard className="mr-1.5 h-4 w-4" /> Começar {TRIAL_DAYS} dias grátis</>
-                    }
-                  </button>
-                  <button
-                    onClick={() => handleCheckout(planCode, 'pix')}
-                    disabled={!!checkingOut}
-                    className="flex h-11 w-full items-center justify-center rounded-[10px] text-sm font-semibold transition-all disabled:opacity-60"
-                    style={{
-                      background: 'color-mix(in oklab, #22c55e 12%, transparent)',
-                      border: '1px solid color-mix(in oklab, #22c55e 35%, transparent)',
-                      color: '#22c55e',
-                    }}
-                  >
-                    {checkingOut === `${planCode}-pix`
-                      ? <Loader2 className="h-4 w-4 animate-spin" />
-                      : <><QrCode className="mr-1.5 h-4 w-4" /> Pagar com PIX</>
-                    }
-                  </button>
-                </div>
+                <button
+                  onClick={() => handleCheckout(planCode, 'card')}
+                  disabled={!!checkingOut}
+                  className="flex h-11 w-full items-center justify-center rounded-[10px] text-sm font-semibold text-white transition-all disabled:opacity-60"
+                  style={{
+                    background: plan.highlight
+                      ? 'linear-gradient(135deg, var(--accent-blue), var(--accent-cyan))'
+                      : 'linear-gradient(135deg, #334155, #1e293b)',
+                  }}
+                >
+                  {checkingOut === `${planCode}-card`
+                    ? <Loader2 className="h-4 w-4 animate-spin" />
+                    : <><CreditCard className="mr-1.5 h-4 w-4" /> Começar {TRIAL_DAYS} dias grátis</>
+                  }
+                </button>
               </article>
             )
           })}
@@ -290,9 +273,9 @@ export default function OnboardingPlanoPage() {
               Como funciona
             </h2>
             <div className="mt-4 space-y-3 text-sm text-app-soft">
-              <p>Pagamento seguro via cartão de crédito ou PIX, processado pelo Stripe.</p>
+              <p>Pagamento seguro via cartão de crédito, processado pelo Stripe.</p>
+              <p>Seus dados são criptografados e nunca armazenados nos nossos servidores.</p>
               <p>Plano ativado automaticamente após confirmação do pagamento.</p>
-              <p>PIX: QR Code gerado pelo Stripe, válido por 24 horas.</p>
             </div>
           </div>
 
@@ -303,14 +286,11 @@ export default function OnboardingPlanoPage() {
             </h2>
             <div className="mt-4 grid gap-3 sm:grid-cols-2">
               <div className="rounded-[12px] border p-4" style={{ borderColor: 'var(--panel-border)' }}>
-                <p className="text-xs uppercase tracking-wider text-app-soft">Métodos</p>
+                <p className="text-xs uppercase tracking-wider text-app-soft">Método de pagamento</p>
                 <p className="mt-2 flex items-center gap-2 text-sm font-semibold text-app">
                   <CreditCard className="h-4 w-4" /> Cartão de crédito
                 </p>
-                <p className="mt-1 flex items-center gap-2 text-sm font-semibold text-app">
-                  <QrCode className="h-4 w-4 text-green-400" /> PIX
-                </p>
-                <p className="mt-1 text-xs text-app-soft">Processado via Stripe</p>
+                <p className="mt-1 text-xs text-app-soft">Processado com segurança via Stripe</p>
               </div>
               <div className="rounded-[12px] border p-4" style={{ borderColor: 'var(--panel-border)' }}>
                 <p className="text-xs uppercase tracking-wider text-app-soft">Sem cobrança</p>
