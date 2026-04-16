@@ -3,6 +3,7 @@ import { z } from 'zod'
 import { requireUser } from '@/lib/server/request-guard'
 
 export const dynamic = 'force-dynamic'
+export const runtime = 'nodejs'
 
 const checkoutSchema = z.object({
   planType: z.enum(['pf', 'pj', 'pro']),
@@ -13,18 +14,22 @@ const checkoutSchema = z.object({
 
 const DURATION_KEY: Record<number, string> = { 1: '1M', 3: '3M', 6: '6M', 12: '12M' }
 
-function getPriceId(planType: string, duration: number): string {
-  const key = `STRIPE_PRICE_${planType.toUpperCase()}_${DURATION_KEY[duration]}`
-  const id = process.env[key]
-  if (!id) throw new Error(`Preço não configurado: ${key}`)
-  return id
+function priceEnvKey(planType: string, duration: number) {
+  return `STRIPE_PRICE_${planType.toUpperCase()}_${DURATION_KEY[duration]}`
+}
+
+function log(...args: unknown[]) {
+  console.log('[checkout]', ...args)
 }
 
 export async function POST(request: NextRequest) {
   try {
     // ── Auth ──────────────────────────────────────────────────────────────
     const auth = await requireUser()
-    if (!auth.ok) return NextResponse.json({ error: 'Não autenticado.' }, { status: 401 })
+    if (!auth.ok) {
+      log('401 unauthenticated')
+      return NextResponse.json({ error: 'Sessão expirada. Faça login novamente.' }, { status: 401 })
+    }
     const { user } = auth
 
     // ── Parse body ────────────────────────────────────────────────────────
@@ -33,27 +38,61 @@ export async function POST(request: NextRequest) {
 
     const parsed = checkoutSchema.safeParse(body)
     if (!parsed.success) {
-      return NextResponse.json({ error: 'Dados inválidos.' }, { status: 400 })
+      log('400 invalid body', parsed.error.issues)
+      return NextResponse.json(
+        { error: 'Dados inválidos.', details: parsed.error.issues },
+        { status: 400 }
+      )
     }
 
     const { planType, duration, trialDays } = parsed.data
+    log('request', { userId: user.id, planType, duration, trialDays })
 
     // ── Stripe key ────────────────────────────────────────────────────────
     const secretKey = process.env.STRIPE_SECRET_KEY?.trim()
     if (!secretKey) {
-      return NextResponse.json({ error: 'Stripe não configurado (chave ausente).' }, { status: 503 })
+      log('503 missing STRIPE_SECRET_KEY')
+      return NextResponse.json(
+        { error: 'Stripe não configurado no servidor (STRIPE_SECRET_KEY ausente).' },
+        { status: 503 }
+      )
     }
     if (!secretKey.startsWith('sk_')) {
-      return NextResponse.json({ error: 'Stripe não configurado (chave inválida).' }, { status: 503 })
+      log('503 invalid key format')
+      return NextResponse.json(
+        { error: 'STRIPE_SECRET_KEY inválida (deve começar com sk_test_ ou sk_live_).' },
+        { status: 503 }
+      )
     }
+    const keyMode = secretKey.startsWith('sk_live_') ? 'LIVE' : 'TEST'
+    log('stripe key mode:', keyMode)
 
     // ── Price ID ──────────────────────────────────────────────────────────
-    const priceId = getPriceId(planType, duration)
+    const envKey = priceEnvKey(planType, duration)
+    const priceId = process.env[envKey]?.trim()
+    if (!priceId) {
+      log(`503 missing ${envKey}`)
+      return NextResponse.json(
+        { error: `Price ID não configurado: ${envKey}. Crie o preço no Stripe e defina a env var.` },
+        { status: 503 }
+      )
+    }
+    if (!priceId.startsWith('price_')) {
+      log(`503 invalid ${envKey}=${priceId.substring(0, 12)}...`)
+      return NextResponse.json(
+        { error: `${envKey} inválido (deve começar com price_).` },
+        { status: 503 }
+      )
+    }
 
     // ── App URL ───────────────────────────────────────────────────────────
-    const appUrl = (process.env.NEXT_PUBLIC_APP_URL ?? '').replace(/\/$/, '')
+    const appUrl = (process.env.NEXT_PUBLIC_APP_URL ?? '').trim().replace(/\/$/, '')
     if (!appUrl) {
-      return NextResponse.json({ error: 'URL do app não configurada.' }, { status: 500 })
+      log('500 missing NEXT_PUBLIC_APP_URL')
+      return NextResponse.json(
+        { error: 'NEXT_PUBLIC_APP_URL não configurada no servidor.' },
+        { status: 500 }
+      )
     }
 
     // ── Stripe client ─────────────────────────────────────────────────────
@@ -62,41 +101,63 @@ export async function POST(request: NextRequest) {
     const stripe = new Stripe(secretKey, {
       apiVersion: '2026-03-25.dahlia' as const,
       httpClient: Stripe.createNodeHttpClient(),
+      maxNetworkRetries: 2,
+      timeout: 20_000,
     })
 
     // ── Create session ────────────────────────────────────────────────────
-    const session = await stripe.checkout.sessions.create({
-      mode: 'subscription',
-      customer_email: user.email ?? undefined,
-      payment_method_types: ['card'],
-      line_items: [{ price: priceId, quantity: 1 }],
-      subscription_data: trialDays && trialDays > 0
-        ? { trial_period_days: trialDays }
-        : undefined,
-      metadata: {
-        user_id: user.id,
-        plan_type: planType,
-        duration: String(duration),
-        payment_method: 'card',
-      },
-      success_url: trialDays
-        ? `${appUrl}/onboarding/trial-ativo`
-        : `${appUrl}/central`,
-      cancel_url: `${appUrl}/onboarding/plano`,
-    })
+    const useTrial = typeof trialDays === 'number' && trialDays > 0
+    log('creating session', { priceId, useTrial, trialDays })
 
-    if (!session.url) {
-      return NextResponse.json({ error: 'Stripe não retornou URL de checkout.' }, { status: 500 })
+    let session
+    try {
+      session = await stripe.checkout.sessions.create({
+        mode: 'subscription',
+        customer_email: user.email ?? undefined,
+        payment_method_types: ['card'],
+        line_items: [{ price: priceId, quantity: 1 }],
+        subscription_data: useTrial ? { trial_period_days: trialDays } : undefined,
+        metadata: {
+          user_id: user.id,
+          plan_type: planType,
+          duration: String(duration),
+          payment_method: 'card',
+        },
+        success_url: useTrial
+          ? `${appUrl}/onboarding/trial-ativo?session_id={CHECKOUT_SESSION_ID}`
+          : `${appUrl}/central?session_id={CHECKOUT_SESSION_ID}`,
+        cancel_url: `${appUrl}/onboarding/plano`,
+        allow_promotion_codes: true,
+      })
+    } catch (stripeErr) {
+      const msg = stripeErr instanceof Error ? stripeErr.message : String(stripeErr)
+      log('stripe API error:', msg)
+      // Common Stripe errors surfaced verbatim so user knows what to fix
+      return NextResponse.json(
+        { error: `Stripe rejeitou a requisição: ${msg}`, envKey, keyMode },
+        { status: 502 }
+      )
     }
 
+    if (!session.url) {
+      log('500 session without url')
+      return NextResponse.json(
+        { error: 'Stripe não retornou URL de checkout.' },
+        { status: 500 }
+      )
+    }
+
+    log('session created', session.id)
     return NextResponse.json({
       checkoutUrl: session.url,
+      sessionId: session.id,
       provider: 'stripe',
+      mode: keyMode,
     })
 
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Erro interno.'
-    console.error('[checkout] Erro:', message)
-    return NextResponse.json({ error: message }, { status: 500 })
+    console.error('[checkout] unexpected error:', message, error)
+    return NextResponse.json({ error: `Erro interno: ${message}` }, { status: 500 })
   }
 }

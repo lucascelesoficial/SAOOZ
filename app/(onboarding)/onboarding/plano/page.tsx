@@ -37,16 +37,36 @@ export default function OnboardingPlanoPage() {
       const res = await fetch('/api/billing/checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'same-origin',
         body: JSON.stringify({ planType: planCode, duration, paymentMethod: 'card', trialDays: TRIAL_DAYS }),
       })
-      const data = await res.json()
+
+      let data: { checkoutUrl?: string; error?: string } = {}
+      try { data = await res.json() } catch { /* non-JSON response */ }
+
       if (!res.ok) {
-        toast.error('Erro ao iniciar checkout', { description: data.error ?? 'Tente novamente.' })
+        // Redirect to login on auth failure
+        if (res.status === 401) {
+          toast.error('Sessão expirada', { description: 'Faça login novamente.' })
+          setTimeout(() => { window.location.href = '/login?next=/onboarding/plano' }, 1200)
+          return
+        }
+        const description = data.error ?? `HTTP ${res.status} — tente novamente.`
+        console.error('[checkout] error', res.status, data)
+        toast.error('Erro ao iniciar checkout', { description })
         return
       }
-      if (data.checkoutUrl) window.location.href = data.checkoutUrl
-    } catch {
-      toast.error('Erro ao iniciar checkout')
+
+      if (data.checkoutUrl) {
+        window.location.href = data.checkoutUrl
+      } else {
+        toast.error('Resposta inválida do servidor')
+      }
+    } catch (err) {
+      console.error('[checkout] network error', err)
+      toast.error('Erro de conexão', {
+        description: err instanceof Error ? err.message : 'Verifique sua internet.',
+      })
     } finally {
       setCheckingOut(null)
     }
