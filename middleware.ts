@@ -146,7 +146,10 @@ export async function middleware(request: NextRequest) {
   }
 
   if (user) {
-    // Fetch subscription + onboarding state in parallel (one round-trip)
+    // Fetch subscription + profile mode in parallel (one round-trip).
+    // NOTE: onboarding_completed_at is intentionally NOT selected here because
+    // migration 023 may not have been applied yet. Once the migration runs and
+    // backfills the column, add it back. Until then, profile.mode is the gate.
     const [{ data: sub }, { data: profile }] = await Promise.all([
       supabase
         .from('subscriptions')
@@ -157,18 +160,14 @@ export async function middleware(request: NextRequest) {
         .maybeSingle(),
       supabase
         .from('profiles')
-        .select('mode, onboarding_completed_at')
+        .select('mode')
         .eq('id', user.id)
         .maybeSingle(),
     ])
 
     const hasSubscription = !!sub
-    // Onboarding is considered complete when onboarding_completed_at is set
-    // OR when mode is already set (fallback for users who existed before migration 023).
-    // After migration 023 backfills onboarding_completed_at for all existing users,
-    // the mode fallback becomes a no-op but remains harmless.
-    const hasCompletedOnboarding =
-      !!profile?.onboarding_completed_at || !!profile?.mode
+    // mode being set means the user completed at least the mode-selection step.
+    const hasCompletedOnboarding = !!profile?.mode
 
     // ── No subscription → force plan selection ───────────────────────────
     if (!hasSubscription && !isOnboardingPlano && !isTrialConfirmRoute) {

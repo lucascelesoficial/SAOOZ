@@ -77,15 +77,8 @@ export default async function DashboardLayout({
     redirect('/onboarding')
   }
 
-  // Gate: block users who have neither mode nor onboarding_completed_at
-  // (truly new users who haven't started onboarding).
-  // Users with mode set but no onboarding_completed_at are pre-migration 023
-  // users — they pass through. After migration 023 backfills the column,
-  // the || !!profile.mode branch becomes a no-op.
-  const onboardingDone = !!profile?.onboarding_completed_at || !!profile?.mode
-  if (!onboardingDone) {
-    redirect('/onboarding')
-  }
+  // onboarding_completed_at check removed until migration 023 is applied.
+  // profile.mode (checked above) is the gate for now.
 
   if (profile.mode === 'pf' && (businesses?.length ?? 0) > 0) {
     const nextActiveBusinessId =
