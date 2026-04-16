@@ -162,8 +162,13 @@ export async function middleware(request: NextRequest) {
         .maybeSingle(),
     ])
 
-    const hasSubscription        = !!sub
-    const hasCompletedOnboarding = !!profile?.onboarding_completed_at
+    const hasSubscription = !!sub
+    // Onboarding is considered complete when onboarding_completed_at is set
+    // OR when mode is already set (fallback for users who existed before migration 023).
+    // After migration 023 backfills onboarding_completed_at for all existing users,
+    // the mode fallback becomes a no-op but remains harmless.
+    const hasCompletedOnboarding =
+      !!profile?.onboarding_completed_at || !!profile?.mode
 
     // ── No subscription → force plan selection ───────────────────────────
     if (!hasSubscription && !isOnboardingPlano && !isTrialConfirmRoute) {
@@ -175,7 +180,6 @@ export async function middleware(request: NextRequest) {
     }
 
     // ── Has subscription but onboarding incomplete → block dashboard ─────
-    // This closes the "change URL to /central" bypass completely.
     if (hasSubscription && !hasCompletedOnboarding && isProtectedRoute) {
       return applySecurityHeaders(
         NextResponse.redirect(new URL('/onboarding', request.url))

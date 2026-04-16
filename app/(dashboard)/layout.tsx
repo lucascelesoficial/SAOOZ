@@ -77,13 +77,14 @@ export default async function DashboardLayout({
     redirect('/onboarding')
   }
 
-  if (!profile?.onboarding_completed_at) {
-    // Route user to the correct incomplete step instead of generic /onboarding
-    if (profile.mode === 'pf') {
-      redirect('/onboarding/pf')
-    } else {
-      redirect('/onboarding/empresa')
-    }
+  // Gate: block users who have neither mode nor onboarding_completed_at
+  // (truly new users who haven't started onboarding).
+  // Users with mode set but no onboarding_completed_at are pre-migration 023
+  // users — they pass through. After migration 023 backfills the column,
+  // the || !!profile.mode branch becomes a no-op.
+  const onboardingDone = !!profile?.onboarding_completed_at || !!profile?.mode
+  if (!onboardingDone) {
+    redirect('/onboarding')
   }
 
   if (profile.mode === 'pf' && (businesses?.length ?? 0) > 0) {
