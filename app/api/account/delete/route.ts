@@ -3,7 +3,7 @@ import { createClient } from '@supabase/supabase-js'
 import { cookies } from 'next/headers'
 import { NextRequest, NextResponse } from 'next/server'
 import type { Database } from '@/types/database.types'
-import { requireUser, enforceRateLimit } from '@/lib/server/request-guard'
+import { enforceRateLimit } from '@/lib/server/request-guard'
 import { requireSameOrigin, rejectLargeBody, withSecurityHeaders } from '@/lib/server/security'
 import { logAuditEvent, getClientIp } from '@/lib/server/audit'
 

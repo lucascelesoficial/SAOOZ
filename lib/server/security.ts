@@ -186,10 +186,11 @@ function safeParseUrl(url: string): URL | null {
 function timingSafeEqual(a: string, b: string): boolean {
   if (a.length !== b.length) {
     // Still iterate to prevent length-based timing oracle
-    let acc = 1
+    let _acc = 1
     for (let i = 0; i < Math.max(a.length, b.length); i++) {
-      acc |= (a.charCodeAt(i) ?? 0) ^ (b.charCodeAt(i) ?? 0)
+      _acc |= (a.charCodeAt(i) ?? 0) ^ (b.charCodeAt(i) ?? 0)
     }
+    void _acc
     return false
   }
   let acc = 0
