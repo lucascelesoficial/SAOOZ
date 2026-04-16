@@ -13,6 +13,7 @@ import {
   XCircle,
 } from 'lucide-react'
 import { toast } from 'sonner'
+import { StepUpDialog } from '@/components/security/StepUpDialog'
 import { formatCurrency } from '@/lib/utils/formatters'
 import {
   BILLING_DURATIONS,
@@ -97,6 +98,7 @@ export function PlanosClient({ snapshot }: PlanosClientProps) {
   const [checkingOut, setCheckingOut] = useState<string | null>(null)
   const [canceling, setCanceling] = useState(false)
   const [cancelConfirm, setCancelConfirm] = useState(false)
+  const [cancelStepUpOpen, setCancelStepUpOpen] = useState(false)
   const [localCancelScheduled, setLocalCancelScheduled] = useState(
     snapshot.subscription.cancel_at_period_end
   )
@@ -518,6 +520,18 @@ export function PlanosClient({ snapshot }: PlanosClientProps) {
               : ''}
           </p>
 
+          <StepUpDialog
+            open={cancelStepUpOpen}
+            onClose={() => setCancelStepUpOpen(false)}
+            onConfirmed={() => {
+              setCancelStepUpOpen(false)
+              setCancelConfirm(true)
+            }}
+            title="Confirme sua identidade"
+            description="Para cancelar sua assinatura, confirme sua senha antes de continuar."
+            confirmVariant="warning"
+          />
+
           {cancelConfirm ? (
             <div className="mt-4 space-y-3">
               <p
@@ -550,7 +564,7 @@ export function PlanosClient({ snapshot }: PlanosClientProps) {
             </div>
           ) : (
             <button
-              onClick={() => setCancelConfirm(true)}
+              onClick={() => setCancelStepUpOpen(true)}
               className="mt-4 rounded-[8px] border px-4 py-2 text-sm font-medium transition-colors"
               style={{
                 borderColor: 'color-mix(in oklab, #f87171 30%, transparent)',

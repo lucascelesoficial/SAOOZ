@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Modal } from '@/components/ui/Modal'
+import { StepUpDialog } from '@/components/security/StepUpDialog'
 import { createClient } from '@/lib/supabase/client'
 import type { Database } from '@/types/database.types'
 
@@ -66,6 +67,7 @@ export default function ConfiguracoesPage() {
   const [deletingAccount, setDeletingAccount] = useState(false)
   const [deleteModalOpen, setDeleteModalOpen] = useState(false)
   const [deleteConfirmation, setDeleteConfirmation] = useState('')
+  const [stepUpOpen, setStepUpOpen] = useState(false)
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null)
   const [cpf, setCpf] = useState('')
   const [savingCpf, setSavingCpf] = useState(false)
@@ -439,16 +441,27 @@ export default function ConfiguracoesPage() {
         <p className="text-sm text-app-base mb-4">A exclusão da conta é irreversível e remove todos os seus dados permanentemente.</p>
         <Button
           variant="outline"
-          onClick={() => {
-            setDeleteConfirmation('')
-            setDeleteModalOpen(true)
-          }}
+          onClick={() => setStepUpOpen(true)}
           className="rounded-[8px] w-full"
           style={{ borderColor: '#f87171', color: '#f87171' }}
         >
           Excluir minha conta
         </Button>
       </div>
+
+      {/* Step-up auth before destructive deletion */}
+      <StepUpDialog
+        open={stepUpOpen}
+        onClose={() => setStepUpOpen(false)}
+        onConfirmed={() => {
+          setStepUpOpen(false)
+          setDeleteConfirmation('')
+          setDeleteModalOpen(true)
+        }}
+        title="Confirme sua identidade"
+        description="Para excluir sua conta, confirme sua senha antes de continuar."
+        confirmVariant="danger"
+      />
 
       <Modal
         open={deleteModalOpen}

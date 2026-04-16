@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import { AlertTriangle, Building2, Camera, Check, Loader2, Shield, User, X } from 'lucide-react'
+import { StepUpDialog } from '@/components/security/StepUpDialog'
 import { createClient } from '@/lib/supabase/client'
 import { useBusinessData } from '@/lib/context/BusinessDataContext'
 import type { BusinessActivity, BusinessTaxRegime } from '@/types/database.types'
@@ -140,10 +141,12 @@ export default function EmpresaConfiguracoesPage() {
   const [deleteOpen, setDeleteOpen] = useState(false)
   const [deletingAcct, setDeletingAcct] = useState(false)
   const [deleteConfirmation, setDeleteConfirmation] = useState('')
+  const [stepUpAccountOpen, setStepUpAccountOpen] = useState(false)
 
   const [deleteBizOpen, setDeleteBizOpen] = useState(false)
   const [deletingBiz, setDeletingBiz] = useState(false)
   const [deleteBizConfirm, setDeleteBizConfirm] = useState('')
+  const [stepUpBizOpen, setStepUpBizOpen] = useState(false)
 
   const hasLength = newPass.length >= 8
   const hasNumber = /[0-9]/.test(newPass)
@@ -592,7 +595,7 @@ export default function EmpresaConfiguracoesPage() {
             <p className="text-xs font-semibold text-app-base mb-1">Excluir perfil empresarial</p>
             <p className="text-xs text-app-soft mb-2">Remove esta empresa e todos os seus dados financeiros (receitas, despesas). Sua conta continua ativa.</p>
             <button
-              onClick={() => { setDeleteBizConfirm(''); setDeleteBizOpen(true) }}
+              onClick={() => setStepUpBizOpen(true)}
               className="w-full h-9 rounded-[9px] text-sm font-semibold transition-all"
               style={{ background: 'transparent', border: '1px solid #f8717130', color: '#f87171' }}
             >
@@ -603,7 +606,7 @@ export default function EmpresaConfiguracoesPage() {
             <p className="text-xs font-semibold text-app-base mb-1">Excluir minha conta</p>
             <p className="text-xs text-app-soft mb-2">Esta ação é irreversível e apagará todos os seus dados.</p>
             <button
-              onClick={() => { setDeleteConfirmation(''); setDeleteOpen(true) }}
+              onClick={() => setStepUpAccountOpen(true)}
               className="w-full h-9 rounded-[9px] text-sm font-semibold transition-all"
               style={{ background: 'transparent', border: '1px solid #f8717140', color: '#f87171' }}
             >
@@ -612,6 +615,34 @@ export default function EmpresaConfiguracoesPage() {
           </div>
         </div>
       </SectionCard>
+
+      {/* Step-up: delete business */}
+      <StepUpDialog
+        open={stepUpBizOpen}
+        onClose={() => setStepUpBizOpen(false)}
+        onConfirmed={() => {
+          setStepUpBizOpen(false)
+          setDeleteBizConfirm('')
+          setDeleteBizOpen(true)
+        }}
+        title="Confirme sua identidade"
+        description="Para excluir o perfil empresarial, confirme sua senha antes de continuar."
+        confirmVariant="danger"
+      />
+
+      {/* Step-up: delete account */}
+      <StepUpDialog
+        open={stepUpAccountOpen}
+        onClose={() => setStepUpAccountOpen(false)}
+        onConfirmed={() => {
+          setStepUpAccountOpen(false)
+          setDeleteConfirmation('')
+          setDeleteOpen(true)
+        }}
+        title="Confirme sua identidade"
+        description="Para excluir sua conta, confirme sua senha antes de continuar."
+        confirmVariant="danger"
+      />
 
       {/* Modal exclusão empresa */}
       {deleteBizOpen && (
