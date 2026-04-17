@@ -1,5 +1,8 @@
 // ─── Email HTML Templates ───────────────────────────────────────────────────
 // All templates share the same dark-brand wrapper for a premium feel.
+// Brand palette: bg #06080f, card #0e1017, blue #3b82f6, cyan #0ea5e9
+
+const YEAR = new Date().getFullYear()
 
 const wrapper = (content: string) => `
 <!DOCTYPE html>
@@ -9,33 +12,34 @@ const wrapper = (content: string) => `
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>SAOOZ</title>
 </head>
-<body style="margin:0;padding:0;background:#06080f;font-family:'Segoe UI',Arial,sans-serif;">
+<body style="margin:0;padding:0;background:#06080f;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif;">
   <table width="100%" cellpadding="0" cellspacing="0" style="background:#06080f;">
     <tr>
       <td align="center" style="padding:40px 16px;">
         <table width="560" cellpadding="0" cellspacing="0" style="max-width:560px;width:100%;">
-          <!-- Logo -->
+          <!-- Wordmark -->
           <tr>
             <td align="center" style="padding-bottom:32px;">
-              <span style="font-size:28px;font-weight:800;letter-spacing:-1px;color:#fff;">
-                SAO<span style="color:#8b5cf6;">OZ</span>
+              <span style="font-size:26px;font-weight:800;letter-spacing:-0.5px;color:#f1f5f9;">
+                S<span style="color:#3b82f6;">A</span>OOZ
               </span>
             </td>
           </tr>
           <!-- Card -->
           <tr>
-            <td style="background:#0e1017;border:1px solid #1e2030;border-radius:16px;padding:40px 36px;">
+            <td style="background:#0e1017;border:1px solid #1e293b;border-radius:16px;padding:40px 36px;">
               ${content}
             </td>
           </tr>
           <!-- Footer -->
           <tr>
-            <td align="center" style="padding-top:24px;">
-              <p style="margin:0;font-size:12px;color:#4b5563;">
-                © ${new Date().getFullYear()} SAOOZ · <a href="https://saooz.com" style="color:#6b7280;text-decoration:none;">saooz.com</a>
+            <td align="center" style="padding-top:28px;">
+              <p style="margin:0;font-size:12px;color:#374151;">
+                © ${YEAR} SAOOZ &nbsp;·&nbsp;
+                <a href="https://saooz.com" style="color:#4b5563;text-decoration:none;">saooz.com</a>
               </p>
-              <p style="margin:4px 0 0;font-size:11px;color:#374151;">
-                Você está recebendo este email porque tem uma conta no SAOOZ.
+              <p style="margin:6px 0 0;font-size:11px;color:#1f2937;">
+                Você está recebendo este e-mail porque tem uma conta no SAOOZ.
               </p>
             </td>
           </tr>
@@ -48,30 +52,36 @@ const wrapper = (content: string) => `
 `
 
 const h1 = (text: string) =>
-  `<h1 style="margin:0 0 8px;font-size:22px;font-weight:700;color:#fff;">${text}</h1>`
+  `<h1 style="margin:0 0 8px;font-size:22px;font-weight:700;color:#f1f5f9;">${text}</h1>`
 
 const p = (text: string) =>
-  `<p style="margin:0 0 20px;font-size:15px;line-height:1.6;color:#9ca3af;">${text}</p>`
+  `<p style="margin:0 0 20px;font-size:15px;line-height:1.65;color:#94a3b8;">${text}</p>`
 
-const btn = (href: string, label: string, color = '#8b5cf6') =>
-  `<a href="${href}" style="display:inline-block;padding:14px 32px;background:${color};color:#fff;font-size:15px;font-weight:600;border-radius:10px;text-decoration:none;">${label}</a>`
+const btn = (href: string, label: string) =>
+  `<a href="${href}" style="display:inline-block;padding:14px 32px;background:linear-gradient(135deg,#3b82f6,#0ea5e9);color:#fff;font-size:15px;font-weight:700;border-radius:10px;text-decoration:none;letter-spacing:0.2px;">${label}</a>`
 
 const divider = () =>
-  `<hr style="margin:28px 0;border:none;border-top:1px solid #1e2030;" />`
+  `<hr style="margin:28px 0;border:none;border-top:1px solid #1e293b;" />`
 
 const small = (text: string) =>
-  `<p style="margin:16px 0 0;font-size:12px;color:#4b5563;">${text}</p>`
+  `<p style="margin:16px 0 0;font-size:12px;color:#475569;">${text}</p>`
 
-// ─── Welcome ──────────────────────────────────────────────────────────────────
+// ─── Confirm signup (Resend-sent version) ─────────────────────────────────────
 export function welcomeEmail(name: string, confirmUrl: string) {
   return wrapper(`
-    ${h1('Bem-vindo ao SAOOZ 👋')}
-    ${p(`Olá ${name}, sua conta foi criada com sucesso. Confirme seu email para ativar o acesso completo à plataforma.`)}
-    <div style="text-align:center;margin:28px 0;">
-      ${btn(confirmUrl, 'Confirmar meu email')}
+    <div style="text-align:center;margin-bottom:28px;">
+      <div style="display:inline-block;background:#1e3a5f;border:1px solid #1d4ed830;border-radius:50%;width:60px;height:60px;line-height:60px;font-size:26px;">
+        ✉️
+      </div>
+    </div>
+    ${h1('Confirme seu e-mail')}
+    ${p(`Olá${name ? ` <strong style="color:#e2e8f0;">${name}</strong>` : ''},`)}
+    ${p('Sua conta SAOOZ foi criada com sucesso. Clique no botão abaixo para confirmar seu endereço de e-mail e ter acesso completo à plataforma.')}
+    <div style="text-align:center;margin:32px 0;">
+      ${btn(confirmUrl, 'Confirmar meu e-mail →')}
     </div>
     ${divider()}
-    ${small('Se você não criou uma conta no SAOOZ, ignore este email com segurança.')}
+    ${small('Se você não criou uma conta no SAOOZ, ignore este e-mail com segurança. Nenhuma ação será tomada.')}
   `)
 }
 
@@ -79,7 +89,7 @@ export function welcomeEmail(name: string, confirmUrl: string) {
 export function trialStartedEmail(name: string, plan: string, trialEnd: string) {
   return wrapper(`
     ${h1('Seu teste grátis começou 🚀')}
-    ${p(`Olá ${name}, você agora tem <strong style="color:#fff;">7 dias grátis</strong> no plano <strong style="color:#8b5cf6;">${plan}</strong>.`)}
+    ${p(`Olá ${name}, você agora tem <strong style="color:#fff;">7 dias grátis</strong> no plano <strong style="color:#3b82f6;">${plan}</strong>.`)}
     ${p(`Explore todos os recursos sem limites. Seu período de teste termina em <strong style="color:#fff;">${trialEnd}</strong>.`)}
     <div style="background:#0a0c13;border:1px solid #1e2030;border-radius:12px;padding:20px 24px;margin:20px 0;">
       <p style="margin:0 0 12px;font-size:13px;font-weight:600;color:#6b7280;text-transform:uppercase;letter-spacing:.05em;">O que você pode fazer agora</p>
@@ -101,10 +111,10 @@ export function trialStartedEmail(name: string, plan: string, trialEnd: string) 
 export function trialEndingSoonEmail(name: string, plan: string, daysLeft: number) {
   return wrapper(`
     ${h1(`Seu teste termina em ${daysLeft} dias ⏳`)}
-    ${p(`Olá ${name}, seu período grátis no plano <strong style="color:#8b5cf6;">${plan}</strong> está chegando ao fim.`)}
+    ${p(`Olá ${name}, seu período grátis no plano <strong style="color:#3b82f6;">${plan}</strong> está chegando ao fim.`)}
     ${p('Continue com acesso completo e não perca o controle das suas finanças.')}
     <div style="text-align:center;margin:28px 0;">
-      ${btn('https://saooz.com/planos', 'Manter meu plano', '#7c3aed')}
+      ${btn('https://saooz.com/planos', 'Manter meu plano')}
     </div>
     ${divider()}
     ${small('Se preferir cancelar, basta não fazer nada — nenhum valor será cobrado automaticamente sem sua confirmação.')}
@@ -115,7 +125,7 @@ export function trialEndingSoonEmail(name: string, plan: string, daysLeft: numbe
 export function subscriptionActiveEmail(name: string, plan: string, nextBilling: string) {
   return wrapper(`
     ${h1('Assinatura ativada com sucesso ✅')}
-    ${p(`Olá ${name}, sua assinatura do plano <strong style="color:#8b5cf6;">${plan}</strong> está ativa.`)}
+    ${p(`Olá ${name}, sua assinatura do plano <strong style="color:#3b82f6;">${plan}</strong> está ativa.`)}
     <div style="background:#0a0c13;border:1px solid #1a2d1a;border-radius:12px;padding:20px 24px;margin:20px 0;">
       <table width="100%" cellpadding="0" cellspacing="0">
         <tr>
@@ -221,7 +231,7 @@ export function overdueAlertEmail(
     ${h1(`Atenção: ${count} lançamento${count !== 1 ? 's' : ''} em atraso ⚠️`)}
     ${p(`Olá ${name}, você possui <strong style="color:#f87171;">${count} lançamento${count !== 1 ? 's' : ''} em atraso</strong>, totalizando <strong style="color:#fff;">${formatted}</strong>. Regularize o quanto antes para manter suas finanças em dia.`)}
     <div style="text-align:center;margin:28px 0;">
-      ${btn(dashUrl, 'Resolver agora', '#f87171')}
+      ${btn(dashUrl, 'Resolver agora')}
     </div>
     ${divider()}
     ${small('Acesse o SAOOZ para marcar como pago ou renegociar os lançamentos. <a href="https://saooz.com/configuracoes" style="color:#6b7280;">Gerenciar notificações</a>')}
