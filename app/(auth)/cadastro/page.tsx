@@ -112,11 +112,32 @@ export default function CadastroPage() {
     setLoading(false)
 
     if (error) {
-      // Never expose raw Supabase error messages — they reveal account existence
-      // ("User already registered", "Email rate limit exceeded", etc.)
-      toast.error('Erro ao criar conta', {
-        description: 'Verifique os dados e tente novamente. Se o problema persistir, entre em contato com o suporte.',
-      })
+      // Log the real error so it appears in Vercel / browser console for debugging.
+      console.error('[cadastro] signUp error:', error.message, 'status:', error.status)
+
+      const msg = error.message?.toLowerCase() ?? ''
+
+      if (msg.includes('rate limit') || msg.includes('too many') || error.status === 429) {
+        toast.error('Muitas tentativas', {
+          description: 'Limite de cadastros atingido. Aguarde alguns minutos e tente novamente.',
+        })
+      } else if (msg.includes('already registered') || msg.includes('already exists') || msg.includes('user already')) {
+        toast.error('E-mail já cadastrado', {
+          description: 'Este e-mail já possui uma conta. Faça login ou use outro e-mail.',
+        })
+      } else if (msg.includes('invalid email') || msg.includes('unable to validate')) {
+        toast.error('E-mail inválido', {
+          description: 'Verifique o endereço de e-mail e tente novamente.',
+        })
+      } else if (msg.includes('signup') && msg.includes('disabled')) {
+        toast.error('Cadastro indisponível', {
+          description: 'O cadastro está temporariamente desativado. Tente novamente mais tarde.',
+        })
+      } else {
+        toast.error('Erro ao criar conta', {
+          description: 'Verifique os dados e tente novamente. Se o problema persistir, entre em contato com o suporte.',
+        })
+      }
       return
     }
 
