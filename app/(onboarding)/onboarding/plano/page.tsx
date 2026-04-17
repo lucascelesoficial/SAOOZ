@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase/server'
 import { getBillingSnapshot } from '@/lib/billing/server'
 import { PlanoClient } from './PlanoClient'
 import type { SubscriptionPlanType } from '@/types/database.types'
+import type { BillingDuration } from '@/lib/billing/plans'
 
 interface PageProps {
   searchParams: Promise<{ feature?: string }>
@@ -13,6 +14,7 @@ async function PlanoPageContent({ searchParams }: PageProps) {
 
   // Fetch billing state — anonymous or new users get null (show default trial CTA)
   let currentPlanType: SubscriptionPlanType | null = null
+  let currentDuration: BillingDuration = 1
   let isInTrial = false
   let isPaid = false
   let trialDaysRemaining = 0
@@ -23,12 +25,12 @@ async function PlanoPageContent({ searchParams }: PageProps) {
 
     if (user) {
       const snapshot = await getBillingSnapshot(user.id)
-      // Only mark as "has active sub" if there is a real Stripe subscription
-      // (gateway set) or a paid/trial access — ignore default fake rows (gateway=null)
-      // that ensureSubscription() creates for every dashboard visitor.
+      // Only consider real Stripe subscriptions (gateway set) — ignore default
+      // fake rows (gateway=null) that ensureSubscription() creates for every visitor.
       const hasRealSub = !!snapshot.subscription.gateway
       if (hasRealSub || snapshot.paidAccess || snapshot.trialAccess) {
         currentPlanType = snapshot.subscription.plan_type as SubscriptionPlanType
+        currentDuration = (snapshot.subscription.billing_duration_months ?? 1) as BillingDuration
         isInTrial = snapshot.trialAccess
         isPaid = snapshot.paidAccess
         trialDaysRemaining = snapshot.trialDaysRemaining
@@ -41,6 +43,7 @@ async function PlanoPageContent({ searchParams }: PageProps) {
   return (
     <PlanoClient
       currentPlanType={currentPlanType}
+      currentDuration={currentDuration}
       isInTrial={isInTrial}
       isPaid={isPaid}
       trialDaysRemaining={trialDaysRemaining}

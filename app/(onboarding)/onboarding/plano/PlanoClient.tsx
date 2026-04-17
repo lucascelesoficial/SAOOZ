@@ -30,6 +30,8 @@ interface PlanoClientProps {
   isPaid: boolean
   /** Days remaining in trial (0 if not in trial) */
   trialDaysRemaining: number
+  /** The exact billing duration of the current subscription (1/3/6/12) */
+  currentDuration: BillingDuration
   /** Context hint — e.g. "business" when coming from the business CTA */
   feature?: string | null
 }
@@ -41,22 +43,38 @@ export function PlanoClient({
   isInTrial,
   isPaid,
   trialDaysRemaining,
+  currentDuration,
   feature,
 }: PlanoClientProps) {
-  const [duration, setDuration] = useState<BillingDuration>(1)
+  // Default duration selector to the user's current duration so the active
+  // plan is highlighted immediately on open.
+  const [duration, setDuration] = useState<BillingDuration>(currentDuration)
   const [checkingOut, setCheckingOut] = useState<string | null>(null)
 
   const hasActiveSub = isInTrial || isPaid
   const currentRank = PLAN_RANK[currentPlanType ?? ''] ?? -1
 
-  // Whether a plan is the user's current active plan
+  /**
+   * A plan card is "active" only when BOTH plan type AND the currently
+   * selected duration match the user's existing subscription exactly.
+   * Viewing the same plan at a different duration is NOT "active" — it's
+   * an upgrade (longer) or a regular checkout (shorter).
+   */
   function isCurrentPlan(planCode: SubscriptionPlanType) {
-    return currentPlanType === planCode && hasActiveSub
+    return currentPlanType === planCode && duration === currentDuration && hasActiveSub
   }
 
-  // Whether this plan is an upgrade relative to the current one
+  /**
+   * An option is an "upgrade" when:
+   * - It is a strictly higher-tier plan (pj > pf, pro > pj), OR
+   * - It is the same plan type but a longer duration (better value, higher commitment)
+   */
   function isUpgrade(planCode: SubscriptionPlanType) {
-    return hasActiveSub && (PLAN_RANK[planCode] ?? -1) > currentRank
+    if (!hasActiveSub) return false
+    const planRank = PLAN_RANK[planCode] ?? -1
+    if (planRank > currentRank) return true                          // higher tier
+    if (planRank === currentRank && duration > currentDuration) return true  // same tier, longer
+    return false
   }
 
   // Button label and state
@@ -72,13 +90,15 @@ export function PlanoClient({
     }
     if (isUpgrade(planCode)) {
       return {
-        label: `Fazer upgrade para ${PLAN_CATALOG[planCode].name}`,
+        label: `Fazer upgrade`,
         disabled: false,
         isUpgrade: true,
       }
     }
+    // No active sub → standard trial CTA
+    // Same plan + shorter duration → allow checkout (customer is choosing to pay monthly)
     return {
-      label: `Começar ${TRIAL_DAYS} dias grátis`,
+      label: hasActiveSub ? 'Assinar plano' : `Começar ${TRIAL_DAYS} dias grátis`,
       disabled: false,
     }
   }

@@ -121,9 +121,35 @@ export function PlanosClient({ snapshot }: PlanosClientProps) {
   // Plan rank for upgrade eligibility
   const PLAN_RANK: Record<string, number> = { pf: 0, pj: 1, pro: 2 }
   const currentRank = PLAN_RANK[snapshot.subscription.plan_type] ?? -1
+  const currentSubDuration = (snapshot.subscription.billing_duration_months ?? 1) as BillingDuration
   const hasActiveSub = snapshot.paidAccess || isInTrial
 
-  // Paid users: in-app proration upgrade
+  /**
+   * A card is the "active" plan only when plan type AND the currently
+   * selected duration BOTH match the user's actual subscription.
+   */
+  function isActivePlan(planCode: SubscriptionPlanType) {
+    return (
+      hasActiveSub &&
+      snapshot.subscription.plan_type === planCode &&
+      duration === currentSubDuration
+    )
+  }
+
+  /**
+   * An option is an upgrade when:
+   * - Higher plan tier (pro > pj > pf), OR
+   * - Same plan tier but longer duration (better value)
+   */
+  function isAnUpgrade(planCode: SubscriptionPlanType) {
+    if (!hasActiveSub || localCancelScheduled) return false
+    const rank = PLAN_RANK[planCode] ?? -1
+    if (rank > currentRank) return true
+    if (rank === currentRank && duration > currentSubDuration) return true
+    return false
+  }
+
+  // Paid users: in-app proration upgrade (higher tier only)
   function canUpgrade(planCode: SubscriptionPlanType) {
     return (
       snapshot.paidAccess &&
@@ -132,13 +158,13 @@ export function PlanosClient({ snapshot }: PlanosClientProps) {
     )
   }
 
-  // Trial users: checkout a higher plan (no new trial — server handles reuse prevention)
+  // Trial users: checkout a higher plan or longer duration (no new trial)
   function canTrialUpgrade(planCode: SubscriptionPlanType) {
     return (
       isInTrial &&
       !snapshot.paidAccess &&
       !localCancelScheduled &&
-      (PLAN_RANK[planCode] ?? -1) > currentRank
+      isAnUpgrade(planCode)
     )
   }
 
@@ -479,7 +505,7 @@ export function PlanosClient({ snapshot }: PlanosClientProps) {
           const plan = PLAN_CATALOG[planCode]
           const pricing = getPlanPriceForDuration(planCode, duration)
           const isCurrentPlan = snapshot.subscription.plan_type === planCode
-          const isActiveCurrentPlan = isCurrentPlan && hasActiveSub
+          const isActiveCurrentPlan = isActivePlan(planCode)
 
           return (
             <article
@@ -578,8 +604,8 @@ export function PlanosClient({ snapshot }: PlanosClientProps) {
               </div>
 
               <div className="mt-5 space-y-2">
-                {/* ── Current plan badge ─────────────────────────────────── */}
-                {isCurrentPlan && hasActiveSub && (
+                {/* ── Active plan indicator ──────────────────────────────── */}
+                {isActiveCurrentPlan && (
                   <div
                     className="flex items-center justify-center gap-2 rounded-[10px] border py-2 text-sm font-semibold"
                     style={{
@@ -601,7 +627,7 @@ export function PlanosClient({ snapshot }: PlanosClientProps) {
 
                 {/* ── Action button ──────────────────────────────────────── */}
                 {canUpgrade(planCode) ? (
-                  // Paid user → in-app proration upgrade
+                  // Paid user, higher tier → in-app proration upgrade
                   <button
                     onClick={() => handleUpgradePreview(planCode)}
                     disabled={upgrading}
@@ -612,7 +638,7 @@ export function PlanosClient({ snapshot }: PlanosClientProps) {
                     {upgrading ? 'Calculando...' : `Fazer upgrade para ${plan.name}`}
                   </button>
                 ) : canTrialUpgrade(planCode) ? (
-                  // Trial user → new checkout for higher plan (no new trial)
+                  // Trial user, higher tier or longer duration → new checkout (no new trial)
                   <button
                     onClick={() => handleCheckout(planCode)}
                     disabled={!!checkingOut}
@@ -622,8 +648,8 @@ export function PlanosClient({ snapshot }: PlanosClientProps) {
                     <ArrowUpCircle className="mr-1.5 h-4 w-4" />
                     {checkingOut === `${planCode}-card` ? 'Aguarde...' : `Fazer upgrade para ${plan.name}`}
                   </button>
-                ) : !isCurrentPlan ? (
-                  // No active sub or lower plan → standard checkout
+                ) : !isActiveCurrentPlan ? (
+                  // No active sub, or same plan at different duration → standard checkout
                   <button
                     onClick={() => handleCheckout(planCode)}
                     disabled={!!checkingOut}
