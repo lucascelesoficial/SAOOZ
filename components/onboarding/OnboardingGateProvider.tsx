@@ -1,7 +1,7 @@
 'use client'
 
 import { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react'
-import { AlertCircle, ArrowRight, Lock, X } from 'lucide-react'
+import { ArrowRight, Lock, X } from 'lucide-react'
 
 /**
  * OnboardingGate (client)
