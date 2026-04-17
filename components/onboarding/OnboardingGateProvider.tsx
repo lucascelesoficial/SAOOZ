@@ -1,20 +1,18 @@
 'use client'
 
 import { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react'
-import { AlertCircle, ArrowRight, X } from 'lucide-react'
+import { AlertCircle, ArrowRight, Lock, X } from 'lucide-react'
 
 /**
  * OnboardingGate (client)
  *
  * Quando o usuário pula o cadastro, `profiles.onboarding_completed_at` fica
- * NULL. Qualquer ação de mutação (criar transação, salvar empresa, etc.)
- * precisa passar por este gate antes de executar.
+ * NULL. O dashboard fica visível mas completamente bloqueado para interação:
  *
- * Uso:
- *   const gate = useOnboardingGate()
- *   gate.guard(() => createTransaction(...))   // executa ou bloqueia
- *
- * Também expõe `required` (boolean) — páginas podem mostrar UX específico.
+ *  1. Glass pane invisível sobre todo o conteúdo — qualquer clique abre o modal
+ *  2. Banner persistente no topo com CTA "Finalizar"
+ *  3. API routes retornam 403 + X-Onboarding-Required → interceptor mostra modal
+ *  4. guard() para wrap explícito em callbacks
  */
 
 interface OnboardingGateContext {
@@ -36,10 +34,13 @@ export function useOnboardingGate() {
 }
 
 interface ProviderProps {
-  required: boolean                  // onboarding_completed_at IS NULL
-  nextHref: string                   // /onboarding/pf or /onboarding/empresa
+  required: boolean       // onboarding_completed_at IS NULL
+  nextHref: string        // /onboarding/pf or /onboarding/empresa
   children: React.ReactNode
 }
+
+// Altura do banner de aviso (px) — usada para posicionar o glass pane
+const BANNER_HEIGHT = 44
 
 export function OnboardingGateProvider({
   required,
@@ -53,10 +54,9 @@ export function OnboardingGateProvider({
   const hide = useCallback(() => setOpen(false), [])
 
   // ── Global fetch interceptor ──────────────────────────────────────────────
-  // Server-side rotas de mutação retornam 403 + header `X-Onboarding-Required`
-  // quando o cadastro está pendente. Aqui detectamos e abrimos o modal — isso
-  // cobre qualquer fetch (formulários, context providers, componentes que não
-  // usaram guard() explicitamente).
+  // API routes de mutação retornam 403 + X-Onboarding-Required quando o
+  // cadastro está pendente. Capturamos aqui para cobrir qualquer fetch que
+  // não usou guard() explicitamente.
   useEffect(() => {
     if (typeof window === 'undefined') return
     if (patchedRef.current) return
@@ -94,18 +94,21 @@ export function OnboardingGateProvider({
     <Ctx.Provider value={{ required, guard, show, hide }}>
       {children}
 
-      {/* Persistent top banner — sempre visível quando cadastro pendente */}
+      {/* ── Banner persistente ─────────────────────────────────────────────
+          Sempre visível no topo quando cadastro pendente. z-40 para ficar
+          acima do glass pane (z-[38]) e do modal (z-[90] quando aberto).   */}
       {required && (
         <div
           className="fixed top-0 left-0 right-0 z-40 flex items-center justify-between gap-3 px-4 py-2.5 text-sm"
           style={{
-            background: 'linear-gradient(90deg, #f59e0b20, #f59e0b10)',
+            background: 'linear-gradient(90deg, #f59e0b22, #f59e0b0e)',
             borderBottom: '1px solid #f59e0b40',
-            backdropFilter: 'blur(8px)',
+            backdropFilter: 'blur(10px)',
+            height: `${BANNER_HEIGHT}px`,
           }}
         >
           <div className="flex items-center gap-2 min-w-0">
-            <AlertCircle className="h-4 w-4 shrink-0" style={{ color: '#f59e0b' }} />
+            <Lock className="h-4 w-4 shrink-0" style={{ color: '#f59e0b' }} />
             <span className="truncate text-app">
               <strong className="font-semibold">Cadastro pendente.</strong>{' '}
               <span className="text-app-soft">Finalize para liberar todas as funções.</span>
@@ -113,7 +116,7 @@ export function OnboardingGateProvider({
           </div>
           <a
             href={nextHref}
-            className="shrink-0 inline-flex items-center gap-1 rounded-md px-3 py-1 text-xs font-semibold text-white transition-colors"
+            className="shrink-0 inline-flex items-center gap-1 rounded-md px-3 py-1 text-xs font-semibold text-white transition-opacity hover:opacity-90"
             style={{ background: '#f59e0b' }}
           >
             Finalizar
@@ -122,11 +125,36 @@ export function OnboardingGateProvider({
         </div>
       )}
 
-      {/* Blocking modal — appears when guard() is triggered */}
-      {open && required && (
+      {/* ── Glass pane ─────────────────────────────────────────────────────
+          Camada invisível sobre o conteúdo do dashboard que captura TODOS
+          os cliques quando o cadastro está pendente. Fica abaixo do banner
+          (z-40) mas acima de qualquer conteúdo normal (z < 38).
+          Ao clicar em qualquer lugar do dashboard → abre o modal.           */}
+      {required && !open && (
+        <div
+          aria-hidden="true"
+          onClick={show}
+          style={{
+            position: 'fixed',
+            top: `${BANNER_HEIGHT}px`,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            zIndex: 38,
+            cursor: 'not-allowed',
+            // totalmente transparente — só captura eventos
+            background: 'transparent',
+          }}
+        />
+      )}
+
+      {/* ── Modal de bloqueio ──────────────────────────────────────────────
+          Abre quando guard() é chamado, quando o glass pane é clicado, ou
+          quando uma API route retorna 403 + X-Onboarding-Required.          */}
+      {open && (
         <div
           className="fixed inset-0 z-[90] flex items-center justify-center p-4"
-          style={{ background: 'rgba(0, 0, 0, 0.6)', backdropFilter: 'blur(4px)' }}
+          style={{ background: 'rgba(0, 0, 0, 0.65)', backdropFilter: 'blur(6px)' }}
           onClick={hide}
         >
           <div
@@ -135,13 +163,13 @@ export function OnboardingGateProvider({
           >
             <div className="flex items-start justify-between gap-3">
               <div
-                className="h-11 w-11 rounded-full flex items-center justify-center"
+                className="h-11 w-11 rounded-full flex items-center justify-center shrink-0"
                 style={{
                   background: 'color-mix(in oklab, #f59e0b 15%, transparent)',
                   border: '1px solid color-mix(in oklab, #f59e0b 30%, transparent)',
                 }}
               >
-                <AlertCircle className="h-5 w-5" style={{ color: '#f59e0b' }} />
+                <Lock className="h-5 w-5" style={{ color: '#f59e0b' }} />
               </div>
               <button
                 onClick={hide}
@@ -156,9 +184,8 @@ export function OnboardingGateProvider({
               <h2 className="text-lg font-extrabold text-app">
                 Finalize seu cadastro primeiro
               </h2>
-              <p className="text-sm text-app-soft">
-                Pra criar, atualizar ou operar seu painel, precisamos que você complete
-                o cadastro de PF ou PJ. Leva menos de 2 minutos.
+              <p className="text-sm text-app-soft leading-relaxed">
+                O painel está bloqueado até você completar o cadastro. Leva menos de 2 minutos e libera tudo: despesas, receitas, investimentos e IA.
               </p>
             </div>
 
@@ -168,7 +195,7 @@ export function OnboardingGateProvider({
                 className="flex-1 h-10 rounded-[10px] text-sm font-medium text-app-soft transition-colors hover:text-app"
                 style={{ border: '1px solid var(--panel-border)', background: 'transparent' }}
               >
-                Agora não
+                Ver o painel
               </button>
               <a
                 href={nextHref}
