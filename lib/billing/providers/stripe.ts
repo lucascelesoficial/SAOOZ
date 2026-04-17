@@ -22,6 +22,8 @@ const stripeCheckoutMetadataSchema = z.object({
   plan_type: planTypeSchema,
   duration: z.coerce.number().pipe(durationSchema),
   payment_method: paymentMethodSchema,
+  // Present when checkout was created with a trial period
+  trial_days: z.coerce.number().int().min(0).optional(),
 })
 
 const stripeCheckoutSessionSchema = z.object({
@@ -112,11 +114,13 @@ export class StripeProvider implements PaymentProvider {
 
     const stripe = await this.getStripeClient()
 
-    const metadata = {
+    const trialDays = input.trialDays && input.trialDays > 0 ? input.trialDays : 0
+    const metadata: Record<string, string> = {
       user_id: input.userId,
       plan_type: input.planType,
       duration: String(input.durationMonths),
       payment_method: input.paymentMethod,
+      trial_days: String(trialDays),
     }
 
     // Always subscription mode — uses the pre-created recurring price.
@@ -126,9 +130,12 @@ export class StripeProvider implements PaymentProvider {
       customer_email: input.userEmail ?? undefined,
       payment_method_types: ['card'],
       line_items: [{ price: priceId, quantity: 1 }],
-      subscription_data: input.trialDays && input.trialDays > 0
-        ? { trial_period_days: input.trialDays }
-        : undefined,
+      subscription_data: trialDays > 0
+        ? {
+            trial_period_days: trialDays,
+            metadata: { user_id: input.userId, plan_type: input.planType, trial_days: String(trialDays) },
+          }
+        : { metadata: { user_id: input.userId, plan_type: input.planType, trial_days: '0' } },
       metadata,
       success_url: input.successUrl,
       cancel_url: input.cancelUrl,
@@ -193,56 +200,156 @@ export class StripeProvider implements PaymentProvider {
       throw new Error('Stripe event id is missing.')
     }
 
-    if (event.type !== 'checkout.session.completed') {
+    // ── checkout.session.completed: initial activation (paid OR trial) ──────
+    if (event.type === 'checkout.session.completed') {
+      const parsedSession = stripeCheckoutSessionSchema.safeParse(event.data.object)
+      if (!parsedSession.success) {
+        throw new Error(`Invalid Stripe checkout payload: ${parsedSession.error.message}`)
+      }
+
+      const metadata = parsedSession.data.metadata ?? {}
+      const parsedMetadata = stripeCheckoutMetadataSchema.safeParse(metadata)
+      if (!parsedMetadata.success) {
+        throw new Error(`Missing Stripe metadata: ${parsedMetadata.error.message}`)
+      }
+
+      const refs = this.resolvePaymentReferences({
+        checkoutSessionId: parsedSession.data.id ?? null,
+        providerSubscriptionId: toStringId(parsedSession.data.subscription),
+        providerPaymentId: toStringId(parsedSession.data.payment_intent),
+        providerReference: parsedSession.data.id ?? null,
+      })
+
+      refs.providerCustomerId = toStringId(parsedSession.data.customer)
+
+      // If the checkout was created with a trial, fetch the actual trial_end
+      // from the subscription so we store the exact UTC timestamp Stripe used.
+      let trialEndsAt: string | null = null
+      const trialDaysFromMeta = parsedMetadata.data.trial_days ?? 0
+      if (trialDaysFromMeta > 0 && refs.providerSubscriptionId) {
+        try {
+          const stripeClient = await this.getStripeClient()
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const sub: any = await stripeClient.subscriptions.retrieve(refs.providerSubscriptionId)
+          if (sub?.trial_end) {
+            trialEndsAt = new Date(sub.trial_end * 1000).toISOString()
+          } else {
+            trialEndsAt = new Date(Date.now() + trialDaysFromMeta * 86400 * 1000).toISOString()
+          }
+        } catch {
+          // Fail-soft: if Stripe API call fails, use a computed timestamp so
+          // we never fall back to "active" by accident on a trial flow.
+          trialEndsAt = new Date(Date.now() + trialDaysFromMeta * 86400 * 1000).toISOString()
+        }
+      }
+
       return {
         externalEvent,
-        relatedUserId: null,
+        relatedUserId: parsedMetadata.data.user_id,
         domainEvent: {
-          kind: 'noop',
-          reason: 'stripe_event_not_supported',
+          kind: 'activate_subscription',
+          payload: {
+            userId: parsedMetadata.data.user_id,
+            planType: parsedMetadata.data.plan_type,
+            durationMonths: parsedMetadata.data.duration,
+            paymentMethod: parsedMetadata.data.payment_method,
+            gateway: this.gateway,
+            providerEventId: externalEvent.eventId,
+            providerEventType: externalEvent.eventType,
+            providerSubscriptionId: refs.providerSubscriptionId,
+            providerPaymentId: refs.providerPaymentId,
+            providerCustomerId: refs.providerCustomerId,
+            providerReference: refs.providerReference,
+            amount: (parsedSession.data.amount_total ?? 0) / 100,
+            trialEndsAt,
+          },
         },
       }
     }
 
-    const parsedSession = stripeCheckoutSessionSchema.safeParse(event.data.object)
-    if (!parsedSession.success) {
-      throw new Error(`Invalid Stripe checkout payload: ${parsedSession.error.message}`)
+    // ── invoice.paid: trial → active conversion (or recurring renewal) ──────
+    // Stripe fires this when the card is actually charged after the trial
+    // period. We re-use the activate_subscription kind so the existing
+    // shouldRenew logic in webhook.ts will route it through renewSubscription.
+    if (event.type === 'invoice.paid' || event.type === 'invoice.payment_succeeded') {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const invoice = event.data.object as any
+      // Skip $0 invoices created at trial start (we already activated via checkout)
+      const amountPaid = Number(invoice?.amount_paid ?? 0)
+      const subscriptionId = typeof invoice?.subscription === 'string'
+        ? invoice.subscription
+        : invoice?.subscription?.id ?? null
+      if (amountPaid <= 0 || !subscriptionId) {
+        return {
+          externalEvent,
+          relatedUserId: null,
+          domainEvent: { kind: 'noop', reason: 'stripe_invoice_no_charge' },
+        }
+      }
+
+      // Pull metadata from the subscription (set during checkout.session creation)
+      try {
+        const stripeClient = await this.getStripeClient()
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const sub: any = await stripeClient.subscriptions.retrieve(subscriptionId)
+        const subMeta = (sub?.metadata ?? {}) as Record<string, string>
+        const userId = subMeta.user_id || (invoice?.metadata?.user_id as string | undefined) || ''
+        if (!userId) {
+          return {
+            externalEvent,
+            relatedUserId: null,
+            domainEvent: { kind: 'noop', reason: 'stripe_invoice_missing_user' },
+          }
+        }
+        const planType = (subMeta.plan_type || 'pf') as 'pf' | 'pj' | 'pro'
+        const item = sub?.items?.data?.[0]
+        const interval = item?.price?.recurring?.interval as string | undefined
+        const intervalCount = Number(item?.price?.recurring?.interval_count ?? 1)
+        const durationMonths = (
+          interval === 'year' ? 12 : interval === 'month' ? Math.max(1, intervalCount) : 1
+        ) as BillingDurationMonths
+        const safeDuration = ([1, 3, 6, 12] as const).includes(durationMonths as 1 | 3 | 6 | 12)
+          ? durationMonths
+          : 1
+
+        return {
+          externalEvent,
+          relatedUserId: userId,
+          domainEvent: {
+            kind: 'activate_subscription',
+            payload: {
+              userId,
+              planType,
+              durationMonths: safeDuration,
+              paymentMethod: 'card',
+              gateway: this.gateway,
+              providerEventId: externalEvent.eventId,
+              providerEventType: externalEvent.eventType,
+              providerSubscriptionId: subscriptionId,
+              providerPaymentId: typeof invoice?.payment_intent === 'string' ? invoice.payment_intent : null,
+              providerCustomerId: typeof sub?.customer === 'string' ? sub.customer : sub?.customer?.id ?? null,
+              providerReference: invoice?.id ?? null,
+              amount: amountPaid / 100,
+              trialEndsAt: null, // post-trial — full active
+            },
+          },
+        }
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : 'unknown'
+        return {
+          externalEvent,
+          relatedUserId: null,
+          domainEvent: { kind: 'noop', reason: `stripe_invoice_lookup_failed:${msg}` },
+        }
+      }
     }
-
-    const metadata = parsedSession.data.metadata ?? {}
-    const parsedMetadata = stripeCheckoutMetadataSchema.safeParse(metadata)
-    if (!parsedMetadata.success) {
-      throw new Error(`Missing Stripe metadata: ${parsedMetadata.error.message}`)
-    }
-
-    const refs = this.resolvePaymentReferences({
-      checkoutSessionId: parsedSession.data.id ?? null,
-      providerSubscriptionId: toStringId(parsedSession.data.subscription),
-      providerPaymentId: toStringId(parsedSession.data.payment_intent),
-      providerReference: parsedSession.data.id ?? null,
-    })
-
-    refs.providerCustomerId = toStringId(parsedSession.data.customer)
 
     return {
       externalEvent,
-      relatedUserId: parsedMetadata.data.user_id,
+      relatedUserId: null,
       domainEvent: {
-        kind: 'activate_subscription',
-        payload: {
-          userId: parsedMetadata.data.user_id,
-          planType: parsedMetadata.data.plan_type,
-          durationMonths: parsedMetadata.data.duration,
-          paymentMethod: parsedMetadata.data.payment_method,
-          gateway: this.gateway,
-          providerEventId: externalEvent.eventId,
-          providerEventType: externalEvent.eventType,
-          providerSubscriptionId: refs.providerSubscriptionId,
-          providerPaymentId: refs.providerPaymentId,
-          providerCustomerId: refs.providerCustomerId,
-          providerReference: refs.providerReference,
-          amount: (parsedSession.data.amount_total ?? 0) / 100,
-        },
+        kind: 'noop',
+        reason: 'stripe_event_not_supported',
       },
     }
   }

@@ -204,6 +204,8 @@ interface ActivationLikeInput {
   gatewayCustomerId?: string | null
   gatewaySubscriptionId?: string | null
   providerReference?: string | null
+  /** Present only when initial activation is a trial. */
+  trialEndsAt?: string | null
   now?: Date
 }
 
@@ -215,15 +217,24 @@ export async function activateSubscription(
   const nowAsIso = nowIso(now)
   const current = await readSubscriptionByUserId(admin, input.userId)
 
+  // When trialEndsAt is provided, activate as 'trialing'. The current_period_end
+  // is set to trial end so the row naturally expires if the post-trial charge
+  // never lands. The later invoice.paid webhook will switch status → 'active'
+  // and extend current_period_end via renewSubscription.
+  const isTrial = !!input.trialEndsAt
+  const trialEndIso = input.trialEndsAt ?? null
+
   if (!current) {
-    const periodEnd = addMonths(now, normalizeDuration(input.durationMonths))
+    const periodEnd = isTrial && trialEndIso
+      ? new Date(trialEndIso)
+      : addMonths(now, normalizeDuration(input.durationMonths))
     const { data, error } = await admin
       .from('subscriptions')
       .insert({
         user_id: input.userId,
         plan_type: input.planType,
-        status: 'active',
-        trial_ends_at: null,
+        status: isTrial ? 'trialing' : 'active',
+        trial_ends_at: trialEndIso,
         current_period_end: periodEnd.toISOString(),
         billing_duration_months: normalizeDuration(input.durationMonths),
         payment_method: input.paymentMethod,
@@ -249,10 +260,19 @@ export async function activateSubscription(
   }
 
   const lifecycle = getSubscriptionLifecycleState(current, now)
-  assertSubscriptionTransition(lifecycle.effectiveStatus, 'active')
+  const targetStatus: SubscriptionStatus = isTrial ? 'trialing' : 'active'
+  // Only assert the transition for the 'active' path — re-activating into
+  // trialing from active would be invalid; we never expect that here.
+  if (!isTrial) {
+    assertSubscriptionTransition(lifecycle.effectiveStatus, 'active')
+  }
+
+  const periodEnd = isTrial && trialEndIso
+    ? new Date(trialEndIso)
+    : addMonths(now, normalizeDuration(input.durationMonths))
 
   return updateSubscriptionByUserId(admin, input.userId, {
-    status: 'active',
+    status: targetStatus,
     plan_type: input.planType,
     billing_duration_months: normalizeDuration(input.durationMonths),
     payment_method: input.paymentMethod,
@@ -261,8 +281,8 @@ export async function activateSubscription(
     gateway_customer_id: input.gatewayCustomerId ?? null,
     gateway_subscription_id: input.gatewaySubscriptionId ?? null,
     provider_reference: input.providerReference ?? null,
-    trial_ends_at: null,
-    current_period_end: addMonths(now, normalizeDuration(input.durationMonths)).toISOString(),
+    trial_ends_at: trialEndIso,
+    current_period_end: periodEnd.toISOString(),
     started_at: current.started_at ?? nowAsIso,
     canceled_at: null,
     cancel_at_period_end: false,

@@ -26,7 +26,7 @@ export async function POST(request: NextRequest) {
 
     const { data: sub, error: subError } = await supabase
       .from('subscriptions')
-      .select('id, status, gateway, gateway_subscription_id, cancel_at_period_end, current_period_end')
+      .select('id, status, gateway, gateway_subscription_id, cancel_at_period_end, current_period_end, trial_ends_at')
       .eq('user_id', user.id)
       .maybeSingle()
 
@@ -42,7 +42,12 @@ export async function POST(request: NextRequest) {
       return withSecurityHeaders(NextResponse.json({ error: 'Assinatura ja encerrada.' }, { status: 400 }))
     }
 
-    // Schedule Stripe cancel at period end (not immediate)
+    // Detect trial by trial_ends_at being in the future — works for both
+    // status='trialing' and status='active' with an ongoing trial period
+    const now = new Date()
+    const isInTrial = !!(sub.trial_ends_at && new Date(sub.trial_ends_at) > now)
+
+    // Schedule Stripe cancel at trial end (for trials) or billing period end (for paid)
     if (sub.gateway === 'stripe' && sub.gateway_subscription_id) {
       const stripeKey = process.env.STRIPE_SECRET_KEY?.trim()
       if (stripeKey) {
@@ -53,9 +58,17 @@ export async function POST(request: NextRequest) {
           apiVersion: '2026-03-25.dahlia',
           httpClient: StripeClient.createNodeHttpClient(),
         })
-        await stripe.subscriptions.update(sub.gateway_subscription_id, {
-          cancel_at_period_end: true,
-        })
+        if (isInTrial && sub.trial_ends_at) {
+          // Cancel exactly at trial end, not at the 30-day billing cycle
+          const cancelAt = Math.floor(new Date(sub.trial_ends_at).getTime() / 1000)
+          await stripe.subscriptions.update(sub.gateway_subscription_id, {
+            cancel_at: cancelAt,
+          })
+        } else {
+          await stripe.subscriptions.update(sub.gateway_subscription_id, {
+            cancel_at_period_end: true,
+          })
+        }
       }
     }
 

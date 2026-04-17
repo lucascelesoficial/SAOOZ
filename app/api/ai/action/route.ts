@@ -10,6 +10,7 @@ import {
 import { createOptionalAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
 import { enforceRateLimit, requireUser } from '@/lib/server/request-guard'
+import { requireCompletedOnboarding } from '@/lib/server/onboarding-gate'
 import type { Database, Json } from '@/types/database.types'
 
 export const dynamic = 'force-dynamic'
@@ -91,6 +92,9 @@ export async function POST(request: NextRequest) {
   if (!auth.ok) {
     return auth.response
   }
+
+  const gate = await requireCompletedOnboarding(auth.user.id)
+  if (!gate.ok) return gate.response
 
   const rate = await enforceRateLimit({
     scope: 'ai-action',

@@ -44,6 +44,7 @@ const activationPayloadSchema = z.object({
   providerCustomerId: z.string().min(1).nullable(),
   providerReference: z.string().min(1).nullable(),
   amount: z.number().finite().nonnegative(),
+  trialEndsAt: z.string().min(1).nullable().optional(),
 })
 
 export type BillingWebhookProvider = BillingGateway | 'manual'
@@ -110,6 +111,7 @@ function parseActivationPayloadFromProvider(
     providerCustomerId: payload.providerCustomerId,
     providerReference: payload.providerReference,
     amount: payload.amount,
+    trialEndsAt: payload.trialEndsAt ?? null,
   })
 }
 
@@ -358,6 +360,7 @@ export async function processBillingWebhookEvent(
         gatewaySubscriptionId: payload.providerSubscriptionId,
         gatewayCustomerId: payload.providerCustomerId,
         providerReference: payload.providerReference,
+        trialEndsAt: payload.trialEndsAt ?? null,
       })
 
   const { error: usageError } = await admin.from('usage_limits').upsert(

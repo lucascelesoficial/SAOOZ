@@ -25,7 +25,7 @@ export default async function OnboardingPfPage() {
       .maybeSingle(),
     supabase
       .from('profiles')
-      .select('id, name, cpf, phone, city, state, mode')
+      .select('id, name, cpf, phone, birth_date, city, state, mode')
       .eq('id', user.id)
       .maybeSingle(),
   ])
@@ -50,6 +50,7 @@ export default async function OnboardingPfPage() {
       initialName={profile?.name ?? ''}
       initialCpf={profile?.cpf ?? ''}
       initialPhone={profile?.phone ?? ''}
+      initialBirthDate={profile?.birth_date ?? ''}
       initialCity={profile?.city ?? ''}
       initialState={profile?.state ?? ''}
     />

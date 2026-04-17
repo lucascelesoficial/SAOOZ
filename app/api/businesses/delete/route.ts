@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { requireSameOrigin, withSecurityHeaders } from '@/lib/server/security'
+import { requireCompletedOnboarding } from '@/lib/server/onboarding-gate'
 import { logAuditEvent, getClientIp } from '@/lib/server/audit'
 
 export const dynamic = 'force-dynamic'
@@ -19,6 +20,9 @@ export async function POST(request: NextRequest) {
         NextResponse.json({ error: 'Não autenticado.' }, { status: 401 })
       )
     }
+
+    const gate = await requireCompletedOnboarding(user.id)
+    if (!gate.ok) return withSecurityHeaders(gate.response)
 
     const body = await request.json() as { businessId?: string }
     const { businessId } = body

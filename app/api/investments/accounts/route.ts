@@ -7,6 +7,7 @@ import {
   InvestmentServiceError,
 } from '@/lib/modules/investments/service'
 import { createClient } from '@/lib/supabase/server'
+import { requireCompletedOnboarding } from '@/lib/server/onboarding-gate'
 
 export const dynamic = 'force-dynamic'
 
@@ -39,6 +40,9 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: 'Não autenticado.' }, { status: 401 })
     }
 
+
+    const gate = await requireCompletedOnboarding(user.id)
+    if (!gate.ok) return gate.response
     const { scope, businessId } = queryResult.data
     const policy = await resolveUserAccessPolicy(user.id)
     if (!canAccessScope(policy, scope)) {
@@ -84,6 +88,9 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Não autenticado.' }, { status: 401 })
     }
 
+
+    const gate = await requireCompletedOnboarding(user.id)
+    if (!gate.ok) return gate.response
     const payload = payloadResult.data
     const policy = await resolveUserAccessPolicy(user.id)
     if (!canAccessScope(policy, payload.scope)) {

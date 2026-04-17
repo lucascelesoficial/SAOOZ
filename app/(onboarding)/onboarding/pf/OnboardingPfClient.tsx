@@ -38,6 +38,10 @@ function maskPhone(v: string) {
   if (d.length <= 10) return d.replace(/(\d{2})(\d{4})(\d{0,4})/, '($1) $2-$3').replace(/-$/, '')
   return d.replace(/(\d{2})(\d{5})(\d{0,4})/, '($1) $2-$3').replace(/-$/, '')
 }
+function validatePhone(raw: string): boolean {
+  const d = raw.replace(/\D/g, '')
+  return d.length === 10 || d.length === 11
+}
 
 interface Props {
   initialName: string
@@ -45,6 +49,7 @@ interface Props {
   initialPhone: string
   initialCity: string
   initialState: string
+  initialBirthDate?: string
 }
 
 export function OnboardingPfClient({
@@ -53,23 +58,31 @@ export function OnboardingPfClient({
   initialPhone,
   initialCity,
   initialState,
+  initialBirthDate = '',
 }: Props) {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [skipping, setSkipping] = useState(false)
 
-  const [name,   setName]   = useState(initialName)
-  const [cpf,    setCpf]    = useState(initialCpf ? maskCPF(initialCpf) : '')
-  const [phone,  setPhone]  = useState(initialPhone ? maskPhone(initialPhone) : '')
-  const [city,   setCity]   = useState(initialCity)
-  const [state,  setState]  = useState(initialState)
+  const [name,       setName]       = useState(initialName)
+  const [cpf,        setCpf]        = useState(initialCpf ? maskCPF(initialCpf) : '')
+  const [phone,      setPhone]      = useState(initialPhone ? maskPhone(initialPhone) : '')
+  const [birthDate,  setBirthDate]  = useState(initialBirthDate ? String(initialBirthDate).slice(0, 10) : '')
+  const [city,       setCity]       = useState(initialCity)
+  const [state,      setState]      = useState(initialState)
 
   const [errors, setErrors] = useState<Record<string, string>>({})
 
   function validate() {
     const e: Record<string, string> = {}
-    if (!name.trim() || name.trim().length < 2) e.name = 'Nome deve ter ao menos 2 caracteres'
-    if (cpf && !validateCPF(cpf)) e.cpf = 'CPF inválido'
+    if (!name.trim() || name.trim().length < 2)
+      e.name = 'Nome deve ter ao menos 2 caracteres'
+    if (!cpf || !validateCPF(cpf))
+      e.cpf = 'CPF obrigatório e deve ser válido'
+    if (!birthDate)
+      e.birthDate = 'Data de nascimento é obrigatória'
+    if (!phone || !validatePhone(phone))
+      e.phone = 'Celular obrigatório — informe DDD + número'
     return e
   }
 
@@ -86,11 +99,12 @@ export function OnboardingPfClient({
     if (!user) { window.location.href = '/login'; return }
 
     const basePayload = {
-      name: name.trim(),
-      cpf: cpf ? cpf.replace(/\D/g, '') : null,
-      phone: phone ? phone.replace(/\D/g, '') : null,
-      city: city.trim() || null,
-      state: state || null,
+      name:       name.trim(),
+      cpf:        cpf.replace(/\D/g, ''),
+      phone:      phone.replace(/\D/g, ''),
+      birth_date: birthDate,
+      city:       city.trim() || null,
+      state:      state || null,
     }
 
     // Try to set onboarding_completed_at (requires migration 023).
@@ -102,8 +116,6 @@ export function OnboardingPfClient({
       .eq('id', user.id)
 
     if (error && /onboarding_completed_at|column/i.test(error.message)) {
-      // Migration 023 not applied yet — save profile data without the gate column.
-      // The dashboard will still allow access; the banner won't show (column absent = undefined).
       const fallback = await supabase
         .from('profiles')
         .update(basePayload)
@@ -127,10 +139,6 @@ export function OnboardingPfClient({
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) { window.location.href = '/login'; return }
 
-    // Ensure profile.mode is set so middleware lets user into the dashboard.
-    // IMPORTANT: do NOT set onboarding_completed_at — that flag is the gate
-    // used by the dashboard banner + server to require cadastro before any
-    // mutation. Skipping lets the user browse; any action will prompt them.
     await supabase
       .from('profiles')
       .update({ mode: 'pf' })
@@ -139,7 +147,7 @@ export function OnboardingPfClient({
     window.location.href = '/central?cadastro=pendente'
   }
 
-  const inputStyle = (hasError?: boolean): React.CSSProperties => ({
+  const inp = (hasError?: boolean): React.CSSProperties => ({
     width: '100%',
     height: 44,
     padding: '0 14px',
@@ -151,6 +159,13 @@ export function OnboardingPfClient({
     outline: 'none',
     boxSizing: 'border-box',
   })
+
+  const focus = (e: React.FocusEvent<HTMLInputElement | HTMLSelectElement>, hasError?: boolean) => {
+    if (!hasError) e.currentTarget.style.border = '1px solid #3b82f6'
+  }
+  const blur = (e: React.FocusEvent<HTMLInputElement | HTMLSelectElement>, hasError?: boolean) => {
+    if (!hasError) e.currentTarget.style.border = '1px solid var(--panel-border)'
+  }
 
   return (
     <div className="panel-card rounded-2xl p-8 space-y-7">
@@ -165,34 +180,33 @@ export function OnboardingPfClient({
         <h1 className="text-2xl font-extrabold text-app">Perfil Pessoal</h1>
         <p className="text-sm text-app-soft">
           Complete seu cadastro PF para personalizar sua experiência financeira.
-          Os campos marcados como opcionais podem ser preenchidos depois.
         </p>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-5">
 
-        {/* Name */}
+        {/* Nome */}
         <div className="space-y-1.5">
           <label className="text-xs font-semibold uppercase tracking-wider text-app-soft">
-            Nome completo
+            Nome completo <span className="text-[#f87171]">*</span>
           </label>
           <input
             type="text"
             placeholder="Seu nome completo"
             value={name}
             onChange={(e) => setName(e.target.value)}
-            style={inputStyle(!!errors.name)}
-            onFocus={(e) => { if (!errors.name) e.currentTarget.style.border = '1px solid #3b82f6' }}
-            onBlur={(e) => { if (!errors.name) e.currentTarget.style.border = '1px solid var(--panel-border)' }}
+            style={inp(!!errors.name)}
+            onFocus={(e) => focus(e, !!errors.name)}
+            onBlur={(e) => blur(e, !!errors.name)}
           />
           {errors.name && <p className="text-xs text-red-400">{errors.name}</p>}
         </div>
 
-        {/* CPF + Phone */}
+        {/* CPF + Data de nascimento */}
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-1.5">
             <label className="text-xs font-semibold uppercase tracking-wider text-app-soft">
-              CPF <span className="normal-case font-normal opacity-60">(opcional)</span>
+              CPF <span className="text-[#f87171]">*</span>
             </label>
             <input
               type="text"
@@ -200,56 +214,76 @@ export function OnboardingPfClient({
               placeholder="000.000.000-00"
               value={cpf}
               onChange={(e) => setCpf(maskCPF(e.target.value))}
-              style={inputStyle(!!errors.cpf)}
-              onFocus={(e) => { if (!errors.cpf) e.currentTarget.style.border = '1px solid #3b82f6' }}
-              onBlur={(e) => { if (!errors.cpf) e.currentTarget.style.border = '1px solid var(--panel-border)' }}
+              style={inp(!!errors.cpf)}
+              onFocus={(e) => focus(e, !!errors.cpf)}
+              onBlur={(e) => blur(e, !!errors.cpf)}
             />
-            {errors.cpf && <p className="text-xs text-red-400">{errors.cpf}</p>}
+            {errors.cpf
+              ? <p className="text-xs text-red-400">{errors.cpf}</p>
+              : cpf && validateCPF(cpf) && <p className="text-xs text-[#22c55e]">CPF válido ✓</p>
+            }
           </div>
 
           <div className="space-y-1.5">
             <label className="text-xs font-semibold uppercase tracking-wider text-app-soft">
-              Celular <span className="normal-case font-normal opacity-60">(opcional)</span>
+              Data de nascimento <span className="text-[#f87171]">*</span>
             </label>
             <input
-              type="tel"
-              placeholder="(00) 00000-0000"
-              value={phone}
-              onChange={(e) => setPhone(maskPhone(e.target.value))}
-              style={inputStyle()}
-              onFocus={(e) => { e.currentTarget.style.border = '1px solid #3b82f6' }}
-              onBlur={(e) => { e.currentTarget.style.border = '1px solid var(--panel-border)' }}
+              type="date"
+              value={birthDate}
+              onChange={(e) => setBirthDate(e.target.value)}
+              style={inp(!!errors.birthDate)}
+              onFocus={(e) => focus(e, !!errors.birthDate)}
+              onBlur={(e) => blur(e, !!errors.birthDate)}
             />
+            {errors.birthDate && <p className="text-xs text-red-400">{errors.birthDate}</p>}
           </div>
         </div>
 
-        {/* City + State */}
+        {/* Celular */}
+        <div className="space-y-1.5">
+          <label className="text-xs font-semibold uppercase tracking-wider text-app-soft">
+            Celular <span className="text-[#f87171]">*</span>
+          </label>
+          <input
+            type="tel"
+            placeholder="(00) 00000-0000"
+            value={phone}
+            onChange={(e) => setPhone(maskPhone(e.target.value))}
+            style={inp(!!errors.phone)}
+            onFocus={(e) => focus(e, !!errors.phone)}
+            onBlur={(e) => blur(e, !!errors.phone)}
+          />
+          {errors.phone && <p className="text-xs text-red-400">{errors.phone}</p>}
+        </div>
+
+        {/* Cidade + Estado (opcionais) */}
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-1.5">
             <label className="text-xs font-semibold uppercase tracking-wider text-app-soft">
-              Cidade <span className="normal-case font-normal opacity-60">(opcional)</span>
+              Cidade <span className="normal-case font-normal opacity-50">(opcional)</span>
             </label>
             <input
               type="text"
               placeholder="Sua cidade"
               value={city}
               onChange={(e) => setCity(e.target.value)}
-              style={inputStyle()}
-              onFocus={(e) => { e.currentTarget.style.border = '1px solid #3b82f6' }}
-              onBlur={(e) => { e.currentTarget.style.border = '1px solid var(--panel-border)' }}
+              style={inp()}
+              onFocus={(e) => focus(e)}
+              onBlur={(e) => blur(e)}
             />
           </div>
 
           <div className="space-y-1.5">
             <label className="text-xs font-semibold uppercase tracking-wider text-app-soft">
-              Estado <span className="normal-case font-normal opacity-60">(opcional)</span>
+              Estado <span className="normal-case font-normal opacity-50">(opcional)</span>
             </label>
             <select
               value={state}
               onChange={(e) => setState(e.target.value)}
-              style={{ ...inputStyle(), cursor: 'pointer' }}
-              onFocus={(e) => { e.currentTarget.style.border = '1px solid #3b82f6' }}
-              onBlur={(e) => { e.currentTarget.style.border = '1px solid var(--panel-border)' }}
+              style={{ ...inp(), cursor: 'pointer' }}
+              onFocus={(e) => focus(e)}
+              onBlur={(e) => blur(e)}
             >
               <option value="">Selecione</option>
               {BR_STATES.map((s) => (
@@ -259,8 +293,13 @@ export function OnboardingPfClient({
           </div>
         </div>
 
+        {/* Aviso campos obrigatórios */}
+        <p className="text-[11px] text-app-soft">
+          Campos marcados com <span className="text-[#f87171]">*</span> são obrigatórios.
+        </p>
+
         {/* Actions */}
-        <div className="flex items-center gap-3 pt-2">
+        <div className="flex items-center gap-3 pt-1">
           <button
             type="button"
             onClick={() => router.back()}
@@ -287,16 +326,14 @@ export function OnboardingPfClient({
           </button>
         </div>
 
-        {/* Skip link — user can browse the dashboard but will be blocked on mutations */}
+        {/* Skip */}
         <button
           type="button"
           onClick={handleSkip}
           disabled={loading || skipping}
           className="w-full text-center text-xs text-app-soft hover:text-app transition-colors pt-1 disabled:opacity-50"
         >
-          {skipping
-            ? 'Redirecionando…'
-            : 'Pular por agora · finalizo depois'}
+          {skipping ? 'Redirecionando…' : 'Pular por agora · finalizo depois'}
         </button>
       </form>
     </div>

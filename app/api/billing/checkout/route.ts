@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { requireUser } from '@/lib/server/request-guard'
+import { createClient } from '@/lib/supabase/server'
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
@@ -45,8 +46,30 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const { planType, duration, trialDays } = parsed.data
+    let { trialDays } = parsed.data
+    const { planType, duration } = parsed.data
     log('request', { userId: user.id, planType, duration, trialDays })
+
+    // ── Trial reuse prevention ─────────────────────────────────────────────
+    // If user has ever had any subscription (even canceled), block the trial
+    if (trialDays && trialDays > 0) {
+      try {
+        const supabase = await createClient()
+        const { data: existingSub } = await supabase
+          .from('subscriptions')
+          .select('id')
+          .eq('user_id', user.id)
+          .limit(1)
+          .maybeSingle()
+        if (existingSub) {
+          log('blocking trial reuse for user', user.id)
+          trialDays = 0
+        }
+      } catch (e) {
+        // Fail open: if we can't check, allow the request but log it
+        log('warning: could not check trial reuse', e)
+      }
+    }
 
     // ── Stripe key ────────────────────────────────────────────────────────
     const secretKey = process.env.STRIPE_SECRET_KEY?.trim()

@@ -9,6 +9,7 @@ import {
   ReserveServiceError,
 } from '@/lib/modules/reserve/service'
 import { requireSameOrigin, requireJsonContentType, rejectLargeBody, withSecurityHeaders } from '@/lib/server/security'
+import { requireCompletedOnboarding } from '@/lib/server/onboarding-gate'
 
 export const dynamic = 'force-dynamic'
 
@@ -65,6 +66,8 @@ export async function POST(request: NextRequest) {
     if (authError || !user) {
       return withSecurityHeaders(NextResponse.json({ error: 'Não autenticado.' }, { status: 401 }))
     }
+    const gate = await requireCompletedOnboarding(user.id)
+    if (!gate.ok) return withSecurityHeaders(gate.response)
     const reserve = await createNewReserve({
       supabase, userId: user.id,
       scope: parsed.data.scope,
@@ -90,6 +93,8 @@ export async function DELETE(request: NextRequest) {
     if (authError || !user) {
       return withSecurityHeaders(NextResponse.json({ error: 'Não autenticado.' }, { status: 401 }))
     }
+    const gate = await requireCompletedOnboarding(user.id)
+    if (!gate.ok) return withSecurityHeaders(gate.response)
     await deactivateReserve({ supabase, userId: user.id, reserveId })
     return withSecurityHeaders(NextResponse.json({ ok: true }))
   } catch (e) { return err(e, 'Falha ao excluir reserva.') }

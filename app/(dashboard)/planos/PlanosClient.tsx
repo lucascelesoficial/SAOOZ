@@ -4,6 +4,7 @@ import { useMemo, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 import {
   AlertTriangle,
+  ArrowUpCircle,
   BadgeCheck,
   CalendarClock,
   CreditCard,
@@ -101,7 +102,90 @@ export function PlanosClient({ snapshot }: PlanosClientProps) {
   const [localCancelScheduled, setLocalCancelScheduled] = useState(
     snapshot.subscription.cancel_at_period_end
   )
+  const [upgradePreview, setUpgradePreview] = useState<{
+    currentPlanName: string
+    newPlan: string
+    newPlanName: string
+    credit: number
+    immediateCharge: number
+    nextBillingAmount: number
+    nextBillingDate: string | null
+  } | null>(null)
+  const [upgrading, setUpgrading] = useState(false)
   const searchParams = useSearchParams()
+
+  // Plan rank for upgrade eligibility
+  const PLAN_RANK: Record<string, number> = { pf: 0, pj: 1, pro: 2 }
+  const currentRank = PLAN_RANK[snapshot.subscription.plan_type] ?? -1
+
+  // Can upgrade: active paid subscription, no cancel scheduled, plan is higher rank
+  function canUpgrade(planCode: SubscriptionPlanType) {
+    return (
+      snapshot.paidAccess &&
+      !localCancelScheduled &&
+      (PLAN_RANK[planCode] ?? -1) > currentRank
+    )
+  }
+
+  async function handleUpgradePreview(planCode: SubscriptionPlanType) {
+    setUpgrading(true)
+    try {
+      const res = await fetch('/api/billing/upgrade', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ planType: planCode, preview: true }),
+      })
+      const data = await res.json()
+      if (!res.ok) {
+        toast.error('Erro ao calcular upgrade', { description: data.error ?? 'Tente novamente.' })
+        return
+      }
+      setUpgradePreview(data)
+    } catch {
+      toast.error('Erro ao calcular upgrade')
+    } finally {
+      setUpgrading(false)
+    }
+  }
+
+  async function handleUpgradeConfirm() {
+    if (!upgradePreview) return
+    setUpgrading(true)
+    try {
+      const res = await fetch('/api/billing/upgrade', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ planType: upgradePreview.newPlan, preview: false }),
+      })
+      const data = await res.json()
+      if (!res.ok) {
+        toast.error('Erro ao fazer upgrade', { description: data.error ?? 'Tente novamente.' })
+        return
+      }
+      toast.success(`Upgrade para ${data.newPlanName} realizado!`, {
+        description: 'Seu plano foi atualizado e o desconto aplicado.',
+      })
+      setUpgradePreview(null)
+      // Refresh page to reflect new plan
+      window.location.reload()
+    } catch {
+      toast.error('Erro ao fazer upgrade')
+    } finally {
+      setUpgrading(false)
+    }
+  }
+
+  // Detect trial by checking trial_ends_at directly — works even when
+  // Stripe status is 'active' (not just 'trialing'), which is what happens
+  // when the subscription is created with a trial but the status transitions
+  // to active before the trial period ends.
+  const trialEndsAt = snapshot.subscription.trial_ends_at
+  const isInTrial = !!(trialEndsAt && new Date(trialEndsAt) > new Date())
+
+  // Date to show when canceling
+  const cancelExpiryDate = isInTrial
+    ? formatDate(trialEndsAt ?? null)
+    : formatDate(snapshot.subscription.current_period_end)
 
   async function handleCancelSubscription() {
     if (!cancelConfirm) {
@@ -119,7 +203,9 @@ export function PlanosClient({ snapshot }: PlanosClientProps) {
       }
       setLocalCancelScheduled(true)
       toast.success('Cancelamento agendado', {
-        description: 'Seu acesso continua ate o fim do periodo atual.',
+        description: isInTrial
+          ? 'Seu acesso continua ativo até o fim do período de trial gratuito.'
+          : 'Seu acesso continua até o fim do período atual.',
       })
     } catch {
       toast.error('Erro ao cancelar assinatura')
@@ -189,6 +275,93 @@ export function PlanosClient({ snapshot }: PlanosClientProps) {
   }, [snapshot.aiActionsLimit, snapshot.trialDaysRemaining, snapshot.usage.ai_actions_used])
 
   return (
+    <>
+    {/* ── Upgrade confirmation modal ─────────────────────────────────────── */}
+    {upgradePreview && (
+      <div
+        className="fixed inset-0 z-50 flex items-center justify-center p-4"
+        style={{ background: 'rgba(0,0,0,0.72)' }}
+        onClick={() => !upgrading && setUpgradePreview(null)}
+      >
+        <div
+          className="w-full max-w-md rounded-[16px] border p-6"
+          style={{ background: '#0e1017', borderColor: '#1e293b' }}
+          onClick={(e) => e.stopPropagation()}
+        >
+          <div className="mb-4 flex items-center gap-3">
+            <div
+              className="flex h-10 w-10 items-center justify-center rounded-full"
+              style={{ background: 'color-mix(in oklab, var(--accent-blue) 15%, transparent)' }}
+            >
+              <ArrowUpCircle className="h-5 w-5" style={{ color: 'var(--accent-blue)' }} />
+            </div>
+            <div>
+              <h3 className="text-base font-bold text-app">
+                Upgrade {upgradePreview.currentPlanName} → {upgradePreview.newPlanName}
+              </h3>
+              <p className="text-xs text-app-soft">Desconto proporcional aplicado automaticamente</p>
+            </div>
+          </div>
+
+          {/* Proration breakdown */}
+          <div
+            className="mb-4 space-y-2 rounded-[12px] border p-4"
+            style={{ borderColor: '#1e293b', background: '#060c18' }}
+          >
+            <div className="flex justify-between text-sm">
+              <span className="text-app-soft">Crédito do plano atual</span>
+              <span className="font-semibold text-[#4ade80]">
+                − {formatCurrency(upgradePreview.credit)}
+              </span>
+            </div>
+            <div className="flex justify-between text-sm">
+              <span className="text-app-soft">Plano {upgradePreview.newPlanName} (proporcional)</span>
+              <span className="font-semibold text-app">
+                {formatCurrency(upgradePreview.immediateCharge + upgradePreview.credit)}
+              </span>
+            </div>
+            <div
+              className="flex justify-between border-t pt-2 text-sm font-bold"
+              style={{ borderColor: '#1e293b' }}
+            >
+              <span className="text-app">Cobrança agora</span>
+              <span style={{ color: 'var(--accent-blue)' }}>
+                {formatCurrency(upgradePreview.immediateCharge)}
+              </span>
+            </div>
+          </div>
+
+          <p className="mb-5 text-xs text-app-soft">
+            A partir do próximo ciclo, você pagará{' '}
+            <strong className="text-app">{formatCurrency(upgradePreview.nextBillingAmount)}</strong>{' '}
+            {upgradePreview.nextBillingDate
+              ? `(renovação em ${formatDate(upgradePreview.nextBillingDate)})`
+              : 'por ciclo'}.
+            O upgrade é imediato — acesso ao plano {upgradePreview.newPlanName} liberado agora.
+          </p>
+
+          <div className="flex gap-3">
+            <button
+              onClick={() => setUpgradePreview(null)}
+              disabled={upgrading}
+              className="flex-1 rounded-[10px] border py-2.5 text-sm font-medium text-app-base transition-colors hover:text-app disabled:opacity-50"
+              style={{ borderColor: '#1e293b' }}
+            >
+              Cancelar
+            </button>
+            <button
+              onClick={handleUpgradeConfirm}
+              disabled={upgrading}
+              className="flex-1 rounded-[10px] py-2.5 text-sm font-bold text-white transition-all disabled:opacity-60"
+              style={{ background: 'linear-gradient(135deg, var(--accent-blue), var(--accent-cyan))' }}
+            >
+              {upgrading ? 'Processando...' : `Confirmar upgrade`}
+            </button>
+          </div>
+        </div>
+      </div>
+    )}
+
     <div className="mx-auto max-w-6xl space-y-6 pb-8">
       <section className="panel-card overflow-hidden p-6">
         <div className="grid gap-6 lg:grid-cols-[1.5fr_1fr]">
@@ -370,13 +543,25 @@ export function PlanosClient({ snapshot }: PlanosClientProps) {
               </div>
 
               <div className="mt-5">
-                {isCurrentPlan && snapshot.paidAccess ? (
+                {isCurrentPlan && (snapshot.paidAccess || isInTrial) ? (
                   <button
                     disabled
                     className="flex h-11 w-full items-center justify-center rounded-[10px] text-sm font-semibold text-white transition-all disabled:opacity-60"
                     style={{ background: 'linear-gradient(135deg, #334155, #1e293b)' }}
                   >
-                    Ativo
+                    {isInTrial ? 'Trial ativo' : 'Ativo'}
+                  </button>
+                ) : canUpgrade(planCode) ? (
+                  <button
+                    onClick={() => handleUpgradePreview(planCode)}
+                    disabled={upgrading}
+                    className="flex h-11 w-full items-center justify-center rounded-[10px] text-sm font-semibold text-white transition-all disabled:opacity-60"
+                    style={{
+                      background: 'linear-gradient(135deg, var(--accent-blue), var(--accent-cyan))',
+                    }}
+                  >
+                    <ArrowUpCircle className="mr-1.5 h-4 w-4" />
+                    {upgrading ? 'Calculando...' : `Upgrade para ${plan.name}`}
                   </button>
                 ) : (
                   <button
@@ -478,7 +663,7 @@ export function PlanosClient({ snapshot }: PlanosClientProps) {
         </div>
       </section>
 
-      {snapshot.paidAccess && !localCancelScheduled && (
+      {(snapshot.paidAccess || snapshot.trialAccess || isInTrial) && !localCancelScheduled && (
         <section
           className="panel-card p-5"
           style={{
@@ -487,13 +672,12 @@ export function PlanosClient({ snapshot }: PlanosClientProps) {
         >
           <h2 className="flex items-center gap-2 text-base font-semibold text-app">
             <AlertTriangle className="h-4 w-4 text-[#f87171]" />
-            Cancelar assinatura
+            Cancelar {isInTrial ? 'trial' : 'assinatura'}
           </h2>
           <p className="mt-2 text-sm text-app-soft">
-            Ao cancelar, seu acesso continuará ativo até o fim do período atual já pago.
-            {snapshot.subscription.current_period_end
-              ? ` Sua assinatura expira em ${formatDate(snapshot.subscription.current_period_end)}.`
-              : ''}
+            {isInTrial
+              ? `Ao cancelar, seu acesso continuará ativo somente até o fim do período de trial gratuito.${cancelExpiryDate ? ` Seu trial expira em ${cancelExpiryDate}.` : ''}`
+              : `Ao cancelar, seu acesso continuará ativo até o fim do período atual já pago.${cancelExpiryDate ? ` Sua assinatura expira em ${cancelExpiryDate}.` : ''}`}
           </p>
 
           <StepUpDialog
@@ -518,7 +702,9 @@ export function PlanosClient({ snapshot }: PlanosClientProps) {
                   color: '#f87171',
                 }}
               >
-                Tem certeza? Esta ação agendará o cancelamento ao fim do período vigente.
+                {isInTrial
+                  ? 'Tem certeza? Seu acesso será encerrado ao fim dos 7 dias de trial gratuito.'
+                  : 'Tem certeza? Esta ação agendará o cancelamento ao fim do período vigente.'}
               </p>
               <div className="flex gap-2">
                 <button
@@ -553,7 +739,7 @@ export function PlanosClient({ snapshot }: PlanosClientProps) {
         </section>
       )}
 
-      {localCancelScheduled && snapshot.paidAccess && (
+      {localCancelScheduled && (snapshot.paidAccess || snapshot.trialAccess || isInTrial) && (
         <section
           className="panel-card p-5"
           style={{
@@ -565,14 +751,14 @@ export function PlanosClient({ snapshot }: PlanosClientProps) {
             Cancelamento agendado
           </h2>
           <p className="mt-2 text-sm text-app-soft">
-            Seu acesso permanece ativo até o fim do período atual
-            {snapshot.subscription.current_period_end
-              ? ` (${formatDate(snapshot.subscription.current_period_end)})`
-              : ''}.
-            Para reativar, entre em contato com o suporte ou adquira um novo plano.
+            {isInTrial
+              ? `Seu trial permanece ativo até o fim do período gratuito${cancelExpiryDate ? ` (${cancelExpiryDate})` : ''}.`
+              : `Seu acesso permanece ativo até o fim do período atual${cancelExpiryDate ? ` (${cancelExpiryDate})` : ''}.`}
+            {' '}Para reativar, entre em contato com o suporte ou adquira um novo plano.
           </p>
         </section>
       )}
     </div>
+    </>
   )
 }

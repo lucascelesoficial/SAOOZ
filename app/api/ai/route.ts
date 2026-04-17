@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { aiActionSchema } from '@/lib/ai/schemas'
 import { canAccessScope, resolveUserAccessPolicy } from '@/lib/billing/policy'
 import { enforceRateLimit, requireUser } from '@/lib/server/request-guard'
+import { requireCompletedOnboarding } from '@/lib/server/onboarding-gate'
 
 export const dynamic = 'force-dynamic'
 
@@ -164,6 +165,9 @@ export async function POST(request: NextRequest) {
   try {
     const auth = await requireUser()
     if (!auth.ok) return auth.response
+
+    const gate = await requireCompletedOnboarding(auth.user.id)
+    if (!gate.ok) return gate.response
 
     const policy = await resolveUserAccessPolicy(auth.user.id)
 

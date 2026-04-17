@@ -8,6 +8,7 @@ import {
 } from '@/lib/business/active-business'
 import { createClient } from '@/lib/supabase/server'
 import { requireSameOrigin, requireJsonContentType, rejectLargeBody, withSecurityHeaders } from '@/lib/server/security'
+import { requireCompletedOnboarding } from '@/lib/server/onboarding-gate'
 
 export const dynamic = 'force-dynamic'
 
@@ -31,6 +32,9 @@ export async function POST(request: NextRequest) {
     if (authError || !user) {
       return withSecurityHeaders(NextResponse.json({ error: 'Não autenticado.' }, { status: 401 }))
     }
+
+    const gate = await requireCompletedOnboarding(user.id)
+    if (!gate.ok) return withSecurityHeaders(gate.response)
 
     const policy = await resolveUserAccessPolicy(user.id)
     const businessLock = getPolicyBlock(policy, 'business_module_locked')

@@ -64,6 +64,8 @@ export interface BillingActivationDomainPayload {
   providerCustomerId: string | null
   providerReference: string | null
   amount: number
+  /** ISO string of when the trial ends. Present only for trial activations. */
+  trialEndsAt?: string | null
 }
 
 export type BillingDomainEvent =

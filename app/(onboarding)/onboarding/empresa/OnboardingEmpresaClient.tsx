@@ -222,6 +222,12 @@ export function OnboardingEmpresaClient({
     if (!socioCpf || !validateCPF(socioCpf)) {
       nextErrors.socioCpf = 'CPF do sócio responsável é obrigatório e deve ser válido.'
     }
+    if (!socioPhone || socioPhone.replace(/\D/g, '').length < 10) {
+      nextErrors.socioPhone = 'Telefone do sócio é obrigatório — informe DDD + número.'
+    }
+    if (!socioBirthDate) {
+      nextErrors.socioBirthDate = 'Data de nascimento do sócio é obrigatória.'
+    }
 
     if (Object.keys(nextErrors).length) {
       setErrors(nextErrors)
@@ -458,26 +464,26 @@ export function OnboardingEmpresaClient({
             )}
           </FieldWrap>
 
-          <FieldWrap label="Telefone">
+          <FieldWrap label="Telefone *" error={errors.socioPhone}>
             <input
               type="text"
               placeholder="(11) 99999-9999"
               value={socioPhone}
               onChange={(e) => setSocioPhone(maskPhone(e.target.value))}
               className="h-11 w-full rounded-[10px] px-4 text-sm placeholder:text-app-soft font-mono tracking-wide"
-              style={INPUT_STYLE}
+              style={errors.socioPhone ? { ...INPUT_STYLE, border: '1.5px solid #f87171' } : INPUT_STYLE}
               onFocus={focusStyle}
               onBlur={blurStyle}
             />
           </FieldWrap>
 
-          <FieldWrap label="Data de nascimento">
+          <FieldWrap label="Data de nascimento *" error={errors.socioBirthDate}>
             <input
               type="date"
               value={socioBirthDate}
               onChange={(e) => setSocioBirthDate(e.target.value)}
               className="h-11 w-full rounded-[10px] px-4 text-sm"
-              style={INPUT_STYLE}
+              style={errors.socioBirthDate ? { ...INPUT_STYLE, border: '1.5px solid #f87171' } : INPUT_STYLE}
               onFocus={focusStyle}
               onBlur={blurStyle}
             />
@@ -511,6 +517,10 @@ export function OnboardingEmpresaClient({
             </FieldWrap>
           </div>
         </div>
+
+        <p className="text-[11px] text-app-soft pt-1">
+          Campos marcados com <span className="text-[#f87171]">*</span> são obrigatórios.
+        </p>
 
         <button
           type="submit"
