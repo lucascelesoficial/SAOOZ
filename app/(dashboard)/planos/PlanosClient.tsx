@@ -504,7 +504,6 @@ export function PlanosClient({ snapshot }: PlanosClientProps) {
         {(Object.keys(PLAN_CATALOG) as SubscriptionPlanType[]).map((planCode) => {
           const plan = PLAN_CATALOG[planCode]
           const pricing = getPlanPriceForDuration(planCode, duration)
-          const isCurrentPlan = snapshot.subscription.plan_type === planCode
           const isActiveCurrentPlan = isActivePlan(planCode)
 
           return (
