@@ -161,6 +161,8 @@ export default async function DashboardLayout({
               canAccessBusinessModule={policy.modules.business}
               canCreateBusiness={canCreateBusiness}
               businessLimitReached={businessLimitReached}
+              isTrial={snapshot.trialAccess}
+              planType={snapshot.subscription.plan_type as 'pf' | 'pj' | 'pro'}
             />
             <main className="flex-1 p-4 pb-24 md:p-6 md:pb-6">
               <FinancialDataProvider userId={user.id}>

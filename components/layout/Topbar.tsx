@@ -183,6 +183,10 @@ interface TopbarProps {
   canAccessBusinessModule: boolean
   canCreateBusiness: boolean
   businessLimitReached: boolean
+  /** true when user is in a free trial (no paid subscription yet) */
+  isTrial: boolean
+  /** current subscription plan type */
+  planType: 'pf' | 'pj' | 'pro'
 }
 
 const FULL_TEXT = 'NÚCLEO FINANCEIRO ATIVADO'
@@ -232,6 +236,8 @@ export function Topbar({
   canAccessBusinessModule,
   canCreateBusiness,
   businessLimitReached,
+  isTrial,
+  planType,
 }: TopbarProps) {
   const pathname = usePathname()
   const router = useRouter()
@@ -289,19 +295,27 @@ export function Topbar({
       ? MODULE_SCOPE_LABEL.business
       : `Liberar ${MODULE_SCOPE_LABEL.business}`
 
-  const businessActionHref = canCreateBusiness
-    ? '/onboarding/empresa'
-    : businessLimitReached
-      ? '/planos?feature=business_limit'
-      : '/planos?feature=business'
+  // PF trial: upsell to plans page so user picks PJ/PRO first
+  const isUpsell = isTrial && planType === 'pf'
+  const businessActionHref = isUpsell
+    ? '/planos?feature=business'
+    : canCreateBusiness
+      ? '/onboarding/empresa'
+      : businessLimitReached
+        ? '/planos?feature=business_limit'
+        : '/planos?feature=business'
 
-  const businessActionLabel = canCreateBusiness
-    ? isBusinessPath
-      ? 'Nova empresa'
-      : 'Adicionar empresa'
-    : businessLimitReached
-      ? 'Aumentar limite'
-      : 'Liberar PJ'
+  const businessActionLabel = isUpsell
+    ? 'Abrir conta empresarial'
+    : canCreateBusiness
+      ? isBusinessPath
+        ? 'Nova empresa'
+        : 'Adicionar empresa'
+      : businessLimitReached
+        ? 'Aumentar limite'
+        : 'Liberar PJ'
+
+  const showBusinessAction = isUpsell || canCreateBusiness || businessLimitReached
 
   async function handleBusinessChange(nextBusinessId: string) {
     if (!nextBusinessId || nextBusinessId === activeBusinessId) {
@@ -431,8 +445,8 @@ export function Topbar({
           </label>
         )}
 
-        {/* Only show business action when user actually has access (can create or hit limit) */}
-        {(canCreateBusiness || businessLimitReached) && (
+        {/* Business action: create, upsell, or limit upgrade */}
+        {showBusinessAction && (
           <Link
             href={businessActionHref}
             className="inline-flex h-9 items-center gap-2 rounded-[8px] border px-3 text-sm font-medium text-app transition-colors hover:opacity-90"

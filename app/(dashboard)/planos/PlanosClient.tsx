@@ -114,14 +114,29 @@ export function PlanosClient({ snapshot }: PlanosClientProps) {
   const [upgrading, setUpgrading] = useState(false)
   const searchParams = useSearchParams()
 
+  // Trial detection — must be before any logic that references isInTrial
+  const trialEndsAt = snapshot.subscription.trial_ends_at
+  const isInTrial = !!(trialEndsAt && new Date(trialEndsAt) > new Date())
+
   // Plan rank for upgrade eligibility
   const PLAN_RANK: Record<string, number> = { pf: 0, pj: 1, pro: 2 }
   const currentRank = PLAN_RANK[snapshot.subscription.plan_type] ?? -1
+  const hasActiveSub = snapshot.paidAccess || isInTrial
 
-  // Can upgrade: active paid subscription, no cancel scheduled, plan is higher rank
+  // Paid users: in-app proration upgrade
   function canUpgrade(planCode: SubscriptionPlanType) {
     return (
       snapshot.paidAccess &&
+      !localCancelScheduled &&
+      (PLAN_RANK[planCode] ?? -1) > currentRank
+    )
+  }
+
+  // Trial users: checkout a higher plan (no new trial — server handles reuse prevention)
+  function canTrialUpgrade(planCode: SubscriptionPlanType) {
+    return (
+      isInTrial &&
+      !snapshot.paidAccess &&
       !localCancelScheduled &&
       (PLAN_RANK[planCode] ?? -1) > currentRank
     )
@@ -174,13 +189,6 @@ export function PlanosClient({ snapshot }: PlanosClientProps) {
       setUpgrading(false)
     }
   }
-
-  // Detect trial by checking trial_ends_at directly — works even when
-  // Stripe status is 'active' (not just 'trialing'), which is what happens
-  // when the subscription is created with a trial but the status transitions
-  // to active before the trial period ends.
-  const trialEndsAt = snapshot.subscription.trial_ends_at
-  const isInTrial = !!(trialEndsAt && new Date(trialEndsAt) > new Date())
 
   // Date to show when canceling
   const cancelExpiryDate = isInTrial
@@ -471,21 +479,48 @@ export function PlanosClient({ snapshot }: PlanosClientProps) {
           const plan = PLAN_CATALOG[planCode]
           const pricing = getPlanPriceForDuration(planCode, duration)
           const isCurrentPlan = snapshot.subscription.plan_type === planCode
+          const isActiveCurrentPlan = isCurrentPlan && hasActiveSub
 
           return (
             <article
               key={plan.code}
               className="panel-card relative overflow-hidden p-5"
               style={
-                plan.highlight
+                isActiveCurrentPlan
                   ? {
-                      borderColor: 'color-mix(in oklab, var(--accent-blue) 45%, transparent)',
-                      boxShadow: '0 12px 40px color-mix(in oklab, var(--accent-blue) 12%, transparent)',
+                      borderColor: isInTrial
+                        ? 'color-mix(in oklab, #f59e0b 50%, transparent)'
+                        : 'color-mix(in oklab, #22c55e 50%, transparent)',
+                      boxShadow: isInTrial
+                        ? '0 8px 32px color-mix(in oklab, #f59e0b 10%, transparent)'
+                        : '0 8px 32px color-mix(in oklab, #22c55e 10%, transparent)',
                     }
-                  : {}
+                  : plan.highlight
+                    ? {
+                        borderColor: 'color-mix(in oklab, var(--accent-blue) 45%, transparent)',
+                        boxShadow: '0 12px 40px color-mix(in oklab, var(--accent-blue) 12%, transparent)',
+                      }
+                    : {}
               }
             >
-              {plan.highlight && (
+              {/* Current plan badge */}
+              {isActiveCurrentPlan && (
+                <div
+                  className="absolute left-4 top-4 inline-flex items-center gap-1 rounded-full px-2 py-1 text-[10px] font-bold uppercase"
+                  style={{
+                    background: isInTrial
+                      ? 'color-mix(in oklab, #f59e0b 18%, transparent)'
+                      : 'color-mix(in oklab, #22c55e 18%, transparent)',
+                    color: isInTrial ? '#f59e0b' : '#22c55e',
+                  }}
+                >
+                  <BadgeCheck className="h-3.5 w-3.5" />
+                  {isInTrial ? 'Trial ativo' : 'Plano ativo'}
+                </div>
+              )}
+
+              {/* Recommended badge — don't show if this is also the current plan */}
+              {plan.highlight && !isActiveCurrentPlan && (
                 <div
                   className="absolute right-4 top-4 inline-flex items-center gap-1 rounded-full px-2 py-1 text-[10px] font-bold uppercase"
                   style={{
@@ -542,28 +577,53 @@ export function PlanosClient({ snapshot }: PlanosClientProps) {
                 <p className="mt-1 text-xs text-app-soft">{businessCapacityLabel(planCode, duration)}</p>
               </div>
 
-              <div className="mt-5">
-                {isCurrentPlan && (snapshot.paidAccess || isInTrial) ? (
-                  <button
-                    disabled
-                    className="flex h-11 w-full items-center justify-center rounded-[10px] text-sm font-semibold text-white transition-all disabled:opacity-60"
-                    style={{ background: 'linear-gradient(135deg, #334155, #1e293b)' }}
+              <div className="mt-5 space-y-2">
+                {/* ── Current plan badge ─────────────────────────────────── */}
+                {isCurrentPlan && hasActiveSub && (
+                  <div
+                    className="flex items-center justify-center gap-2 rounded-[10px] border py-2 text-sm font-semibold"
+                    style={{
+                      borderColor: isInTrial
+                        ? 'color-mix(in oklab, #f59e0b 40%, transparent)'
+                        : 'color-mix(in oklab, #22c55e 40%, transparent)',
+                      background: isInTrial
+                        ? 'color-mix(in oklab, #f59e0b 10%, transparent)'
+                        : 'color-mix(in oklab, #22c55e 10%, transparent)',
+                      color: isInTrial ? '#f59e0b' : '#22c55e',
+                    }}
                   >
-                    {isInTrial ? 'Trial ativo' : 'Ativo'}
-                  </button>
-                ) : canUpgrade(planCode) ? (
+                    <BadgeCheck className="h-4 w-4" />
+                    {isInTrial
+                      ? `Trial ativo — ${snapshot.trialDaysRemaining} dia(s) restante(s)`
+                      : 'Plano ativo'}
+                  </div>
+                )}
+
+                {/* ── Action button ──────────────────────────────────────── */}
+                {canUpgrade(planCode) ? (
+                  // Paid user → in-app proration upgrade
                   <button
                     onClick={() => handleUpgradePreview(planCode)}
                     disabled={upgrading}
                     className="flex h-11 w-full items-center justify-center rounded-[10px] text-sm font-semibold text-white transition-all disabled:opacity-60"
-                    style={{
-                      background: 'linear-gradient(135deg, var(--accent-blue), var(--accent-cyan))',
-                    }}
+                    style={{ background: 'linear-gradient(135deg, var(--accent-blue), var(--accent-cyan))' }}
                   >
                     <ArrowUpCircle className="mr-1.5 h-4 w-4" />
-                    {upgrading ? 'Calculando...' : `Upgrade para ${plan.name}`}
+                    {upgrading ? 'Calculando...' : `Fazer upgrade para ${plan.name}`}
                   </button>
-                ) : (
+                ) : canTrialUpgrade(planCode) ? (
+                  // Trial user → new checkout for higher plan (no new trial)
+                  <button
+                    onClick={() => handleCheckout(planCode)}
+                    disabled={!!checkingOut}
+                    className="flex h-11 w-full items-center justify-center rounded-[10px] text-sm font-semibold text-white transition-all disabled:opacity-60"
+                    style={{ background: 'linear-gradient(135deg, var(--accent-blue), var(--accent-cyan))' }}
+                  >
+                    <ArrowUpCircle className="mr-1.5 h-4 w-4" />
+                    {checkingOut === `${planCode}-card` ? 'Aguarde...' : `Fazer upgrade para ${plan.name}`}
+                  </button>
+                ) : !isCurrentPlan ? (
+                  // No active sub or lower plan → standard checkout
                   <button
                     onClick={() => handleCheckout(planCode)}
                     disabled={!!checkingOut}
@@ -575,9 +635,11 @@ export function PlanosClient({ snapshot }: PlanosClientProps) {
                     }}
                   >
                     <CreditCard className="mr-1.5 h-4 w-4" />
-                    {checkingOut === `${planCode}-card` ? 'Aguarde...' : 'Assinar com Cartão'}
+                    {checkingOut === `${planCode}-card` ? 'Aguarde...' : 'Assinar com cartão'}
                   </button>
-                )}
+                ) : null}
+
+                {/* Cancel subscription (only on current active/paid plan) */}
               </div>
             </article>
           )
