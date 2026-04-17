@@ -1,0 +1,79 @@
+<svg width="220" height="60" viewBox="0 0 220 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- Soft glow for rings -->
+    <filter id="glow" x="-60%" y="-60%" width="220%" height="220%">
+      <feGaussianBlur stdDeviation="2.5" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    <filter id="glow-core" x="-120%" y="-120%" width="340%" height="340%">
+      <feGaussianBlur stdDeviation="3" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    <radialGradient id="core-grad" cx="50%" cy="50%" r="50%">
+      <stop offset="0%"   stop-color="#a5f3fc" stop-opacity="0.9"/>
+      <stop offset="100%" stop-color="#3b82f6" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <!-- ─── Nucleus icon (centered at 110, 30) ─── -->
+  <!-- Ring 1: outermost, blue dashed -->
+  <circle cx="110" cy="30" r="26"
+    stroke="#3b82f6" stroke-width="1" stroke-dasharray="5 8"
+    stroke-opacity="0.7" fill="none"
+    filter="url(#glow)"/>
+
+  <!-- Ring 2: solid cyan-blue -->
+  <circle cx="110" cy="30" r="21"
+    stroke="#60a5fa" stroke-width="1.5"
+    stroke-opacity="0.85" fill="none"
+    filter="url(#glow)"/>
+
+  <!-- Ring 3: indigo -->
+  <circle cx="110" cy="30" r="16"
+    stroke="#818cf8" stroke-width="2"
+    stroke-opacity="0.8" fill="none"
+    filter="url(#glow)"/>
+
+  <!-- Ring 4: violet -->
+  <circle cx="110" cy="30" r="11"
+    stroke="#a78bfa" stroke-width="2"
+    stroke-opacity="0.75" fill="none"
+    filter="url(#glow)"/>
+
+  <!-- Ring 5: innermost, magenta-violet -->
+  <circle cx="110" cy="30" r="6.5"
+    stroke="#c084fc" stroke-width="1.8"
+    stroke-opacity="0.8" fill="none"
+    filter="url(#glow)"/>
+
+  <!-- Core ambient halo -->
+  <circle cx="110" cy="30" r="5"
+    fill="url(#core-grad)" opacity="0.5"
+    filter="url(#glow-core)"/>
+
+  <!-- Core bright dot -->
+  <circle cx="110" cy="30" r="2.5"
+    fill="#a5f3fc" opacity="0.95"
+    filter="url(#glow-core)"/>
+
+  <!-- ─── "SA" text (left of nucleus) ─── -->
+  <text x="0" y="44"
+    font-family="-apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', Arial, sans-serif"
+    font-size="46" font-weight="900"
+    letter-spacing="-1.5"
+    fill="#ffffff">SA</text>
+
+  <!-- ─── "OZ" text (right of nucleus) ─── -->
+  <text x="140" y="44"
+    font-family="-apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', Arial, sans-serif"
+    font-size="46" font-weight="900"
+    letter-spacing="-1.5"
+    fill="#ffffff">OZ</text>
+</svg>

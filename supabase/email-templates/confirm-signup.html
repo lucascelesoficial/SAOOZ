@@ -11,12 +11,25 @@
       <td align="center" style="padding:48px 16px;">
         <table width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;">
 
-          <!-- Wordmark -->
+          <!-- Logo + tagline -->
+          <tr>
+            <td align="center" style="padding-bottom:8px;">
+              <a href="https://saooz.com" style="display:inline-block;text-decoration:none;">
+                <img
+                  src="https://saooz.com/email-logo.svg"
+                  alt="SAOOZ"
+                  width="200"
+                  height="55"
+                  style="display:block;border:0;outline:none;max-width:200px;"
+                />
+              </a>
+            </td>
+          </tr>
           <tr>
             <td align="center" style="padding-bottom:36px;">
-              <span style="font-size:26px;font-weight:800;letter-spacing:-0.5px;color:#f1f5f9;">
-                S<span style="color:#3b82f6;">A</span>OOZ
-              </span>
+              <p style="margin:0;font-size:13px;color:#475569;letter-spacing:0.3px;">
+                O núcleo financeiro da sua vida
+              </p>
             </td>
           </tr>
 
@@ -24,8 +37,9 @@
           <tr>
             <td style="background:#0e1017;border:1px solid #1e293b;border-radius:16px;padding:44px 40px;">
 
-              <!-- Icon -->
               <table width="100%" cellpadding="0" cellspacing="0">
+
+                <!-- Icon -->
                 <tr>
                   <td align="center" style="padding-bottom:28px;">
                     <table cellpadding="0" cellspacing="0">
@@ -44,35 +58,36 @@
                     <h1 style="margin:0 0 12px;font-size:24px;font-weight:700;color:#f1f5f9;text-align:center;">
                       Confirme seu e-mail
                     </h1>
-                  </td>
-                </tr>
-
-                <!-- Body -->
-                <tr>
-                  <td>
-                    <p style="margin:0 0 8px;font-size:15px;line-height:1.65;color:#94a3b8;text-align:center;">
-                      Você criou uma conta no SAOOZ.
-                    </p>
                     <p style="margin:0 0 32px;font-size:15px;line-height:1.65;color:#94a3b8;text-align:center;">
-                      Clique no botão abaixo para confirmar seu endereço de e-mail
-                      e ativar o acesso completo à plataforma.
+                      Sua conta SAOOZ foi criada com sucesso. Clique no botão
+                      abaixo para confirmar seu endereço de e-mail e ter acesso
+                      completo à plataforma.
                     </p>
                   </td>
                 </tr>
 
                 <!-- CTA -->
                 <tr>
-                  <td align="center" style="padding-bottom:36px;">
+                  <td align="center" style="padding-bottom:20px;">
                     <a href="{{ .ConfirmationURL }}"
                        style="display:inline-block;padding:15px 36px;background:linear-gradient(135deg,#3b82f6,#0ea5e9);color:#ffffff;font-size:15px;font-weight:700;border-radius:10px;text-decoration:none;letter-spacing:0.3px;">
-                      Confirmar e-mail &rarr;
+                      Confirmar meu e-mail &rarr;
                     </a>
+                  </td>
+                </tr>
+
+                <!-- Expiry note -->
+                <tr>
+                  <td align="center" style="padding-bottom:32px;">
+                    <p style="margin:0;font-size:12px;color:#475569;">
+                      Este link expira em <strong style="color:#64748b;">24 horas</strong>.
+                    </p>
                   </td>
                 </tr>
 
                 <!-- Link fallback -->
                 <tr>
-                  <td style="background:#060c18;border:1px solid #1e293b;border-radius:10px;padding:14px 18px;margin-bottom:24px;">
+                  <td style="background:#060c18;border:1px solid #1e293b;border-radius:10px;padding:14px 18px;">
                     <p style="margin:0 0 6px;font-size:11px;font-weight:600;color:#475569;text-transform:uppercase;letter-spacing:0.05em;">
                       Ou copie e cole este link no navegador
                     </p>
@@ -82,7 +97,7 @@
                   </td>
                 </tr>
 
-                <!-- Divider -->
+                <!-- Divider + disclaimer -->
                 <tr>
                   <td style="padding-top:28px;">
                     <hr style="margin:0 0 20px;border:none;border-top:1px solid #1e293b;" />
@@ -92,8 +107,8 @@
                     </p>
                   </td>
                 </tr>
-              </table>
 
+              </table>
             </td>
           </tr>
 
