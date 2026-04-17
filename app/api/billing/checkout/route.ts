@@ -144,12 +144,18 @@ export async function POST(request: NextRequest) {
         customer_email: user.email ?? undefined,
         payment_method_types: ['card'],
         line_items: [{ price: priceId, quantity: 1 }],
-        subscription_data: useTrial ? { trial_period_days: trialDays } : undefined,
+        subscription_data: useTrial
+          ? {
+              trial_period_days: trialDays,
+              metadata: { user_id: user.id, plan_type: planType, trial_days: String(trialDays) },
+            }
+          : { metadata: { user_id: user.id, plan_type: planType, trial_days: '0' } },
         metadata: {
           user_id: user.id,
           plan_type: planType,
           duration: String(duration),
           payment_method: 'card',
+          trial_days: String(useTrial ? (trialDays ?? 0) : 0),
         },
         success_url: useTrial
           ? `${appUrl}/onboarding/trial-ativo?session_id={CHECKOUT_SESSION_ID}`
