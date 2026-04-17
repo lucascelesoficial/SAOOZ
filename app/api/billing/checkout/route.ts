@@ -51,7 +51,10 @@ export async function POST(request: NextRequest) {
     log('request', { userId: user.id, planType, duration, trialDays })
 
     // ── Trial reuse prevention ─────────────────────────────────────────────
-    // If user has ever had any subscription (even canceled), block the trial
+    // Bloqueia trial apenas se o usuário já teve uma assinatura REAL no Stripe
+    // (gateway IS NOT NULL). Ignora rows default criadas por ensureSubscription
+    // (gateway=null, gateway_subscription_id=null) que existem para todo usuário
+    // que visitou o dashboard — essas NÃO configuram "já usou trial".
     if (trialDays && trialDays > 0) {
       try {
         const supabase = await createClient()
@@ -59,6 +62,8 @@ export async function POST(request: NextRequest) {
           .from('subscriptions')
           .select('id')
           .eq('user_id', user.id)
+          .not('gateway', 'is', null)          // apenas assinaturas reais (Stripe)
+          .not('gateway_subscription_id', 'is', null)
           .limit(1)
           .maybeSingle()
         if (existingSub) {
@@ -66,7 +71,7 @@ export async function POST(request: NextRequest) {
           trialDays = 0
         }
       } catch (e) {
-        // Fail open: if we can't check, allow the request but log it
+        // Fail open: se não conseguir checar, permite (erra a favor do usuário)
         log('warning: could not check trial reuse', e)
       }
     }
