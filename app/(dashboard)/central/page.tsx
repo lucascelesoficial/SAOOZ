@@ -37,6 +37,8 @@ export default async function DashboardPage() {
       userId={user.id}
       canCreateBusiness={canCreateBusiness}
       businessLimitReached={businessLimitReached}
+      isTrial={snapshot.trialAccess}
+      planType={snapshot.subscription.plan_type as 'pf' | 'pj' | 'pro'}
     />
   )
 }

@@ -21,22 +21,37 @@ interface DashboardClientProps {
   userId: string
   canCreateBusiness: boolean
   businessLimitReached: boolean
+  /** true when the user is on a free trial (no paid subscription yet) */
+  isTrial: boolean
+  /** current plan type — used to decide if business CTA should upsell or create */
+  planType: 'pf' | 'pj' | 'pro'
 }
 
 export function DashboardClient({
   userId,
   canCreateBusiness,
   businessLimitReached,
+  isTrial,
+  planType,
 }: DashboardClientProps) {
   const [modalOpen, setModalOpen] = useState(false)
   const { totals, categoryData, incomes, expenses, isLoading, currentMonth } = useFinancialData()
   const insights = useMemo(() => generateInsights(totals, categoryData), [categoryData, totals])
-  // Show the header CTA only when user has PJ access (can create or hit limit)
-  const showHeaderCta = canCreateBusiness || businessLimitReached
-  const businessCtaHref = canCreateBusiness
-    ? '/onboarding/empresa'
-    : '/planos?feature=business_limit'
-  const businessCtaLabel = canCreateBusiness ? 'Adicionar empresa' : 'Aumentar limite'
+
+  // PF trial: show upsell CTA → plans page (user needs to upgrade to PJ/PRO first)
+  // PJ/PRO trial or paid: show create/limit CTA → onboarding or limit upgrade
+  const isUpsell = isTrial && planType === 'pf'
+  const showHeaderCta = isUpsell || canCreateBusiness || businessLimitReached
+  const businessCtaHref = isUpsell
+    ? '/onboarding/plano'
+    : canCreateBusiness
+      ? '/onboarding/empresa'
+      : '/planos?feature=business_limit'
+  const businessCtaLabel = isUpsell
+    ? 'Abrir conta empresarial'
+    : canCreateBusiness
+      ? 'Adicionar empresa'
+      : 'Aumentar limite'
 
   return (
     <>
