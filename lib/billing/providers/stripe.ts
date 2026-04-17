@@ -1,5 +1,6 @@
 import { z } from 'zod'
 import type { Json } from '@/types/database.types'
+import { TRIAL_DAYS } from '@/lib/billing/plans'
 import type {
   CheckoutInput,
   CheckoutResult,
@@ -222,12 +223,20 @@ export class StripeProvider implements PaymentProvider {
 
       refs.providerCustomerId = toStringId(parsedSession.data.customer)
 
-      // Always fetch the subscription from Stripe to get the real trial_end.
-      // We do NOT rely on trial_days metadata because sessions created before
-      // this deploy won't have that field — instead we trust the subscription
-      // status directly (trialing = card captured but not yet charged).
-      let trialEndsAt: string | null = null
+      // Determina se é trial e calcula trial_ends_at com 3 camadas de fallback:
+      //
+      // 1. Busca a subscription no Stripe → usa sub.trial_end (mais preciso)
+      // 2. Se a chamada falhar ou sub.trial_end não existir, mas sub.status='trialing'
+      //    → usa trial_days da metadata (sessions novas têm esse campo)
+      // 3. Se amount_total = 0 (sem cobrança = trial sem dúvida) e nada mais
+      //    funcionou → usa TRIAL_DAYS global como fallback absoluto
+      //
+      // Isso cobre: sessions antigas sem trial_days metadata, falhas de API,
+      // e qualquer combinação de modo test/live.
+      const amountTotal = parsedSession.data.amount_total ?? 0
       const trialDaysFromMeta = parsedMetadata.data.trial_days ?? 0
+      let trialEndsAt: string | null = null
+
       if (refs.providerSubscriptionId) {
         try {
           const stripeClient = await this.getStripeClient()
@@ -237,19 +246,25 @@ export class StripeProvider implements PaymentProvider {
           const stripeTrialEnd: number | null = sub?.trial_end ?? null
 
           if (isStripeTrial && stripeTrialEnd) {
-            // Stripe says it's a trial — use the exact timestamp Stripe set
             trialEndsAt = new Date(stripeTrialEnd * 1000).toISOString()
-          } else if (isStripeTrial && trialDaysFromMeta > 0) {
-            // Trialing but no trial_end set — fall back to metadata
-            trialEndsAt = new Date(Date.now() + trialDaysFromMeta * 86400 * 1000).toISOString()
+          } else if (isStripeTrial) {
+            // trialing mas sem trial_end — usa metadata ou constante
+            const days = trialDaysFromMeta > 0 ? trialDaysFromMeta : TRIAL_DAYS
+            trialEndsAt = new Date(Date.now() + days * 86400 * 1000).toISOString()
           }
-          // else: not a trial (status=active) → trialEndsAt stays null → activates as paid
+          // sub.status === 'active' → cobrança real, trialEndsAt fica null
         } catch {
-          // Fail-soft: if Stripe API call fails and metadata says trial, use computed timestamp
+          // API do Stripe falhou — usa sinais locais
           if (trialDaysFromMeta > 0) {
             trialEndsAt = new Date(Date.now() + trialDaysFromMeta * 86400 * 1000).toISOString()
+          } else if (amountTotal === 0) {
+            // amount_total=0 é prova irrefutável de trial (Stripe não cobra $0 em planos pagos)
+            trialEndsAt = new Date(Date.now() + TRIAL_DAYS * 86400 * 1000).toISOString()
           }
         }
+      } else if (amountTotal === 0) {
+        // Sem subscription ID ainda mas sem cobrança → é trial
+        trialEndsAt = new Date(Date.now() + TRIAL_DAYS * 86400 * 1000).toISOString()
       }
 
       return {
