@@ -291,15 +291,12 @@ async function normalizeUsageWindow(usage: UsageRow, now = new Date()) {
 }
 
 function computeTrialDaysRemaining(subscription: SubscriptionRow, now = new Date()) {
-  if (subscription.status !== 'trialing' || !subscription.trial_ends_at) {
-    return 0
-  }
-
+  // Count days whether status is 'trialing' OR 'active' with a future trial_ends_at.
+  // The latter happens when Stripe transitions the subscription before our
+  // invoice.paid webhook updates our DB record.
+  if (!subscription.trial_ends_at) return 0
   const diffMs = new Date(subscription.trial_ends_at).getTime() - now.getTime()
-  if (diffMs <= 0) {
-    return 0
-  }
-
+  if (diffMs <= 0) return 0
   return Math.ceil(diffMs / (1000 * 60 * 60 * 24))
 }
 

@@ -222,24 +222,33 @@ export class StripeProvider implements PaymentProvider {
 
       refs.providerCustomerId = toStringId(parsedSession.data.customer)
 
-      // If the checkout was created with a trial, fetch the actual trial_end
-      // from the subscription so we store the exact UTC timestamp Stripe used.
+      // Always fetch the subscription from Stripe to get the real trial_end.
+      // We do NOT rely on trial_days metadata because sessions created before
+      // this deploy won't have that field — instead we trust the subscription
+      // status directly (trialing = card captured but not yet charged).
       let trialEndsAt: string | null = null
       const trialDaysFromMeta = parsedMetadata.data.trial_days ?? 0
-      if (trialDaysFromMeta > 0 && refs.providerSubscriptionId) {
+      if (refs.providerSubscriptionId) {
         try {
           const stripeClient = await this.getStripeClient()
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const sub: any = await stripeClient.subscriptions.retrieve(refs.providerSubscriptionId)
-          if (sub?.trial_end) {
-            trialEndsAt = new Date(sub.trial_end * 1000).toISOString()
-          } else {
+          const isStripeTrial = sub?.status === 'trialing'
+          const stripeTrialEnd: number | null = sub?.trial_end ?? null
+
+          if (isStripeTrial && stripeTrialEnd) {
+            // Stripe says it's a trial — use the exact timestamp Stripe set
+            trialEndsAt = new Date(stripeTrialEnd * 1000).toISOString()
+          } else if (isStripeTrial && trialDaysFromMeta > 0) {
+            // Trialing but no trial_end set — fall back to metadata
             trialEndsAt = new Date(Date.now() + trialDaysFromMeta * 86400 * 1000).toISOString()
           }
+          // else: not a trial (status=active) → trialEndsAt stays null → activates as paid
         } catch {
-          // Fail-soft: if Stripe API call fails, use a computed timestamp so
-          // we never fall back to "active" by accident on a trial flow.
-          trialEndsAt = new Date(Date.now() + trialDaysFromMeta * 86400 * 1000).toISOString()
+          // Fail-soft: if Stripe API call fails and metadata says trial, use computed timestamp
+          if (trialDaysFromMeta > 0) {
+            trialEndsAt = new Date(Date.now() + trialDaysFromMeta * 86400 * 1000).toISOString()
+          }
         }
       }
 
