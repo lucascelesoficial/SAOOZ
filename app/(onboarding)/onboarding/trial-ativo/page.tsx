@@ -22,13 +22,31 @@ const POLL_MS = 2000
 interface SubInfo {
   planType: SubscriptionPlanType | null
   planName: string
-  trialEnd: string | null
+  trialEndLabel: string | null
+  trialEndDays: number | null
+}
+
+// Map plan → mode + next onboarding step
+const PLAN_TO_MODE: Record<SubscriptionPlanType, 'pf' | 'pj' | 'both'> = {
+  pf: 'pf',
+  pj: 'pj',
+  pro: 'both',
+}
+const PLAN_TO_NEXT: Record<SubscriptionPlanType, string> = {
+  pf: '/onboarding/pf',
+  pj: '/onboarding/empresa',
+  pro: '/onboarding/empresa',
 }
 
 export default function TrialAtivoPage() {
   const router = useRouter()
   const [phase, setPhase] = useState<'polling' | 'ready'>('polling')
-  const [info, setInfo] = useState<SubInfo>({ planType: null, planName: '', trialEnd: null })
+  const [info, setInfo] = useState<SubInfo>({
+    planType: null,
+    planName: '',
+    trialEndLabel: null,
+    trialEndDays: null,
+  })
   const [attempts, setAttempts] = useState(0)
 
   const check = useCallback(async (): Promise<boolean> => {
@@ -44,7 +62,7 @@ export default function TrialAtivoPage() {
 
     const { data: sub } = await supabase
       .from('subscriptions')
-      .select('status, current_period_end, plan_type')
+      .select('status, trial_ends_at, plan_type')
       .eq('user_id', user.id)
       .in('status', ['active', 'trialing'])
       .limit(1)
@@ -52,18 +70,36 @@ export default function TrialAtivoPage() {
 
     if (sub) {
       const planLabels: Record<string, string> = { pf: 'PF', pj: 'PJ', pro: 'PRO' }
-      const trialEnd = sub.current_period_end
-        ? new Date(sub.current_period_end).toLocaleDateString('pt-BR', {
-            day: '2-digit',
-            month: 'long',
-            year: 'numeric',
-          })
-        : null
+      const planType = sub.plan_type as SubscriptionPlanType
+
+      // ── Trial end computation ─────────────────────────────────────────
+      // Prefer DB trial_ends_at; fall back to now+TRIAL_DAYS for safety.
+      const trialEndDate = sub.trial_ends_at
+        ? new Date(sub.trial_ends_at)
+        : new Date(Date.now() + TRIAL_DAYS * 24 * 60 * 60 * 1000)
+
+      const trialEndLabel = trialEndDate.toLocaleDateString('pt-BR', {
+        day: '2-digit',
+        month: 'long',
+        year: 'numeric',
+      })
+
+      const diffMs = trialEndDate.getTime() - Date.now()
+      const trialEndDays = Math.max(0, Math.ceil(diffMs / (24 * 60 * 60 * 1000)))
+
+      // ── Auto-set profile.mode from plan_type (skip mode picker step) ──
+      if (planType && PLAN_TO_MODE[planType]) {
+        await supabase
+          .from('profiles')
+          .update({ mode: PLAN_TO_MODE[planType] })
+          .eq('id', user.id)
+      }
 
       setInfo({
-        planType: sub.plan_type as SubscriptionPlanType,
-        planName: planLabels[sub.plan_type as string] ?? (sub.plan_type as string)?.toUpperCase() ?? '',
-        trialEnd,
+        planType,
+        planName: planLabels[planType] ?? planType?.toUpperCase() ?? '',
+        trialEndLabel,
+        trialEndDays,
       })
       return true
     }
@@ -104,7 +140,6 @@ export default function TrialAtivoPage() {
         className="fixed inset-0 overflow-y-auto"
         style={{ zIndex: 100, background: 'var(--bg, #06080f)' }}
       >
-        {/* Dot grid */}
         <div
           className="pointer-events-none fixed inset-0 opacity-[0.025]"
           style={{
@@ -134,6 +169,7 @@ export default function TrialAtivoPage() {
   }
 
   const plan = info.planType ? PLAN_CATALOG[info.planType] : null
+  const nextHref = info.planType ? PLAN_TO_NEXT[info.planType] : '/onboarding'
 
   // ── Ready state ────────────────────────────────────────────────────────────
   return (
@@ -141,7 +177,6 @@ export default function TrialAtivoPage() {
       className="fixed inset-0 overflow-y-auto"
       style={{ zIndex: 100, background: 'var(--bg, #06080f)' }}
     >
-      {/* Dot grid */}
       <div
         className="pointer-events-none fixed inset-0 opacity-[0.025]"
         style={{
@@ -174,11 +209,11 @@ export default function TrialAtivoPage() {
         {/* Title */}
         <div className="text-center mb-8 space-y-2">
           <h1 className="text-3xl font-extrabold text-app">
-            {TRIAL_DAYS} dias grátis ativados!
+            {info.trialEndDays ?? TRIAL_DAYS} dias grátis ativados!
           </h1>
           <p className="text-sm text-app-soft">
             Você tem acesso completo ao plano
-            {info.planName ? <strong className="text-app"> {info.planName}</strong> : ''} por {TRIAL_DAYS} dias.
+            {info.planName ? <strong className="text-app"> {info.planName}</strong> : ''} por {info.trialEndDays ?? TRIAL_DAYS} dias.
             Explore tudo sem nenhuma cobrança agora.
           </p>
         </div>
@@ -194,9 +229,11 @@ export default function TrialAtivoPage() {
           >
             <CalendarDays className="h-4 w-4 mb-2" style={{ color: 'var(--accent-blue)' }} />
             <p className="text-xs uppercase tracking-wider text-app-soft mb-0.5">Período grátis</p>
-            <p className="text-sm font-bold text-app">{TRIAL_DAYS} dias a partir de hoje</p>
-            {info.trialEnd && (
-              <p className="text-xs text-app-soft mt-0.5">Até {info.trialEnd}</p>
+            <p className="text-sm font-bold text-app">
+              {info.trialEndDays !== null ? `${info.trialEndDays} dias` : `${TRIAL_DAYS} dias`} restantes
+            </p>
+            {info.trialEndLabel && (
+              <p className="text-xs text-app-soft mt-0.5">Termina em {info.trialEndLabel}</p>
             )}
           </div>
 
@@ -237,9 +274,9 @@ export default function TrialAtivoPage() {
           </div>
         )}
 
-        {/* CTA */}
+        {/* CTA — skip the generic /onboarding step and go straight to cadastro */}
         <button
-          onClick={() => router.push('/onboarding')}
+          onClick={() => { window.location.href = nextHref }}
           className="w-full h-13 rounded-[12px] text-sm font-bold text-white flex items-center justify-center gap-2 transition-all"
           style={{
             height: '52px',
@@ -247,7 +284,10 @@ export default function TrialAtivoPage() {
             boxShadow: '0 4px 24px color-mix(in oklab, var(--accent-blue) 30%, transparent)',
           }}
         >
-          Configurar minha conta
+          {info.planType === 'pf' && 'Cadastrar meus dados pessoais'}
+          {info.planType === 'pj' && 'Cadastrar minha empresa'}
+          {info.planType === 'pro' && 'Cadastrar minha empresa'}
+          {!info.planType && 'Continuar'}
           <ArrowRight className="h-4 w-4" />
         </button>
 

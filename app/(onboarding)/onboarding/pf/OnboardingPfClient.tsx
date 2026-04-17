@@ -56,6 +56,7 @@ export function OnboardingPfClient({
 }: Props) {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
+  const [skipping, setSkipping] = useState(false)
 
   const [name,   setName]   = useState(initialName)
   const [cpf,    setCpf]    = useState(initialCpf ? maskCPF(initialCpf) : '')
@@ -84,18 +85,31 @@ export function OnboardingPfClient({
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) { window.location.href = '/login'; return }
 
-    const { error } = await supabase
+    const basePayload = {
+      name: name.trim(),
+      cpf: cpf ? cpf.replace(/\D/g, '') : null,
+      phone: phone ? phone.replace(/\D/g, '') : null,
+      city: city.trim() || null,
+      state: state || null,
+    }
+
+    // Try to set onboarding_completed_at (requires migration 023).
+    // If the column doesn't exist yet, fall back to saving without it.
+    const completedAt = new Date().toISOString()
+    let { error } = await supabase
       .from('profiles')
-      .update({
-        name: name.trim(),
-        cpf: cpf ? cpf.replace(/\D/g, '') : null,
-        phone: phone ? phone.replace(/\D/g, '') : null,
-        city: city.trim() || null,
-        state: state || null,
-        // ── This is the gate key: only set here after real user action ──
-        onboarding_completed_at: new Date().toISOString(),
-      })
+      .update({ ...basePayload, onboarding_completed_at: completedAt })
       .eq('id', user.id)
+
+    if (error && /onboarding_completed_at|column/i.test(error.message)) {
+      // Migration 023 not applied yet — save profile data without the gate column.
+      // The dashboard will still allow access; the banner won't show (column absent = undefined).
+      const fallback = await supabase
+        .from('profiles')
+        .update(basePayload)
+        .eq('id', user.id)
+      error = fallback.error
+    }
 
     if (error) {
       toast.error('Erro ao salvar perfil. Tente novamente.')
@@ -105,6 +119,24 @@ export function OnboardingPfClient({
 
     // Hard navigation clears Next.js Router Cache so layout reads fresh data
     window.location.href = '/central'
+  }
+
+  async function handleSkip() {
+    setSkipping(true)
+    const supabase = createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) { window.location.href = '/login'; return }
+
+    // Ensure profile.mode is set so middleware lets user into the dashboard.
+    // IMPORTANT: do NOT set onboarding_completed_at — that flag is the gate
+    // used by the dashboard banner + server to require cadastro before any
+    // mutation. Skipping lets the user browse; any action will prompt them.
+    await supabase
+      .from('profiles')
+      .update({ mode: 'pf' })
+      .eq('id', user.id)
+
+    window.location.href = '/central?cadastro=pendente'
   }
 
   const inputStyle = (hasError?: boolean): React.CSSProperties => ({
@@ -241,7 +273,7 @@ export function OnboardingPfClient({
 
           <button
             type="submit"
-            disabled={loading}
+            disabled={loading || skipping}
             className="flex-1 h-11 rounded-[10px] text-sm font-bold text-white flex items-center justify-center gap-2 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             style={{
               background: 'linear-gradient(135deg, #3b82f6, #0ea5e9)',
@@ -250,10 +282,22 @@ export function OnboardingPfClient({
           >
             {loading
               ? <Loader2 className="h-4 w-4 animate-spin" />
-              : <>Acessar o painel <ArrowRight className="h-4 w-4" /></>
+              : <>Finalizar cadastro <ArrowRight className="h-4 w-4" /></>
             }
           </button>
         </div>
+
+        {/* Skip link — user can browse the dashboard but will be blocked on mutations */}
+        <button
+          type="button"
+          onClick={handleSkip}
+          disabled={loading || skipping}
+          className="w-full text-center text-xs text-app-soft hover:text-app transition-colors pt-1 disabled:opacity-50"
+        >
+          {skipping
+            ? 'Redirecionando…'
+            : 'Pular por agora · finalizo depois'}
+        </button>
       </form>
     </div>
   )

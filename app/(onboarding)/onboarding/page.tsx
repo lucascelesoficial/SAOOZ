@@ -1,185 +1,101 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { User, Briefcase, Layers, ChevronRight, Loader2 } from 'lucide-react'
+import { useEffect } from 'react'
+import { Loader2 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
-import { toast } from 'sonner'
-import type { UserMode } from '@/types/database.types'
+import type { SubscriptionPlanType, UserMode } from '@/types/database.types'
 
-interface ModeOption {
-  id: UserMode
-  icon: React.ElementType
-  title: string
-  subtitle: string
-  color: string
-  glow: string
+/**
+ * /onboarding — automatic router after trial activation.
+ *
+ * Deriva o mode direto do plano assinado (sem pedir ao usuário):
+ *   plan_type='pf'  → mode='pf'  → /onboarding/pf
+ *   plan_type='pj'  → mode='pj'  → /onboarding/empresa
+ *   plan_type='pro' → mode='both' → /onboarding/empresa
+ *
+ * Antes havia uma aba de escolha PF/PJ/Ambos aqui — removida por redundância,
+ * já que o plano já carrega essa informação.
+ */
+
+const PLAN_TO_MODE: Record<SubscriptionPlanType, UserMode> = {
+  pf: 'pf',
+  pj: 'pj',
+  pro: 'both',
 }
 
-const OPTIONS: ModeOption[] = [
-  {
-    id: 'pf',
-    icon: User,
-    title: 'Pessoa Física',
-    subtitle: 'Controle de renda, gastos, metas e saúde financeira pessoal.',
-    color: '#3b82f6',
-    glow: '#3b82f640',
-  },
-  {
-    id: 'pj',
-    icon: Briefcase,
-    title: 'Pessoa Jurídica',
-    subtitle: 'Faturamento, despesas, impostos, lucro e pró-labore da empresa.',
-    color: '#0ea5e9',
-    glow: '#0ea5e940',
-  },
-  {
-    id: 'both',
-    icon: Layers,
-    title: 'Ambos',
-    subtitle: 'Gerencie suas finanças pessoais e empresariais no mesmo lugar.',
-    color: '#22c55e',
-    glow: '#22c55e40',
-  },
-]
+const PLAN_TO_NEXT: Record<SubscriptionPlanType, string> = {
+  pf: '/onboarding/pf',
+  pj: '/onboarding/empresa',
+  pro: '/onboarding/empresa',
+}
 
-export default function OnboardingPage() {
+const MODE_TO_NEXT: Record<UserMode, string> = {
+  pf: '/onboarding/pf',
+  pj: '/onboarding/empresa',
+  both: '/onboarding/empresa',
+}
+
+export default function OnboardingRouterPage() {
   const router = useRouter()
-  const [selected, setSelected] = useState<UserMode | null>(null)
-  const [loading, setLoading] = useState(false)
-  const [checking, setChecking] = useState(true)
 
   useEffect(() => {
-    const supabase = createClient()
-    supabase.auth.getUser().then(({ data: { user } }) => {
+    (async () => {
+      const supabase = createClient()
+      const { data: { user } } = await supabase.auth.getUser()
       if (!user) { window.location.href = '/login'; return }
-      supabase
-        .from('subscriptions')
-        .select('id, status')
-        .eq('user_id', user.id)
-        .in('status', ['active', 'trialing'])
-        .limit(1)
-        .then(({ data }) => {
-          if (!data || data.length === 0) {
-            router.replace('/onboarding/plano')
-          } else {
-            setChecking(false)
-          }
-        })
-    })
+
+      const [{ data: sub }, { data: profile }] = await Promise.all([
+        supabase
+          .from('subscriptions')
+          .select('status, plan_type')
+          .eq('user_id', user.id)
+          .in('status', ['active', 'trialing'])
+          .limit(1)
+          .maybeSingle(),
+        supabase
+          .from('profiles')
+          // Note: onboarding_completed_at intentionally omitted — explicit select of a
+          // non-existent column causes PostgREST to return null for the entire row.
+          // Migration 023 adds this column; once applied, the dashboard layout (select *)
+          // will handle the fast-path check.
+          .select('mode')
+          .eq('id', user.id)
+          .maybeSingle(),
+      ])
+
+      // No subscription → pick a plan first
+      if (!sub) {
+        router.replace('/onboarding/plano')
+        return
+      }
+
+      // Derive mode from plan if needed, then route
+      const planType = sub.plan_type as SubscriptionPlanType | null
+      const derivedMode = planType ? PLAN_TO_MODE[planType] : null
+      const finalMode = (profile?.mode as UserMode | null) ?? derivedMode
+
+      // Save mode if missing
+      if (!profile?.mode && derivedMode) {
+        await supabase
+          .from('profiles')
+          .update({ mode: derivedMode })
+          .eq('id', user.id)
+      }
+
+      const next = finalMode
+        ? MODE_TO_NEXT[finalMode]
+        : planType
+          ? PLAN_TO_NEXT[planType]
+          : '/onboarding/plano'
+
+      window.location.href = next
+    })()
   }, [router])
 
-  if (checking) {
-    return (
-      <div className="flex items-center justify-center py-20">
-        <Loader2 className="h-6 w-6 animate-spin text-white opacity-40" />
-      </div>
-    )
-  }
-
-  async function handleContinue() {
-    if (!selected) return
-    setLoading(true)
-    const supabase = createClient()
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) { window.location.href = '/login'; return }
-
-    const { error } = await supabase
-      .from('profiles')
-      .update({ mode: selected })
-      .eq('id', user.id)
-
-    if (error) {
-      toast.error('Erro ao salvar preferência')
-      setLoading(false)
-      return
-    }
-
-    // Hard navigation bypasses Next.js Router Cache entirely
-    // so (dashboard)/layout.tsx always reads fresh DB data
-    if (selected === 'pj' || selected === 'both') {
-      window.location.href = '/onboarding/empresa'
-    } else {
-      // PF: must complete profile setup before entering the dashboard
-      window.location.href = '/onboarding/pf'
-    }
-  }
-
   return (
-    <div className="panel-card rounded-2xl p-8 space-y-8">
-      {/* Header */}
-      <div className="text-center space-y-2">
-        <h1 className="text-2xl font-extrabold text-app">
-          Como você vai usar o SAOOZ?
-        </h1>
-        <p className="text-sm text-app-soft">
-          Isso personaliza toda a sua experiência. Você pode mudar depois nas configurações.
-        </p>
-      </div>
-
-      {/* Options */}
-      <div className="space-y-3">
-        {OPTIONS.map((opt) => {
-          const Icon = opt.icon
-          const isSelected = selected === opt.id
-          return (
-            <button
-              key={opt.id}
-              onClick={() => setSelected(opt.id)}
-              className="w-full text-left rounded-[14px] p-4 transition-all duration-200 flex items-center gap-4"
-              style={{
-                background: isSelected ? `${opt.color}12` : 'var(--panel-bg-soft)',
-                border: isSelected ? `1.5px solid ${opt.color}` : '1.5px solid var(--panel-border)',
-                boxShadow: isSelected ? `0 0 20px ${opt.glow}` : 'none',
-              }}
-            >
-              {/* Icon bubble */}
-              <div className="h-12 w-12 rounded-xl flex items-center justify-center shrink-0 transition-all"
-                style={{
-                  background: isSelected ? `${opt.color}20` : 'var(--panel-border)',
-                  border: `1px solid ${isSelected ? opt.color : 'var(--panel-border-strong)'}`,
-                }}>
-                <Icon className="h-5 w-5" style={{ color: isSelected ? opt.color : 'var(--text-soft)' }} />
-              </div>
-
-              {/* Text */}
-              <div className="flex-1 min-w-0">
-                <p className="font-semibold text-app text-sm">{opt.title}</p>
-                <p className="text-xs text-app-soft mt-0.5 leading-relaxed">{opt.subtitle}</p>
-              </div>
-
-              {/* Check */}
-              <div className="h-5 w-5 rounded-full border-2 shrink-0 flex items-center justify-center transition-all"
-                style={{
-                  borderColor: isSelected ? opt.color : 'var(--panel-border-strong)',
-                  background: isSelected ? opt.color : 'transparent',
-                }}>
-                {isSelected && (
-                  <svg width="10" height="8" viewBox="0 0 10 8" fill="none">
-                    <path d="M1 4l2.5 2.5L9 1" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg>
-                )}
-              </div>
-            </button>
-          )
-        })}
-      </div>
-
-      {/* CTA */}
-      <button
-        onClick={handleContinue}
-        disabled={!selected || loading}
-        className="w-full h-12 rounded-[12px] text-sm font-bold text-white flex items-center justify-center gap-2 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
-        style={{
-          background: selected ? 'linear-gradient(135deg, var(--accent-blue), var(--accent-cyan))' : 'var(--panel-border)',
-          boxShadow: selected ? '0 4px 20px color-mix(in oklab, var(--accent-blue) 25%, transparent)' : 'none',
-        }}
-      >
-        {loading
-          ? <Loader2 className="h-4 w-4 animate-spin" />
-          : <>Continuar <ChevronRight className="h-4 w-4" /></>
-        }
-      </button>
+    <div className="flex items-center justify-center py-20">
+      <Loader2 className="h-6 w-6 animate-spin text-white opacity-40" />
     </div>
   )
 }

@@ -11,6 +11,7 @@ import { SidebarOffset } from '@/components/layout/SidebarOffset'
 import { SidebarProvider } from '@/lib/context/SidebarContext'
 import { FinancialDataProvider } from '@/lib/context/FinancialDataContext'
 import { SessionTimeoutGuard } from '@/components/security/SessionTimeoutGuard'
+import { OnboardingGateProvider } from '@/components/onboarding/OnboardingGateProvider'
 
 function formatPlanStatusLabel(
   lifecycleStatus: 'trialing' | 'active' | 'past_due' | 'canceled' | 'expired' | 'inactive',
@@ -113,41 +114,65 @@ export default async function DashboardLayout({
     }
   }
 
+  // ── Onboarding gate ────────────────────────────────────────────────────────
+  // profile.onboarding_completed_at IS NULL means the user skipped cadastro.
+  // We allow dashboard access but a persistent banner + mutation-blocking
+  // modal will prompt them to finalize. Next step depends on mode:
+  //   pf          → /onboarding/pf
+  //   pj or both  → /onboarding/empresa
+  //
+  // IMPORTANT: when migration 023 hasn't been applied yet, the column doesn't
+  // exist in the DB so select('*') returns the row WITHOUT the field (undefined,
+  // not null). We must distinguish undefined (column absent) from null (column
+  // exists but user skipped). Banner is only shown when the column is present
+  // AND null — avoids showing it to every user before migration is applied.
+  const rawCompleted = (profile as { onboarding_completed_at?: string | null })
+    ?.onboarding_completed_at
+  const onboardingRequired = rawCompleted !== undefined && rawCompleted === null
+
+  const onboardingNext =
+    profile.mode === 'pf' ? '/onboarding/pf' : '/onboarding/empresa'
+
   return (
     <SidebarProvider>
-      <div className="app-shell flex min-h-screen">
-        <Sidebar
-          profile={profile}
-          planLabel={
-            snapshot.paidAccess
-              ? snapshot.subscription.plan_type.toUpperCase()
-              : snapshot.trialDaysRemaining > 0
-                ? 'TRIAL'
-                : 'GRATIS'
-          }
-          planStatusLabel={formatPlanStatusLabel(snapshot.lifecycleStatus, snapshot.trialDaysRemaining)}
-          canAccessPersonalModule={policy.modules.personal}
-          canAccessBusinessModule={policy.modules.business}
-        />
-        <SidebarOffset>
-          <Topbar
+      <OnboardingGateProvider required={onboardingRequired} nextHref={onboardingNext}>
+        <div
+          className="app-shell flex min-h-screen"
+          style={onboardingRequired ? { paddingTop: '42px' } : undefined}
+        >
+          <Sidebar
             profile={profile}
-            businesses={businesses ?? []}
+            planLabel={
+              snapshot.paidAccess
+                ? snapshot.subscription.plan_type.toUpperCase()
+                : snapshot.trialDaysRemaining > 0
+                  ? 'TRIAL'
+                  : 'GRATIS'
+            }
+            planStatusLabel={formatPlanStatusLabel(snapshot.lifecycleStatus, snapshot.trialDaysRemaining)}
             canAccessPersonalModule={policy.modules.personal}
             canAccessBusinessModule={policy.modules.business}
-            canCreateBusiness={canCreateBusiness}
-            businessLimitReached={businessLimitReached}
           />
-          <main className="flex-1 p-4 pb-24 md:p-6 md:pb-6">
-            <FinancialDataProvider userId={user.id}>
-              {children}
-            </FinancialDataProvider>
-          </main>
-          {/* Client island — fires idle logout after 30 min inactivity */}
-          <SessionTimeoutGuard />
-        </SidebarOffset>
-        <BottomNav />
-      </div>
+          <SidebarOffset>
+            <Topbar
+              profile={profile}
+              businesses={businesses ?? []}
+              canAccessPersonalModule={policy.modules.personal}
+              canAccessBusinessModule={policy.modules.business}
+              canCreateBusiness={canCreateBusiness}
+              businessLimitReached={businessLimitReached}
+            />
+            <main className="flex-1 p-4 pb-24 md:p-6 md:pb-6">
+              <FinancialDataProvider userId={user.id}>
+                {children}
+              </FinancialDataProvider>
+            </main>
+            {/* Client island — fires idle logout after 30 min inactivity */}
+            <SessionTimeoutGuard />
+          </SidebarOffset>
+          <BottomNav />
+        </div>
+      </OnboardingGateProvider>
     </SidebarProvider>
   )
 }

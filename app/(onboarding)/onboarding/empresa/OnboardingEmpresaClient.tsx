@@ -104,6 +104,7 @@ export function OnboardingEmpresaClient({
   const isEditing = Boolean(businessId)
 
   const [loading, setLoading] = useState(false)
+  const [skipping, setSkipping] = useState(false)
   const [loadingBusiness, setLoadingBusiness] = useState(Boolean(businessId))
   const [name, setName] = useState('')
   const [cnpj, setCnpj] = useState('')
@@ -282,14 +283,22 @@ export function OnboardingEmpresaClient({
 
     // Save responsible partner data to the user's profile
     // Also marks onboarding as complete — prevents dashboard bypass
-    await supabase.from('profiles').update({
+    const profilePayload = {
       cpf: socioCpf.replace(/\D/g, '') || null,
       phone: socioPhone.replace(/\D/g, '') || null,
       birth_date: socioBirthDate || null,
       city: socioCity.trim() || null,
       state: socioBrazilState || null,
-      onboarding_completed_at: new Date().toISOString(),
+    }
+    const completedAt = new Date().toISOString()
+    const { error: profileErr } = await supabase.from('profiles').update({
+      ...profilePayload,
+      onboarding_completed_at: completedAt,
     }).eq('id', user.id)
+    // If migration 023 not applied yet, fall back to saving without the column
+    if (profileErr && /onboarding_completed_at|column/i.test(profileErr.message)) {
+      await supabase.from('profiles').update(profilePayload).eq('id', user.id)
+    }
 
     toast.success(isEditing ? 'Empresa atualizada' : 'Empresa cadastrada', {
       description: 'A empresa ativa foi atualizada no seu painel.',
@@ -297,6 +306,20 @@ export function OnboardingEmpresaClient({
 
     router.refresh()
     window.location.href = '/empresa'
+  }
+
+  async function handleSkip() {
+    if (isEditing) return // skip is only meaningful during initial onboarding
+
+    setSkipping(true)
+    const supabase = createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) { window.location.href = '/login'; return }
+
+    // Mode must already be set by /onboarding router — don't overwrite it here.
+    // We just skip cadastro completion; onboarding_completed_at stays NULL.
+    // The dashboard banner + mutation gate will prompt the user later.
+    window.location.href = '/central?cadastro=pendente'
   }
 
   return (
@@ -491,7 +514,7 @@ export function OnboardingEmpresaClient({
 
         <button
           type="submit"
-          disabled={loading || loadingBusiness}
+          disabled={loading || loadingBusiness || skipping}
           className="mt-2 flex h-12 w-full items-center justify-center gap-2 rounded-[12px] text-sm font-bold text-white transition-all disabled:opacity-60"
           style={{
             background: 'linear-gradient(135deg, #0ea5e9, #0284c7)',
@@ -507,6 +530,20 @@ export function OnboardingEmpresaClient({
             </>
           )}
         </button>
+
+        {/* Skip link — only during initial onboarding flow (not when editing) */}
+        {!isEditing && (
+          <button
+            type="button"
+            onClick={handleSkip}
+            disabled={loading || skipping}
+            className="w-full text-center text-xs text-app-soft hover:text-app transition-colors disabled:opacity-50"
+          >
+            {skipping
+              ? 'Redirecionando…'
+              : 'Pular por agora · finalizo depois'}
+          </button>
+        )}
       </form>
     </div>
   )

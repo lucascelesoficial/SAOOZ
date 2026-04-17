@@ -25,9 +25,9 @@ export default async function OnboardingPfPage() {
       .maybeSingle(),
     supabase
       .from('profiles')
-      .select('id, name, cpf, phone, city, state, mode, onboarding_completed_at')
+      .select('id, name, cpf, phone, city, state, mode')
       .eq('id', user.id)
-      .single(),
+      .maybeSingle(),
   ])
 
   // No subscription → go select a plan
@@ -40,7 +40,10 @@ export default async function OnboardingPfPage() {
   if (profile.mode === 'pj' || profile.mode === 'both') redirect('/onboarding/empresa')
 
   // Already completed → go to dashboard
-  if (profile.onboarding_completed_at) redirect('/central')
+  // (onboarding_completed_at will be undefined if migration 023 not yet applied — safe to skip)
+  if ((profile as { onboarding_completed_at?: string | null })?.onboarding_completed_at) {
+    redirect('/central')
+  }
 
   return (
     <OnboardingPfClient
