@@ -16,12 +16,18 @@ import https from 'https'
 
 // ─── CONFIG ─────────────────────────────────────────────────────────────────
 
-const PROJECT_ID = 'prj_DgaoWHNfEqcA4wGHk76SyE14Hkxo'
-const TEAM_ID    = 'team_mdYjbNug1B2iJnO03VWcwwwP'
+const PROJECT_ID = process.env.VERCEL_PROJECT_ID
+const TEAM_ID    = process.env.VERCEL_TEAM_ID
+
+if (!PROJECT_ID || !TEAM_ID) {
+  console.error('❌  VERCEL_PROJECT_ID e VERCEL_TEAM_ID são obrigatórios.')
+  console.error('    Execute: $env:VERCEL_PROJECT_ID = "prj_xxx"; $env:VERCEL_TEAM_ID = "team_xxx"')
+  process.exit(1)
+}
 
 // Fill in your values here OR pass as env vars
 const VALUES = {
-  CRON_SECRET:                   process.env.CRON_SECRET    || 'a43f8898f740a17fd0b46eb50de4b7d9fa51cae360d24deb02645a9fbb1e88ce',
+  CRON_SECRET:                   process.env.CRON_SECRET    || '',
   NEXT_PUBLIC_SENTRY_DSN:        process.env.SENTRY_DSN     || '',
   SENTRY_ORG:                    process.env.SENTRY_ORG     || '',
   SENTRY_PROJECT:                process.env.SENTRY_PROJECT || '',

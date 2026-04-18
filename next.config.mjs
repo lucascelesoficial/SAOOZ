@@ -10,7 +10,7 @@ const APP_HOST = process.env.NEXT_PUBLIC_APP_URL
  * Content-Security-Policy
  *
  * - default-src 'self'           → only same-origin by default
- * - script-src                   → self + unsafe-inline/eval (Next.js hydration) + Stripe
+ * - script-src                   → self + unsafe-inline (Next.js hydration) + Stripe + Cloudflare Turnstile
  * - style-src                    → self + unsafe-inline (Tailwind inline styles)
  * - img-src                      → self + data: + Supabase CDN + Stripe assets
  * - connect-src                  → self + Supabase RT + Groq + PostHog + Sentry
@@ -22,7 +22,9 @@ const APP_HOST = process.env.NEXT_PUBLIC_APP_URL
  */
 const CSP = [
   "default-src 'self'",
-  "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://js.stripe.com https://maps.stripe.com",
+  // unsafe-eval removed — not required by Next.js 14 App Router in production
+  // unsafe-inline retained for Next.js hydration inline scripts
+  "script-src 'self' 'unsafe-inline' https://js.stripe.com https://maps.stripe.com https://challenges.cloudflare.com",
   "style-src 'self' 'unsafe-inline'",
   "font-src 'self' data:",
   `img-src 'self' data: blob: https://*.supabase.co https://*.stripe.com`,
@@ -35,8 +37,9 @@ const CSP = [
     'https://o*.ingest.sentry.io',
     'https://api.groq.com',
     'https://api.elevenlabs.io',
+    'https://challenges.cloudflare.com',
   ].join(' '),
-  "frame-src 'self' https://js.stripe.com https://hooks.stripe.com https://checkout.stripe.com",
+  "frame-src 'self' https://js.stripe.com https://hooks.stripe.com https://checkout.stripe.com https://challenges.cloudflare.com",
   "object-src 'none'",
   "base-uri 'self'",
   `form-action 'self' https://checkout.stripe.com`,

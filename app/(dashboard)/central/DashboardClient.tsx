@@ -1,8 +1,10 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useMemo, useState, useEffect } from 'react'
 import Link from 'next/link'
+import { useSearchParams } from 'next/navigation'
 import { Building2 } from 'lucide-react'
+import { toast } from 'sonner'
 import { AddExpenseModal } from '@/components/dashboard/AddExpenseModal'
 import { CategoryList } from '@/components/dashboard/CategoryList'
 import { GaugeChart } from '@/components/dashboard/GaugeChart'
@@ -36,6 +38,22 @@ export function DashboardClient({
 }: DashboardClientProps) {
   const [modalOpen, setModalOpen] = useState(false)
   const { totals, categoryData, incomes, expenses, isLoading, currentMonth } = useFinancialData()
+  const searchParams = useSearchParams()
+
+  // Show welcome toast after successful checkout redirect
+  useEffect(() => {
+    if (searchParams.get('checkout') === 'success') {
+      toast.success('Plano ativado com sucesso!', {
+        description: 'Bem-vindo ao SAOOZ. Seu acesso completo está liberado.',
+        duration: 6000,
+      })
+      // Clean the URL without reloading
+      const url = new URL(window.location.href)
+      url.searchParams.delete('checkout')
+      url.searchParams.delete('session_id')
+      window.history.replaceState({}, '', url.toString())
+    }
+  }, [searchParams])
   const insights = useMemo(() => generateInsights(totals, categoryData), [categoryData, totals])
 
   // PF trial: show upsell CTA → plans page (user needs to upgrade to PJ/PRO first)

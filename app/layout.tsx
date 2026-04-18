@@ -18,7 +18,10 @@ export const viewport: Viewport = {
 }
 
 export const metadata: Metadata = {
-  title: 'SAOOZ - Dashboard Financeiro',
+  title: {
+    default: 'SAOOZ',
+    template: 'SAOOZ | %s',
+  },
   description: 'Entenda para onde vai seu dinheiro em menos de 5 segundos.',
   manifest: '/manifest.webmanifest',
   appleWebApp: {

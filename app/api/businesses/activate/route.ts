@@ -116,7 +116,8 @@ export async function POST(request: NextRequest) {
       path: '/',
       maxAge: ACTIVE_BUSINESS_COOKIE_MAX_AGE_SECONDS,
       sameSite: 'lax',
-      httpOnly: false,
+      httpOnly: true,  // server-side only — never read by JS
+      secure: process.env.NODE_ENV === 'production',
     })
     return response
   } catch (error) {

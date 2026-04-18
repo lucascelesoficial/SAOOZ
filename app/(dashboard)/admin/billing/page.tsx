@@ -1,3 +1,4 @@
+import type { Metadata } from 'next'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { createOptionalAdminClient } from '@/lib/supabase/admin'
@@ -9,6 +10,7 @@ import { readBillingObservabilityData } from '@/lib/billing/observability'
 import { BillingObservabilityView } from './BillingObservabilityView'
 
 export const dynamic = 'force-dynamic'
+export const metadata: Metadata = { title: 'Admin — Billing' }
 
 interface SearchParamsInput {
   [key: string]: string | string[] | undefined

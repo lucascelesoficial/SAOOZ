@@ -34,11 +34,13 @@ export async function verifyTurnstileToken(
   token: string | null | undefined,
   request: NextRequest
 ): Promise<TurnstileResult> {
-  // Graceful degradation: if the secret isn't configured, skip verification
+  // In production, TURNSTILE_SECRET_KEY must be set — fail-closed if missing
   if (!SECRET) {
     if (process.env.NODE_ENV === 'production') {
-      console.warn('[turnstile] TURNSTILE_SECRET_KEY not set — skipping verification in production!')
+      console.error('[turnstile] TURNSTILE_SECRET_KEY not set in production — blocking request')
+      return { success: false, error: 'Verificação de segurança indisponível. Tente novamente em instantes.' }
     }
+    // Development: allow without key
     return { success: true }
   }
 
@@ -68,7 +70,9 @@ export async function verifyTurnstileToken(
 
     if (!res.ok) {
       console.error('[turnstile] CF verify HTTP error:', res.status)
-      // Fail open on network error to avoid blocking legitimate users
+      if (process.env.NODE_ENV === 'production') {
+        return { success: false, error: 'Verificação de segurança falhou. Tente novamente.' }
+      }
       return { success: true }
     }
 
@@ -82,8 +86,11 @@ export async function verifyTurnstileToken(
 
     return { success: true }
   } catch (err) {
-    // Fail open on timeout / network error
-    console.error('[turnstile] Verification error (failing open):', err)
+    console.error('[turnstile] Verification error:', err)
+    if (process.env.NODE_ENV === 'production') {
+      // Fail-closed: Cloudflare outage should block signups/logins, not open them
+      return { success: false, error: 'Verificação de segurança indisponível. Tente novamente em instantes.' }
+    }
     return { success: true }
   }
 }

@@ -18,8 +18,8 @@ const supabase = createClient<Database>(supabaseUrl, serviceRoleKey, {
   auth: { autoRefreshToken: false, persistSession: false },
 })
 
-const DEMO_EMAIL = 'demo@saooz.com'
-const DEMO_PASSWORD = 'Demo1234'
+const DEMO_EMAIL    = process.env.DEMO_EMAIL    ?? 'demo@saooz.com'
+const DEMO_PASSWORD = process.env.DEMO_PASSWORD ?? (() => { throw new Error('DEMO_PASSWORD env var is required') })()
 
 const currentMonth = new Date()
 currentMonth.setDate(1)

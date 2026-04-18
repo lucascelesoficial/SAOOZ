@@ -1,6 +1,11 @@
 #!/usr/bin/env node
 const TOKEN = process.env.VERCEL_TOKEN
-const PID = 'prj_DgaoWHNfEqcA4wGHk76SyE14Hkxo'
+const PID   = process.env.VERCEL_PROJECT_ID
+
+if (!TOKEN || !PID) {
+  console.error('❌  VERCEL_TOKEN e VERCEL_PROJECT_ID são obrigatórios.')
+  process.exit(1)
+}
 
 const MAP = {
   psVz0uxOWfWcuVcm: ['STRIPE_PRICE_PF_1M',  'price_1TMzeqQvDDC4s0W9N2YAQbOZ'],

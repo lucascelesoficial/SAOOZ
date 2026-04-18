@@ -28,6 +28,8 @@ import type { SubscriptionPlanType } from '@/types/database.types'
 
 interface PlanosClientProps {
   snapshot: BillingSnapshot
+  /** true when Cakto env vars are configured — shows PIX payment button */
+  caktoEnabled?: boolean
 }
 
 function usageMessage(label: string, used: number, limit: number | null) {
@@ -93,8 +95,11 @@ function formatDate(dateStr: string | null) {
   }
 }
 
-export function PlanosClient({ snapshot }: PlanosClientProps) {
-  const [duration, setDuration] = useState<BillingDuration>(6)
+export function PlanosClient({ snapshot, caktoEnabled = false }: PlanosClientProps) {
+  // Default to the user's current billing duration so the active plan card is visible immediately
+  const [duration, setDuration] = useState<BillingDuration>(
+    (snapshot.subscription.billing_duration_months ?? 6) as BillingDuration
+  )
   const [checkingOut, setCheckingOut] = useState<string | null>(null)
   const [canceling, setCanceling] = useState(false)
   const [cancelConfirm, setCancelConfirm] = useState(false)
@@ -106,6 +111,7 @@ export function PlanosClient({ snapshot }: PlanosClientProps) {
     currentPlanName: string
     newPlan: string
     newPlanName: string
+    duration: BillingDuration
     credit: number
     immediateCharge: number
     nextBillingAmount: number
@@ -149,13 +155,13 @@ export function PlanosClient({ snapshot }: PlanosClientProps) {
     return false
   }
 
-  // Paid users: in-app proration upgrade (higher tier only)
+  // Paid users: in-app proration upgrade (higher tier OR same tier longer duration)
   function canUpgrade(planCode: SubscriptionPlanType) {
-    return (
-      snapshot.paidAccess &&
-      !localCancelScheduled &&
-      (PLAN_RANK[planCode] ?? -1) > currentRank
-    )
+    if (!snapshot.paidAccess || localCancelScheduled) return false
+    const rank = PLAN_RANK[planCode] ?? -1
+    if (rank > currentRank) return true
+    if (rank === currentRank && duration > currentSubDuration) return true
+    return false
   }
 
   // Trial users: checkout a higher plan or longer duration (no new trial)
@@ -174,7 +180,7 @@ export function PlanosClient({ snapshot }: PlanosClientProps) {
       const res = await fetch('/api/billing/upgrade', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ planType: planCode, preview: true }),
+        body: JSON.stringify({ planType: planCode, duration, preview: true }),
       })
       const data = await res.json()
       if (!res.ok) {
@@ -196,7 +202,7 @@ export function PlanosClient({ snapshot }: PlanosClientProps) {
       const res = await fetch('/api/billing/upgrade', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ planType: upgradePreview.newPlan, preview: false }),
+        body: JSON.stringify({ planType: upgradePreview.newPlan, duration: upgradePreview.duration, preview: false }),
       })
       const data = await res.json()
       if (!res.ok) {
@@ -248,13 +254,13 @@ export function PlanosClient({ snapshot }: PlanosClientProps) {
     }
   }
 
-  async function handleCheckout(planCode: SubscriptionPlanType) {
-    setCheckingOut(`${planCode}-card`)
+  async function handleCheckout(planCode: SubscriptionPlanType, method: 'pix' | 'card' = 'pix') {
+    setCheckingOut(`${planCode}-${method}`)
     try {
-      const res = await fetch('/api/billing/checkout', {
+      const res = await fetch('/api/billing/cakto/checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ planType: planCode, duration, paymentMethod: 'card' }),
+        body: JSON.stringify({ planType: planCode, duration, paymentMethod: method }),
       })
       const data = await res.json()
       if (!res.ok) {
@@ -637,20 +643,20 @@ export function PlanosClient({ snapshot }: PlanosClientProps) {
                     {upgrading ? 'Calculando...' : `Fazer upgrade para ${plan.name}`}
                   </button>
                 ) : canTrialUpgrade(planCode) ? (
-                  // Trial user, higher tier or longer duration → new checkout (no new trial)
+                  // Trial user, higher tier or longer duration → new checkout via Cakto (no new trial)
                   <button
-                    onClick={() => handleCheckout(planCode)}
+                    onClick={() => handleCheckout(planCode, 'pix')}
                     disabled={!!checkingOut}
                     className="flex h-11 w-full items-center justify-center rounded-[10px] text-sm font-semibold text-white transition-all disabled:opacity-60"
                     style={{ background: 'linear-gradient(135deg, var(--accent-blue), var(--accent-cyan))' }}
                   >
                     <ArrowUpCircle className="mr-1.5 h-4 w-4" />
-                    {checkingOut === `${planCode}-card` ? 'Aguarde...' : `Fazer upgrade para ${plan.name}`}
+                    {checkingOut === `${planCode}-pix` ? 'Aguarde...' : `Fazer upgrade para ${plan.name}`}
                   </button>
                 ) : !isActiveCurrentPlan ? (
-                  // No active sub, or same plan at different duration → standard checkout
+                  // No active sub, or same plan at different duration → Cakto checkout
                   <button
-                    onClick={() => handleCheckout(planCode)}
+                    onClick={() => handleCheckout(planCode, 'pix')}
                     disabled={!!checkingOut}
                     className="flex h-11 w-full items-center justify-center rounded-[10px] text-sm font-semibold text-white transition-all disabled:opacity-60"
                     style={{
@@ -660,7 +666,7 @@ export function PlanosClient({ snapshot }: PlanosClientProps) {
                     }}
                   >
                     <CreditCard className="mr-1.5 h-4 w-4" />
-                    {checkingOut === `${planCode}-card` ? 'Aguarde...' : 'Assinar com cartão'}
+                    {checkingOut === `${planCode}-pix` ? 'Aguarde...' : 'Assinar agora'}
                   </button>
                 ) : null}
 

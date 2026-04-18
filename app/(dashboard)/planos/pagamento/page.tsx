@@ -1,5 +1,8 @@
+import type { Metadata } from 'next'
 import { Suspense } from 'react'
 import { PaymentPageClient } from './PaymentPageClient'
+
+export const metadata: Metadata = { title: 'Pagamento' }
 
 export default function PaymentPage() {
   return (

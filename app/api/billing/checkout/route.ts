@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { requireUser } from '@/lib/server/request-guard'
 import { createClient } from '@/lib/supabase/server'
+import { PLAN_CATALOG } from '@/lib/billing/plans'
+import type { SubscriptionPlanType } from '@/types/database.types'
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
@@ -20,7 +22,9 @@ function priceEnvKey(planType: string, duration: number) {
 }
 
 function log(...args: unknown[]) {
-  console.log('[checkout]', ...args)
+  if (process.env.NODE_ENV !== 'production') {
+    console.log('[checkout]', ...args)
+  }
 }
 
 export async function POST(request: NextRequest) {
@@ -137,19 +141,42 @@ export async function POST(request: NextRequest) {
     const useTrial = typeof trialDays === 'number' && trialDays > 0
     log('creating session', { priceId, useTrial, trialDays })
 
+    const planName = PLAN_CATALOG[planType as SubscriptionPlanType]?.name ?? planType.toUpperCase()
+    const durationLabel: Record<number, string> = { 1: 'mensal', 3: 'trimestral', 6: 'semestral', 12: 'anual' }
+
     let session
     try {
       session = await stripe.checkout.sessions.create({
         mode: 'subscription',
+        locale: 'pt-BR',
         customer_email: user.email ?? undefined,
-        payment_method_types: ['card'],
+        customer_creation: 'always',
+
+        // ── Payment methods ───────────────────────────────────────────────
+        // card + boleto (boleto enabled on this Stripe account for BR)
+        payment_method_types: ['card', 'boleto'],
+        payment_method_options: {
+          boleto: {
+            expires_after_days: 3,
+          },
+        },
+
+        // ── Billing address ───────────────────────────────────────────────
+        // Required for boleto and improves fraud signals on card
+        billing_address_collection: 'required',
+
+        // ── Line items ────────────────────────────────────────────────────
         line_items: [{ price: priceId, quantity: 1 }],
+
+        // ── Subscription data ─────────────────────────────────────────────
         subscription_data: useTrial
           ? {
               trial_period_days: trialDays,
               metadata: { user_id: user.id, plan_type: planType, trial_days: String(trialDays) },
             }
           : { metadata: { user_id: user.id, plan_type: planType, trial_days: '0' } },
+
+        // ── Session metadata ──────────────────────────────────────────────
         metadata: {
           user_id: user.id,
           plan_type: planType,
@@ -157,11 +184,27 @@ export async function POST(request: NextRequest) {
           payment_method: 'card',
           trial_days: String(useTrial ? (trialDays ?? 0) : 0),
         },
+
+        // ── Custom text (SAOOZ branding) ──────────────────────────────────
+        custom_text: {
+          submit: {
+            message: useTrial
+              ? `Você terá ${trialDays} dias gratuitos. Cancele a qualquer momento antes do fim do trial e não será cobrado.`
+              : `Plano ${planName} ${durationLabel[duration] ?? ''} — acesso imediato após confirmação do pagamento.`,
+          },
+          after_submit: {
+            message: 'Seus dados de pagamento são processados com segurança pelo Stripe. A SAOOZ nunca armazena informações do seu cartão.',
+          },
+        },
+
+        // ── Promotions ────────────────────────────────────────────────────
+        allow_promotion_codes: true,
+
+        // ── URLs ──────────────────────────────────────────────────────────
         success_url: useTrial
           ? `${appUrl}/onboarding/trial-ativo?session_id={CHECKOUT_SESSION_ID}`
-          : `${appUrl}/central?session_id={CHECKOUT_SESSION_ID}`,
-        cancel_url: `${appUrl}/onboarding/plano`,
-        allow_promotion_codes: true,
+          : `${appUrl}/central?checkout=success&session_id={CHECKOUT_SESSION_ID}`,
+        cancel_url: `${appUrl}/onboarding/plano?checkout=cancelled`,
       })
     } catch (stripeErr) {
       const msg = stripeErr instanceof Error ? stripeErr.message : String(stripeErr)
@@ -177,8 +220,12 @@ export async function POST(request: NextRequest) {
         friendly = `STRIPE_SECRET_KEY inválida ou expirada. Gere uma nova em https://dashboard.stripe.com/apikeys`
       }
 
+      // In production, never leak internal Stripe details (key names, modes, raw errors)
+      const isProd = process.env.NODE_ENV === 'production'
       return NextResponse.json(
-        { error: friendly, envKey, keyMode, stripeMessage: msg },
+        isProd
+          ? { error: friendly }
+          : { error: friendly, envKey, keyMode, stripeMessage: msg },
         { status: 502 }
       )
     }

@@ -15,15 +15,27 @@ import { dirname, join } from 'path'
 
 const __dir = dirname(fileURLToPath(import.meta.url))
 
-const PROJECT_REF   = 'usegvbsijgeemdtgujrl'
+const PROJECT_REF   = process.env.SUPABASE_PROJECT_REF
 const MGMT_API      = 'https://api.supabase.com/v1'
 const ACCESS_TOKEN  = process.env.SUPABASE_ACCESS_TOKEN
-const RESEND_KEY    = process.env.RESEND_API_KEY ?? 're_CYPZyaVf_EeJeWQUoAgz8LPqvuAVu5fKN'
+const RESEND_KEY    = process.env.RESEND_API_KEY
+
+if (!PROJECT_REF) {
+  console.error('❌ SUPABASE_PROJECT_REF is required.')
+  console.error('   Example: SUPABASE_PROJECT_REF=yourref node scripts/apply-email-templates.mjs')
+  process.exit(1)
+}
 
 if (!ACCESS_TOKEN) {
   console.error('❌ SUPABASE_ACCESS_TOKEN is required.')
   console.error('   Get yours at: https://app.supabase.com/account/tokens')
   console.error('   Then run:  SUPABASE_ACCESS_TOKEN=sbp_xxx node scripts/apply-email-templates.mjs')
+  process.exit(1)
+}
+
+if (!RESEND_KEY) {
+  console.error('❌ RESEND_API_KEY is required.')
+  console.error('   Get yours at: https://resend.com/api-keys')
   process.exit(1)
 }
 

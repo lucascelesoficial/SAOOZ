@@ -180,7 +180,11 @@ export async function POST(request: NextRequest) {
     if (!rate.ok) return rate.response
 
     if (!process.env.GROQ_API_KEY) {
-      return NextResponse.json({ error: 'GROQ_API_KEY não configurada.' }, { status: 500 })
+      console.error('[ai] GROQ_API_KEY não configurada — IA indisponível')
+      return NextResponse.json(
+        { error: 'A inteligência está temporariamente indisponível. Tente novamente em instantes.' },
+        { status: 503 }
+      )
     }
 
     const { message, context } = await request.json() as { message: unknown; context: Record<string, unknown> }

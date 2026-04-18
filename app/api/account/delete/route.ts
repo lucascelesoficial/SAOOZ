@@ -74,13 +74,16 @@ export async function POST(request: NextRequest) {
     }
 
     // ── Audit log BEFORE deletion (user_id becomes invalid after) ───────────
+    // LGPD: never store PII (email) in audit_logs — log a hash of the domain only
+    // so we can audit "an account was deleted" without retaining personal data.
+    const emailDomain = user.email?.split('@')[1] ?? 'unknown'
     await logAuditEvent({
       userId: user.id,
       actorType: 'user',
       actionType: 'account.delete',
       resourceType: 'profile',
       resourceId: user.id,
-      metadata: { ip: getClientIp(request), email: user.email },
+      metadata: { ip: getClientIp(request), email_domain: emailDomain },
     })
 
     const { error: deleteError } = await admin.auth.admin.deleteUser(user.id)

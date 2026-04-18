@@ -23,6 +23,9 @@ function logWebhook(
   message: string,
   meta: Record<string, unknown>
 ) {
+  // In production, skip info-level noise — only surface warnings and errors
+  if (level === 'info' && process.env.NODE_ENV === 'production') return
+
   const payload = {
     scope: 'billing.webhook',
     message,
@@ -80,7 +83,11 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    if (!event && manualSecret) {
+    // Manual webhook fallback — DEVELOPMENT ONLY.
+    // In production all events MUST be signed by Stripe (HMAC).
+    // The BILLING_WEBHOOK_SECRET bearer path bypasses signature verification
+    // and is disabled in production to prevent privilege escalation via secret leak.
+    if (!event && manualSecret && process.env.NODE_ENV !== 'production') {
       const authHeader = request.headers.get('authorization')
       if (authHeader !== `Bearer ${manualSecret}`) {
         return NextResponse.json({ error: 'Unauthorized.' }, { status: 401 })

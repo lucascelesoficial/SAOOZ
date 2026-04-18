@@ -1,4 +1,12 @@
+import type { Metadata } from 'next'
 import { SaoozWordmark } from '@/components/ui/SaoozLogo'
+
+export const metadata: Metadata = {
+  title: {
+    default: 'SAOOZ',
+    template: 'SAOOZ | %s',
+  },
+}
 
 export default function OnboardingLayout({ children }: { children: React.ReactNode }) {
   return (

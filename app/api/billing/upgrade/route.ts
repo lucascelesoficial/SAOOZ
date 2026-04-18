@@ -13,6 +13,7 @@ export const runtime = 'nodejs'
 
 const upgradeSchema = z.object({
   planType: z.enum(['pf', 'pj', 'pro']),
+  duration: z.union([z.literal(1), z.literal(3), z.literal(6), z.literal(12)]).optional(),
   preview: z.boolean().optional().default(false),
 })
 
@@ -51,7 +52,7 @@ export async function POST(request: NextRequest) {
       return withSecurityHeaders(NextResponse.json({ error: 'Dados inválidos.' }, { status: 400 }))
     }
 
-    const { planType: newPlanType, preview } = parsed.data
+    const { planType: newPlanType, duration: requestedDuration, preview } = parsed.data
 
     // Get current subscription
     const { data: sub, error: subError } = await supabase
@@ -72,12 +73,19 @@ export async function POST(request: NextRequest) {
       return withSecurityHeaders(NextResponse.json({ error: 'Não é possível fazer upgrade com cancelamento agendado.' }, { status: 400 }))
     }
 
-    // Only allow upgrades to a higher-rank plan
+    // Upgrade = higher plan rank OR same rank with longer duration
     const currentRank = PLAN_RANK[sub.plan_type]
     const newRank = PLAN_RANK[newPlanType]
-    if (newRank <= currentRank) {
+    const currentDuration = (sub.billing_duration_months ?? 1) as BillingDuration
+    // Requested duration: if not provided, default to current (plan-rank upgrade keeps same duration)
+    const duration = (requestedDuration ?? currentDuration) as BillingDuration
+
+    const isHigherPlan = newRank > currentRank
+    const isSamePlanLongerDuration = newRank === currentRank && duration > currentDuration
+
+    if (!isHigherPlan && !isSamePlanLongerDuration) {
       return withSecurityHeaders(NextResponse.json({
-        error: `Não é possível fazer upgrade de ${sub.plan_type.toUpperCase()} para ${newPlanType.toUpperCase()}. Escolha um plano superior.`,
+        error: `Não é possível fazer upgrade: escolha um plano superior ou uma duração maior.`,
       }, { status: 400 }))
     }
 
@@ -89,9 +97,6 @@ export async function POST(request: NextRequest) {
     if (!stripeKey) {
       return withSecurityHeaders(NextResponse.json({ error: 'Stripe não configurado.' }, { status: 503 }))
     }
-
-    // Keep the same billing duration as current plan
-    const duration = (sub.billing_duration_months ?? 1) as BillingDuration
     const envKey = priceEnvKey(newPlanType, duration)
     const newPriceId = process.env[envKey]?.trim()
 
@@ -125,13 +130,16 @@ export async function POST(request: NextRequest) {
 
     if (preview) {
       // Preview the proration — what will be charged immediately
+      // stripe.invoices.createPreview() replaced retrieveUpcoming() in Stripe SDK v22
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const upcomingInvoice = await stripe.invoices.retrieveUpcoming({
+      const upcomingInvoice = await stripe.invoices.createPreview({
         customer: stripeSub.customer as string,
         subscription: sub.gateway_subscription_id,
-        subscription_items: [{ id: subscriptionItem.id, price: newPriceId }],
-        subscription_proration_behavior: 'create_prorations',
-        subscription_proration_date: prorationDate,
+        subscription_details: {
+          items: [{ id: subscriptionItem.id, price: newPriceId }],
+          proration_behavior: 'create_prorations',
+          proration_date: prorationDate,
+        },
       })
 
       // Credit = unused value of current plan (negative line items)
@@ -166,12 +174,12 @@ export async function POST(request: NextRequest) {
       proration_date: prorationDate,
     })
 
-    // Update plan_type in DB immediately (webhook will confirm later)
+    // Update plan_type and billing_duration_months in DB immediately (webhook will confirm later)
     const admin = createOptionalAdminClient()
     const db = admin ?? supabase
     await db
       .from('subscriptions')
-      .update({ plan_type: newPlanType })
+      .update({ plan_type: newPlanType, billing_duration_months: duration })
       .eq('id', sub.id)
 
     await logAuditEvent({
@@ -181,9 +189,10 @@ export async function POST(request: NextRequest) {
       resourceType: 'subscription',
       resourceId: sub.id,
       metadata: {
-        from: sub.plan_type,
-        to: newPlanType,
-        duration,
+        from_plan: sub.plan_type,
+        to_plan: newPlanType,
+        from_duration: currentDuration,
+        to_duration: duration,
         gateway_subscription_id: sub.gateway_subscription_id,
         ip: getClientIp(request),
       },
@@ -198,6 +207,10 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Erro interno.'
     console.error('[upgrade] error:', message)
-    return withSecurityHeaders(NextResponse.json({ error: message }, { status: 500 }))
+    // Never leak internal error details to the client in production
+    const clientMessage = process.env.NODE_ENV === 'production'
+      ? 'Não foi possível processar o upgrade. Tente novamente ou contate o suporte.'
+      : message
+    return withSecurityHeaders(NextResponse.json({ error: clientMessage }, { status: 500 }))
   }
 }

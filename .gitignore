@@ -2,9 +2,17 @@
 .next/
 .env
 .env.local
+.env.production
+.env.production.local
 .claude/
 dist/
 build/
 coverage/
 *.log
 vercel_projects.json
+
+# Vercel — contains real project/org IDs, never commit
+.vercel/
+
+# Dev output logs
+dev.*.log

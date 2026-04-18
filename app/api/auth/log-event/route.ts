@@ -13,7 +13,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 import { logAuditEvent, getClientIp, getUserAgent, type AuditActionType } from '@/lib/server/audit'
-import { rejectLargeBody, withSecurityHeaders } from '@/lib/server/security'
+import { requireSameOrigin, requireJsonContentType, rejectLargeBody, withSecurityHeaders } from '@/lib/server/security'
 
 export const dynamic = 'force-dynamic'
 
@@ -27,6 +27,13 @@ const ALLOWED_EVENTS = new Set<AuditActionType>([
 ])
 
 export async function POST(request: NextRequest) {
+  // ── CSRF guard ─────────────────────────────────────────────────────────
+  const originCheck = requireSameOrigin(request)
+  if (originCheck) return withSecurityHeaders(originCheck)
+
+  const ctCheck = requireJsonContentType(request)
+  if (ctCheck) return withSecurityHeaders(ctCheck)
+
   // ── Reject oversized bodies ────────────────────────────────────────────
   const bodyCheck = rejectLargeBody(request, 4096)
   if (bodyCheck) return withSecurityHeaders(bodyCheck)

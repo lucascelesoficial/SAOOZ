@@ -1,3 +1,4 @@
+import { cache } from 'react'
 import type { Database } from '@/types/database.types'
 import { createOptionalAdminClient } from '@/lib/supabase/admin'
 import { createClient as createServerClient } from '@/lib/supabase/server'
@@ -328,9 +329,9 @@ function computeTransactionsLimit(subscription: SubscriptionRow, now = new Date(
   return null
 }
 
-export async function getBillingSnapshot(
+async function _getBillingSnapshot(
   userId: string,
-  now = new Date()
+  now: Date
 ): Promise<BillingSnapshot> {
   try {
     const [subscriptionSeed, usageSeed] = await Promise.all([
@@ -374,6 +375,18 @@ export async function getBillingSnapshot(
     }
   }
 }
+
+/**
+ * Per-request cached billing snapshot. React cache() deduplicates multiple
+ * calls with the same userId within a single server render pass — layout,
+ * page, and any server actions all share the same result without extra DB hits.
+ *
+ * Note: the `now` parameter is intentionally omitted on the export so the
+ * cache key is stable per userId per request.
+ */
+export const getBillingSnapshot = cache(function (userId: string): Promise<BillingSnapshot> {
+  return _getBillingSnapshot(userId, new Date())
+})
 
 export async function consumeAiAction(userId: string) {
   const snapshot = await getBillingSnapshot(userId)

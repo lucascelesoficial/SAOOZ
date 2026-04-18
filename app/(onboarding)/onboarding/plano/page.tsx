@@ -1,9 +1,12 @@
+import type { Metadata } from 'next'
 import { Suspense } from 'react'
 import { createClient } from '@/lib/supabase/server'
 import { getBillingSnapshot } from '@/lib/billing/server'
 import { PlanoClient } from './PlanoClient'
 import type { SubscriptionPlanType } from '@/types/database.types'
 import type { BillingDuration } from '@/lib/billing/plans'
+
+export const metadata: Metadata = { title: 'Escolha seu Plano' }
 
 interface PageProps {
   searchParams: Promise<{ feature?: string }>

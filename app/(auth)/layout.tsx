@@ -1,5 +1,14 @@
+import type { Metadata } from 'next'
 import { SaoozWordmark } from '@/components/ui/SaoozLogo'
 import { Shield, TrendingUp, BarChart2, Zap } from 'lucide-react'
+
+export const metadata: Metadata = {
+  title: {
+    default: 'SAOOZ',
+    template: 'SAOOZ | %s',
+  },
+  description: 'Entenda para onde vai seu dinheiro em menos de 5 segundos.',
+}
 
 const FEATURES = [
   { icon: TrendingUp, text: 'Acompanhe renda e gastos em tempo real' },

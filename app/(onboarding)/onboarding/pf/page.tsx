@@ -1,6 +1,9 @@
+import type { Metadata } from 'next'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { OnboardingPfClient } from './OnboardingPfClient'
+
+export const metadata: Metadata = { title: 'Perfil Pessoal' }
 
 /**
  * Server gate for /onboarding/pf

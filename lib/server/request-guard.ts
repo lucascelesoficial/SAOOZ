@@ -78,7 +78,18 @@ export async function enforceRateLimit(input: {
     // Use admin client to bypass RLS (rate_limit_buckets has no RLS)
     const { createAdminClient, hasAdminCredentials } = await import('@/lib/supabase/admin')
     if (!hasAdminCredentials()) {
-      // No admin key — fall back to allowing (log a warning)
+      if (process.env.NODE_ENV === 'production') {
+        // In production, fail-closed: never allow unmetered access when rate limiting is broken
+        console.error('[rate-limit] SUPABASE_SERVICE_ROLE_KEY not set in production — blocking request')
+        return {
+          ok: false as const,
+          response: NextResponse.json(
+            { error: 'Serviço temporariamente indisponível.' },
+            { status: 503, headers: { 'Retry-After': '60', 'Cache-Control': 'no-store' } }
+          ),
+        }
+      }
+      // Development: allow with warning
       console.warn('[rate-limit] SUPABASE_SERVICE_ROLE_KEY not set — rate limiting disabled')
       return { ok: true as const }
     }
@@ -133,8 +144,18 @@ export async function enforceRateLimit(input: {
 
     return { ok: true as const }
   } catch (err) {
-    // DB error → fail open (allow request) but log it
-    console.error('[rate-limit] DB error — allowing request:', err)
+    console.error('[rate-limit] DB error:', err)
+    if (process.env.NODE_ENV === 'production') {
+      // Fail-closed in production: a broken rate limiter is worse than a momentary 503
+      return {
+        ok: false as const,
+        response: NextResponse.json(
+          { error: 'Serviço temporariamente indisponível.' },
+          { status: 503, headers: { 'Retry-After': '30', 'Cache-Control': 'no-store' } }
+        ),
+      }
+    }
+    // Development: fail open so local work isn't blocked
     return { ok: true as const }
   }
 }
