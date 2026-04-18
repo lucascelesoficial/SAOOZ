@@ -99,16 +99,16 @@ export function PlanoClient({
   }
 
   async function handleCheckout(planCode: SubscriptionPlanType) {
-    setCheckingOut(`${planCode}-card`)
+    setCheckingOut(`${planCode}-pix`)
     try {
-      const res = await fetch('/api/billing/checkout', {
+      const res = await fetch('/api/billing/cakto/checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'same-origin',
         body: JSON.stringify({
           planType: planCode,
           duration,
-          paymentMethod: 'card',
+          paymentMethod: 'pix',
         }),
       })
 
@@ -388,7 +388,7 @@ export function PlanoClient({
                           : 'linear-gradient(135deg, #334155, #1e293b)',
                       }}
                     >
-                      {checkingOut === `${planCode}-card` ? (
+                      {checkingOut === `${planCode}-pix` ? (
                         <Loader2 className="h-4 w-4 animate-spin" />
                       ) : upgrade ? (
                         <><ArrowUpCircle className="mr-1.5 h-4 w-4" />{cta.label}</>
