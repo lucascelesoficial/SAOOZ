@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { requireUser } from '@/lib/server/request-guard'
-import { createClient } from '@/lib/supabase/server'
 import { PLAN_CATALOG } from '@/lib/billing/plans'
 import type { SubscriptionPlanType } from '@/types/database.types'
 
@@ -12,7 +11,6 @@ const checkoutSchema = z.object({
   planType: z.enum(['pf', 'pj', 'pro']),
   duration: z.union([z.literal(1), z.literal(3), z.literal(6), z.literal(12)]),
   paymentMethod: z.enum(['card']),
-  trialDays: z.number().int().min(0).max(30).optional(),
 })
 
 const DURATION_KEY: Record<number, string> = { 1: '1M', 3: '3M', 6: '6M', 12: '12M' }
@@ -50,35 +48,8 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    let { trialDays } = parsed.data
     const { planType, duration } = parsed.data
-    log('request', { userId: user.id, planType, duration, trialDays })
-
-    // ── Trial reuse prevention ─────────────────────────────────────────────
-    // Bloqueia trial apenas se o usuário já teve uma assinatura REAL no Stripe
-    // (gateway IS NOT NULL). Ignora rows default criadas por ensureSubscription
-    // (gateway=null, gateway_subscription_id=null) que existem para todo usuário
-    // que visitou o dashboard — essas NÃO configuram "já usou trial".
-    if (trialDays && trialDays > 0) {
-      try {
-        const supabase = await createClient()
-        const { data: existingSub } = await supabase
-          .from('subscriptions')
-          .select('id')
-          .eq('user_id', user.id)
-          .not('gateway', 'is', null)          // apenas assinaturas reais (Stripe)
-          .not('gateway_subscription_id', 'is', null)
-          .limit(1)
-          .maybeSingle()
-        if (existingSub) {
-          log('blocking trial reuse for user', user.id)
-          trialDays = 0
-        }
-      } catch (e) {
-        // Fail open: se não conseguir checar, permite (erra a favor do usuário)
-        log('warning: could not check trial reuse', e)
-      }
-    }
+    log('request', { userId: user.id, planType, duration })
 
     // ── Stripe key ────────────────────────────────────────────────────────
     const secretKey = process.env.STRIPE_SECRET_KEY?.trim()
@@ -138,8 +109,7 @@ export async function POST(request: NextRequest) {
     })
 
     // ── Create session ────────────────────────────────────────────────────
-    const useTrial = typeof trialDays === 'number' && trialDays > 0
-    log('creating session', { priceId, useTrial, trialDays })
+    log('creating session', { priceId })
 
     const planName = PLAN_CATALOG[planType as SubscriptionPlanType]?.name ?? planType.toUpperCase()
     const durationLabel: Record<number, string> = { 1: 'mensal', 3: 'trimestral', 6: 'semestral', 12: 'anual' }
@@ -169,12 +139,7 @@ export async function POST(request: NextRequest) {
         line_items: [{ price: priceId, quantity: 1 }],
 
         // ── Subscription data ─────────────────────────────────────────────
-        subscription_data: useTrial
-          ? {
-              trial_period_days: trialDays,
-              metadata: { user_id: user.id, plan_type: planType, trial_days: String(trialDays) },
-            }
-          : { metadata: { user_id: user.id, plan_type: planType, trial_days: '0' } },
+        subscription_data: { metadata: { user_id: user.id, plan_type: planType, trial_days: '0' } },
 
         // ── Session metadata ──────────────────────────────────────────────
         metadata: {
@@ -182,15 +147,13 @@ export async function POST(request: NextRequest) {
           plan_type: planType,
           duration: String(duration),
           payment_method: 'card',
-          trial_days: String(useTrial ? (trialDays ?? 0) : 0),
+          trial_days: '0',
         },
 
         // ── Custom text (SAOOZ branding) ──────────────────────────────────
         custom_text: {
           submit: {
-            message: useTrial
-              ? `Você terá ${trialDays} dias gratuitos. Cancele a qualquer momento antes do fim do trial e não será cobrado.`
-              : `Plano ${planName} ${durationLabel[duration] ?? ''} — acesso imediato após confirmação do pagamento.`,
+            message: `Plano ${planName} ${durationLabel[duration] ?? ''} — acesso imediato após confirmação do pagamento.`,
           },
           after_submit: {
             message: 'Seus dados de pagamento são processados com segurança pelo Stripe. A SAOOZ nunca armazena informações do seu cartão.',
@@ -201,9 +164,7 @@ export async function POST(request: NextRequest) {
         allow_promotion_codes: true,
 
         // ── URLs ──────────────────────────────────────────────────────────
-        success_url: useTrial
-          ? `${appUrl}/onboarding/trial-ativo?session_id={CHECKOUT_SESSION_ID}`
-          : `${appUrl}/central?checkout=success&session_id={CHECKOUT_SESSION_ID}`,
+        success_url: `${appUrl}/central?checkout=success&session_id={CHECKOUT_SESSION_ID}`,
         cancel_url: `${appUrl}/onboarding/plano?checkout=cancelled`,
       })
     } catch (stripeErr) {

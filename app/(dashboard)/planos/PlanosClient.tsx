@@ -120,15 +120,11 @@ export function PlanosClient({ snapshot }: PlanosClientProps) {
   const [upgrading, setUpgrading] = useState(false)
   const searchParams = useSearchParams()
 
-  // Trial detection — must be before any logic that references isInTrial
-  const trialEndsAt = snapshot.subscription.trial_ends_at
-  const isInTrial = !!(trialEndsAt && new Date(trialEndsAt) > new Date())
-
   // Plan rank for upgrade eligibility
   const PLAN_RANK: Record<string, number> = { pf: 0, pj: 1, pro: 2 }
   const currentRank = PLAN_RANK[snapshot.subscription.plan_type] ?? -1
   const currentSubDuration = (snapshot.subscription.billing_duration_months ?? 1) as BillingDuration
-  const hasActiveSub = snapshot.paidAccess || isInTrial
+  const hasActiveSub = snapshot.paidAccess
 
   /**
    * A card is the "active" plan only when plan type AND the currently
@@ -142,19 +138,6 @@ export function PlanosClient({ snapshot }: PlanosClientProps) {
     )
   }
 
-  /**
-   * An option is an upgrade when:
-   * - Higher plan tier (pro > pj > pf), OR
-   * - Same plan tier but longer duration (better value)
-   */
-  function isAnUpgrade(planCode: SubscriptionPlanType) {
-    if (!hasActiveSub || localCancelScheduled) return false
-    const rank = PLAN_RANK[planCode] ?? -1
-    if (rank > currentRank) return true
-    if (rank === currentRank && duration > currentSubDuration) return true
-    return false
-  }
-
   // Paid users: in-app proration upgrade (higher tier OR same tier longer duration)
   function canUpgrade(planCode: SubscriptionPlanType) {
     if (!snapshot.paidAccess || localCancelScheduled) return false
@@ -162,16 +145,6 @@ export function PlanosClient({ snapshot }: PlanosClientProps) {
     if (rank > currentRank) return true
     if (rank === currentRank && duration > currentSubDuration) return true
     return false
-  }
-
-  // Trial users: checkout a higher plan or longer duration (no new trial)
-  function canTrialUpgrade(planCode: SubscriptionPlanType) {
-    return (
-      isInTrial &&
-      !snapshot.paidAccess &&
-      !localCancelScheduled &&
-      isAnUpgrade(planCode)
-    )
   }
 
   async function handleUpgradePreview(planCode: SubscriptionPlanType) {
@@ -223,9 +196,7 @@ export function PlanosClient({ snapshot }: PlanosClientProps) {
   }
 
   // Date to show when canceling
-  const cancelExpiryDate = isInTrial
-    ? formatDate(trialEndsAt ?? null)
-    : formatDate(snapshot.subscription.current_period_end)
+  const cancelExpiryDate = formatDate(snapshot.subscription.current_period_end)
 
   async function handleCancelSubscription() {
     if (!cancelConfirm) {
@@ -243,9 +214,7 @@ export function PlanosClient({ snapshot }: PlanosClientProps) {
       }
       setLocalCancelScheduled(true)
       toast.success('Cancelamento agendado', {
-        description: isInTrial
-          ? 'Seu acesso continua ativo até o fim do período de trial gratuito.'
-          : 'Seu acesso continua até o fim do período atual.',
+        description: 'Seu acesso continua até o fim do período atual.',
       })
     } catch {
       toast.error('Erro ao cancelar assinatura')
@@ -300,10 +269,6 @@ export function PlanosClient({ snapshot }: PlanosClientProps) {
   }, [searchParams])
 
   const urgencyMessage = useMemo(() => {
-    if (snapshot.trialDaysRemaining > 0 && snapshot.trialDaysRemaining <= 3) {
-      return `Seu trial termina em ${snapshot.trialDaysRemaining} dia(s).`
-    }
-
     if (
       snapshot.aiActionsLimit !== null &&
       snapshot.usage.ai_actions_used / snapshot.aiActionsLimit >= 0.8
@@ -312,7 +277,7 @@ export function PlanosClient({ snapshot }: PlanosClientProps) {
     }
 
     return null
-  }, [snapshot.aiActionsLimit, snapshot.trialDaysRemaining, snapshot.usage.ai_actions_used])
+  }, [snapshot.aiActionsLimit, snapshot.usage.ai_actions_used])
 
   return (
     <>
@@ -462,10 +427,10 @@ export function PlanosClient({ snapshot }: PlanosClientProps) {
               )}
             </div>
             <div className="panel-card p-4">
-              <p className="text-xs uppercase tracking-wider text-app-soft">Trial</p>
-              <p className="mt-2 text-lg font-bold text-app">{snapshot.trialDaysRemaining} dia(s)</p>
+              <p className="text-xs uppercase tracking-wider text-app-soft">Garantia</p>
+              <p className="mt-2 text-sm font-semibold text-app">7 dias</p>
               <p className="mt-1 text-xs text-app-soft">
-                {snapshot.trialDaysRemaining > 0 ? 'Acesso completo com limite de uso.' : 'Trial encerrado.'}
+                Garantia de reembolso total nos primeiros 7 dias.
               </p>
             </div>
             <div className="panel-card p-4">
@@ -519,12 +484,8 @@ export function PlanosClient({ snapshot }: PlanosClientProps) {
               style={
                 isActiveCurrentPlan
                   ? {
-                      borderColor: isInTrial
-                        ? 'color-mix(in oklab, #f59e0b 50%, transparent)'
-                        : 'color-mix(in oklab, #22c55e 50%, transparent)',
-                      boxShadow: isInTrial
-                        ? '0 8px 32px color-mix(in oklab, #f59e0b 10%, transparent)'
-                        : '0 8px 32px color-mix(in oklab, #22c55e 10%, transparent)',
+                      borderColor: 'color-mix(in oklab, #22c55e 50%, transparent)',
+                      boxShadow: '0 8px 32px color-mix(in oklab, #22c55e 10%, transparent)',
                     }
                   : plan.highlight
                     ? {
@@ -539,14 +500,12 @@ export function PlanosClient({ snapshot }: PlanosClientProps) {
                 <div
                   className="absolute left-4 top-4 inline-flex items-center gap-1 rounded-full px-2 py-1 text-[10px] font-bold uppercase"
                   style={{
-                    background: isInTrial
-                      ? 'color-mix(in oklab, #f59e0b 18%, transparent)'
-                      : 'color-mix(in oklab, #22c55e 18%, transparent)',
-                    color: isInTrial ? '#f59e0b' : '#22c55e',
+                    background: 'color-mix(in oklab, #22c55e 18%, transparent)',
+                    color: '#22c55e',
                   }}
                 >
                   <BadgeCheck className="h-3.5 w-3.5" />
-                  {isInTrial ? 'Trial ativo' : 'Plano ativo'}
+                  Plano ativo
                 </div>
               )}
 
@@ -614,19 +573,13 @@ export function PlanosClient({ snapshot }: PlanosClientProps) {
                   <div
                     className="flex items-center justify-center gap-2 rounded-[10px] border py-2 text-sm font-semibold"
                     style={{
-                      borderColor: isInTrial
-                        ? 'color-mix(in oklab, #f59e0b 40%, transparent)'
-                        : 'color-mix(in oklab, #22c55e 40%, transparent)',
-                      background: isInTrial
-                        ? 'color-mix(in oklab, #f59e0b 10%, transparent)'
-                        : 'color-mix(in oklab, #22c55e 10%, transparent)',
-                      color: isInTrial ? '#f59e0b' : '#22c55e',
+                      borderColor: 'color-mix(in oklab, #22c55e 40%, transparent)',
+                      background: 'color-mix(in oklab, #22c55e 10%, transparent)',
+                      color: '#22c55e',
                     }}
                   >
                     <BadgeCheck className="h-4 w-4" />
-                    {isInTrial
-                      ? `Trial ativo — ${snapshot.trialDaysRemaining} dia(s) restante(s)`
-                      : 'Plano ativo'}
+                    Plano ativo
                   </div>
                 )}
 
@@ -642,32 +595,24 @@ export function PlanosClient({ snapshot }: PlanosClientProps) {
                     <ArrowUpCircle className="mr-1.5 h-4 w-4" />
                     {upgrading ? 'Calculando...' : `Fazer upgrade para ${plan.name}`}
                   </button>
-                ) : canTrialUpgrade(planCode) ? (
-                  // Trial user, higher tier or longer duration → new checkout via Cakto (no new trial)
-                  <button
-                    onClick={() => handleCheckout(planCode, 'pix')}
-                    disabled={!!checkingOut}
-                    className="flex h-11 w-full items-center justify-center rounded-[10px] text-sm font-semibold text-white transition-all disabled:opacity-60"
-                    style={{ background: 'linear-gradient(135deg, var(--accent-blue), var(--accent-cyan))' }}
-                  >
-                    <ArrowUpCircle className="mr-1.5 h-4 w-4" />
-                    {checkingOut === `${planCode}-pix` ? 'Aguarde...' : `Fazer upgrade para ${plan.name}`}
-                  </button>
                 ) : !isActiveCurrentPlan ? (
                   // No active sub, or same plan at different duration → Cakto checkout
-                  <button
-                    onClick={() => handleCheckout(planCode, 'pix')}
-                    disabled={!!checkingOut}
-                    className="flex h-11 w-full items-center justify-center rounded-[10px] text-sm font-semibold text-white transition-all disabled:opacity-60"
-                    style={{
-                      background: plan.highlight
-                        ? 'linear-gradient(135deg, var(--accent-blue), var(--accent-cyan))'
-                        : 'linear-gradient(135deg, #334155, #1e293b)',
-                    }}
-                  >
-                    <CreditCard className="mr-1.5 h-4 w-4" />
-                    {checkingOut === `${planCode}-pix` ? 'Aguarde...' : 'Assinar agora'}
-                  </button>
+                  <>
+                    <button
+                      onClick={() => handleCheckout(planCode, 'pix')}
+                      disabled={!!checkingOut}
+                      className="flex h-11 w-full items-center justify-center rounded-[10px] text-sm font-semibold text-white transition-all disabled:opacity-60"
+                      style={{
+                        background: plan.highlight
+                          ? 'linear-gradient(135deg, var(--accent-blue), var(--accent-cyan))'
+                          : 'linear-gradient(135deg, #334155, #1e293b)',
+                      }}
+                    >
+                      <CreditCard className="mr-1.5 h-4 w-4" />
+                      {checkingOut === `${planCode}-pix` ? 'Aguarde...' : 'Assinar agora'}
+                    </button>
+                    <p className="text-center text-xs text-app-soft mt-2">7 dias de garantia — ou seu dinheiro de volta</p>
+                  </>
                 ) : null}
 
                 {/* Cancel subscription (only on current active/paid plan) */}
@@ -743,20 +688,20 @@ export function PlanosClient({ snapshot }: PlanosClientProps) {
               <p className="mt-1 text-xs text-app-soft">Processado com segurança via Stripe</p>
             </div>
             <div className="rounded-[12px] border p-4" style={{ borderColor: 'var(--panel-border)' }}>
-              <p className="text-xs uppercase tracking-wider text-app-soft">Ciclo</p>
+              <p className="text-xs uppercase tracking-wider text-app-soft">Garantia</p>
               <p className="mt-2 flex items-center gap-2 text-sm font-semibold text-app">
                 <CalendarClock className="h-4 w-4" />
-                Trial de 7 dias
+                7 dias de garantia
               </p>
               <p className="mt-1 text-sm text-app-soft">
-                No plano gratuito: 20 transações e 5 ações de IA por mês.
+                Reembolso total nos primeiros 7 dias, sem perguntas.
               </p>
             </div>
           </div>
         </div>
       </section>
 
-      {(snapshot.paidAccess || snapshot.trialAccess || isInTrial) && !localCancelScheduled && (
+      {(snapshot.paidAccess || snapshot.trialAccess) && !localCancelScheduled && (
         <section
           className="panel-card p-5"
           style={{
@@ -765,12 +710,10 @@ export function PlanosClient({ snapshot }: PlanosClientProps) {
         >
           <h2 className="flex items-center gap-2 text-base font-semibold text-app">
             <AlertTriangle className="h-4 w-4 text-[#f87171]" />
-            Cancelar {isInTrial ? 'trial' : 'assinatura'}
+            Cancelar assinatura
           </h2>
           <p className="mt-2 text-sm text-app-soft">
-            {isInTrial
-              ? `Ao cancelar, seu acesso continuará ativo somente até o fim do período de trial gratuito.${cancelExpiryDate ? ` Seu trial expira em ${cancelExpiryDate}.` : ''}`
-              : `Ao cancelar, seu acesso continuará ativo até o fim do período atual já pago.${cancelExpiryDate ? ` Sua assinatura expira em ${cancelExpiryDate}.` : ''}`}
+            {`Ao cancelar, seu acesso continuará ativo até o fim do período atual já pago.${cancelExpiryDate ? ` Sua assinatura expira em ${cancelExpiryDate}.` : ''}`}
           </p>
 
           <StepUpDialog
@@ -795,9 +738,7 @@ export function PlanosClient({ snapshot }: PlanosClientProps) {
                   color: '#f87171',
                 }}
               >
-                {isInTrial
-                  ? 'Tem certeza? Seu acesso será encerrado ao fim dos 7 dias de trial gratuito.'
-                  : 'Tem certeza? Esta ação agendará o cancelamento ao fim do período vigente.'}
+                Tem certeza? Esta ação agendará o cancelamento ao fim do período vigente.
               </p>
               <div className="flex gap-2">
                 <button
@@ -832,7 +773,7 @@ export function PlanosClient({ snapshot }: PlanosClientProps) {
         </section>
       )}
 
-      {localCancelScheduled && (snapshot.paidAccess || snapshot.trialAccess || isInTrial) && (
+      {localCancelScheduled && (snapshot.paidAccess || snapshot.trialAccess) && (
         <section
           className="panel-card p-5"
           style={{
@@ -844,9 +785,7 @@ export function PlanosClient({ snapshot }: PlanosClientProps) {
             Cancelamento agendado
           </h2>
           <p className="mt-2 text-sm text-app-soft">
-            {isInTrial
-              ? `Seu trial permanece ativo até o fim do período gratuito${cancelExpiryDate ? ` (${cancelExpiryDate})` : ''}.`
-              : `Seu acesso permanece ativo até o fim do período atual${cancelExpiryDate ? ` (${cancelExpiryDate})` : ''}.`}
+            {`Seu acesso permanece ativo até o fim do período atual${cancelExpiryDate ? ` (${cancelExpiryDate})` : ''}.`}
             {' '}Para reativar, entre em contato com o suporte ou adquira um novo plano.
           </p>
         </section>

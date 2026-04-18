@@ -12,7 +12,6 @@ import { formatCurrency } from '@/lib/utils/formatters'
 import {
   BILLING_DURATIONS,
   PLAN_CATALOG,
-  TRIAL_DAYS,
   getBusinessAccountLimit,
   getDurationLabel,
   getPlanPriceForDuration,
@@ -24,12 +23,8 @@ import { createClient } from '@/lib/supabase/client'
 interface PlanoClientProps {
   /** Current plan type if user already has a subscription */
   currentPlanType: SubscriptionPlanType | null
-  /** true when currently in a trial period */
-  isInTrial: boolean
   /** true when there is an active paid subscription */
   isPaid: boolean
-  /** Days remaining in trial (0 if not in trial) */
-  trialDaysRemaining: number
   /** The exact billing duration of the current subscription (1/3/6/12) */
   currentDuration: BillingDuration
   /** Context hint — e.g. "business" when coming from the business CTA */
@@ -40,9 +35,7 @@ const PLAN_RANK: Record<string, number> = { pf: 0, pj: 1, pro: 2 }
 
 export function PlanoClient({
   currentPlanType,
-  isInTrial,
   isPaid,
-  trialDaysRemaining,
   currentDuration,
   feature,
 }: PlanoClientProps) {
@@ -51,7 +44,7 @@ export function PlanoClient({
   const [duration, setDuration] = useState<BillingDuration>(currentDuration)
   const [checkingOut, setCheckingOut] = useState<string | null>(null)
 
-  const hasActiveSub = isInTrial || isPaid
+  const hasActiveSub = isPaid
   const currentRank = PLAN_RANK[currentPlanType ?? ''] ?? -1
 
   /**
@@ -81,9 +74,7 @@ export function PlanoClient({
   function planCta(planCode: SubscriptionPlanType) {
     if (isCurrentPlan(planCode)) {
       return {
-        label: isInTrial
-          ? `Trial ativo — ${trialDaysRemaining} dia(s) restante(s)`
-          : 'Plano ativo',
+        label: 'Plano ativo',
         disabled: true,
         isActive: true,
       }
@@ -95,10 +86,8 @@ export function PlanoClient({
         isUpgrade: true,
       }
     }
-    // No active sub → standard trial CTA
-    // Same plan + shorter duration → allow checkout (customer is choosing to pay monthly)
     return {
-      label: hasActiveSub ? 'Assinar plano' : `Começar ${TRIAL_DAYS} dias grátis`,
+      label: hasActiveSub ? 'Assinar plano' : 'Começar agora',
       disabled: false,
     }
   }
@@ -120,8 +109,6 @@ export function PlanoClient({
           planType: planCode,
           duration,
           paymentMethod: 'card',
-          // Server will automatically block trial reuse if user already has a Stripe sub
-          trialDays: TRIAL_DAYS,
         }),
       })
 
@@ -203,7 +190,7 @@ export function PlanoClient({
           </div>
         )}
 
-        {/* Trial banner — only show when user has no active subscription */}
+        {/* Guarantee banner — only show when user has no active subscription */}
         {!hasActiveSub && (
           <div
             className="rounded-[14px] border px-5 py-4 mb-8 text-center"
@@ -213,28 +200,10 @@ export function PlanoClient({
             }}
           >
             <p className="text-sm font-semibold text-white mb-0.5">
-              🚀 {TRIAL_DAYS} dias grátis — sem cobranças agora
+              7 dias de garantia — ou seu dinheiro de volta
             </p>
             <p className="text-xs" style={{ color: 'var(--text-soft)' }}>
-              Escolha seu plano, insira o cartão e acesse tudo sem pagar nada por {TRIAL_DAYS} dias. Cancele quando quiser.
-            </p>
-          </div>
-        )}
-
-        {/* Active trial banner */}
-        {isInTrial && (
-          <div
-            className="rounded-[14px] border px-5 py-4 mb-8 text-center"
-            style={{
-              borderColor: 'color-mix(in oklab, #f59e0b 35%, transparent)',
-              background: 'color-mix(in oklab, #f59e0b 8%, transparent)',
-            }}
-          >
-            <p className="text-sm font-semibold text-white mb-0.5">
-              ⏳ Trial ativo — {trialDaysRemaining} dia(s) restante(s)
-            </p>
-            <p className="text-xs" style={{ color: 'var(--text-soft)' }}>
-              Você está no plano {currentPlanType?.toUpperCase()}. Para acessar recursos de outros planos, faça upgrade abaixo.
+              Assine agora com total segurança. Se não estiver satisfeito nos primeiros 7 dias, devolvemos 100% do valor. Sem burocracia.
             </p>
           </div>
         )}
@@ -244,14 +213,12 @@ export function PlanoClient({
           <div className="grid gap-6 lg:grid-cols-[1.5fr_1fr]">
             <div>
               <h1 className="text-2xl font-bold text-app">
-                {isInTrial && feature === 'business'
+                {feature === 'business'
                   ? 'Upgrade para módulo empresarial'
                   : 'Escolha seu plano'}
               </h1>
               <p className="mt-2 max-w-xl text-sm text-app-soft">
-                {isInTrial && feature === 'business'
-                  ? 'Seu trial atual é do plano PF. Para criar contas empresariais, faça upgrade para PJ ou PRO.'
-                  : 'Controle suas finanças pessoais, empresariais ou os dois ao mesmo tempo.'}
+                Controle suas finanças pessoais, empresariais ou os dois ao mesmo tempo.
               </p>
               <div className="mt-5 flex flex-wrap gap-2">
                 {BILLING_DURATIONS.map((item) => (
@@ -315,12 +282,8 @@ export function PlanoClient({
                 style={
                   active
                     ? {
-                        borderColor: isInTrial
-                          ? 'color-mix(in oklab, #f59e0b 50%, transparent)'
-                          : 'color-mix(in oklab, #22c55e 50%, transparent)',
-                        boxShadow: isInTrial
-                          ? '0 8px 32px color-mix(in oklab, #f59e0b 10%, transparent)'
-                          : '0 8px 32px color-mix(in oklab, #22c55e 10%, transparent)',
+                        borderColor: 'color-mix(in oklab, #22c55e 50%, transparent)',
+                        boxShadow: '0 8px 32px color-mix(in oklab, #22c55e 10%, transparent)',
                       }
                     : plan.highlight && !active
                       ? {
@@ -335,14 +298,12 @@ export function PlanoClient({
                   <div
                     className="absolute left-4 top-4 inline-flex items-center gap-1 rounded-full px-2 py-1 text-[10px] font-bold uppercase"
                     style={{
-                      background: isInTrial
-                        ? 'color-mix(in oklab, #f59e0b 18%, transparent)'
-                        : 'color-mix(in oklab, #22c55e 18%, transparent)',
-                      color: isInTrial ? '#f59e0b' : '#22c55e',
+                      background: 'color-mix(in oklab, #22c55e 18%, transparent)',
+                      color: '#22c55e',
                     }}
                   >
                     <BadgeCheck className="h-3.5 w-3.5" />
-                    {isInTrial ? 'Trial ativo' : 'Plano ativo'}
+                    Plano ativo
                   </div>
                 )}
 
@@ -407,37 +368,38 @@ export function PlanoClient({
                   <div
                     className="flex h-11 w-full items-center justify-center gap-2 rounded-[10px] border text-sm font-semibold"
                     style={{
-                      borderColor: isInTrial
-                        ? 'color-mix(in oklab, #f59e0b 40%, transparent)'
-                        : 'color-mix(in oklab, #22c55e 40%, transparent)',
-                      background: isInTrial
-                        ? 'color-mix(in oklab, #f59e0b 10%, transparent)'
-                        : 'color-mix(in oklab, #22c55e 10%, transparent)',
-                      color: isInTrial ? '#f59e0b' : '#22c55e',
+                      borderColor: 'color-mix(in oklab, #22c55e 40%, transparent)',
+                      background: 'color-mix(in oklab, #22c55e 10%, transparent)',
+                      color: '#22c55e',
                     }}
                   >
                     <BadgeCheck className="h-4 w-4" />
                     {cta.label}
                   </div>
                 ) : (
-                  <button
-                    onClick={() => handleCheckout(planCode)}
-                    disabled={!!checkingOut}
-                    className="flex h-11 w-full items-center justify-center rounded-[10px] text-sm font-semibold text-white transition-all disabled:opacity-60"
-                    style={{
-                      background: upgrade || plan.highlight
-                        ? 'linear-gradient(135deg, var(--accent-blue), var(--accent-cyan))'
-                        : 'linear-gradient(135deg, #334155, #1e293b)',
-                    }}
-                  >
-                    {checkingOut === `${planCode}-card` ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                    ) : upgrade ? (
-                      <><ArrowUpCircle className="mr-1.5 h-4 w-4" />{cta.label}</>
-                    ) : (
-                      <><CreditCard className="mr-1.5 h-4 w-4" />{cta.label}</>
+                  <>
+                    <button
+                      onClick={() => handleCheckout(planCode)}
+                      disabled={!!checkingOut}
+                      className="flex h-11 w-full items-center justify-center rounded-[10px] text-sm font-semibold text-white transition-all disabled:opacity-60"
+                      style={{
+                        background: upgrade || plan.highlight
+                          ? 'linear-gradient(135deg, var(--accent-blue), var(--accent-cyan))'
+                          : 'linear-gradient(135deg, #334155, #1e293b)',
+                      }}
+                    >
+                      {checkingOut === `${planCode}-card` ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : upgrade ? (
+                        <><ArrowUpCircle className="mr-1.5 h-4 w-4" />{cta.label}</>
+                      ) : (
+                        <><CreditCard className="mr-1.5 h-4 w-4" />{cta.label}</>
+                      )}
+                    </button>
+                    {!hasActiveSub && (
+                      <p className="text-center text-xs mt-2" style={{ color: 'var(--text-soft)' }}>7 dias de garantia — ou seu dinheiro de volta</p>
                     )}
-                  </button>
+                  </>
                 )}
               </article>
             )
@@ -491,7 +453,7 @@ export function PlanoClient({
           <div className="panel-card p-5">
             <h2 className="flex items-center gap-2 text-base font-semibold text-app">
               <Layers3 className="h-4 w-4" style={{ color: 'var(--accent-blue)' }} />
-              {hasActiveSub ? 'Seu plano atual' : `Trial de ${TRIAL_DAYS} dias`}
+              {hasActiveSub ? 'Seu plano atual' : 'Garantia de 7 dias'}
             </h2>
             <div className="mt-4 grid gap-3 sm:grid-cols-2">
               <div className="rounded-[12px] border p-4" style={{ borderColor: 'var(--panel-border)' }}>
@@ -503,22 +465,18 @@ export function PlanoClient({
               </div>
               <div className="rounded-[12px] border p-4" style={{ borderColor: 'var(--panel-border)' }}>
                 <p className="text-xs uppercase tracking-wider text-app-soft">
-                  {hasActiveSub ? 'Plano atual' : 'Sem cobrança'}
+                  {hasActiveSub ? 'Plano atual' : 'Garantia'}
                 </p>
                 <p className="mt-2 flex items-center gap-2 text-sm font-semibold text-app">
                   <CalendarClock className="h-4 w-4" />
-                  {isInTrial
-                    ? `${trialDaysRemaining} dia(s) de trial`
-                    : isPaid
-                      ? `${currentPlanType?.toUpperCase()} ativo`
-                      : `${TRIAL_DAYS} dias grátis`}
+                  {isPaid
+                    ? `${currentPlanType?.toUpperCase()} ativo`
+                    : '7 dias de garantia'}
                 </p>
                 <p className="mt-1 text-sm text-app-soft">
-                  {isInTrial
-                    ? 'Sem cobrança até o fim do trial. Cancele antes e não paga nada.'
-                    : isPaid
-                      ? 'Assinatura ativa com renovação automática.'
-                      : `Nenhuma cobrança durante o período de teste.`}
+                  {isPaid
+                    ? 'Assinatura ativa com renovação automática.'
+                    : 'Reembolso total nos primeiros 7 dias, sem perguntas.'}
                 </p>
               </div>
             </div>

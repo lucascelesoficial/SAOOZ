@@ -82,8 +82,8 @@ const RESULTS = [
 ]
 
 const FAQ_ITEMS = [
-  { q: 'O cartão é obrigatório para ativar o trial?',   a: 'Sim. O cartão é necessário para ativar os 7 dias gratuitos. Nenhuma cobrança é feita durante o período — a assinatura começa somente depois, caso você não cancele antes.' },
-  { q: 'Quando começa a cobrança?',                      a: 'Somente após o encerramento dos 7 dias de trial. Cancele antes do vencimento e não paga nada. Sem fidelidade, sem multa de saída.' },
+  { q: 'O que é a garantia de 7 dias?',                 a: 'Se você assinar qualquer plano e não estiver satisfeito nos primeiros 7 dias, devolvemos 100% do valor pago. Sem perguntas, sem burocracia.' },
+  { q: 'Quando começa a cobrança?',                      a: 'Imediatamente após a confirmação do pagamento. Se decidir cancelar nos primeiros 7 dias, reembolsamos o valor integral. Sem fidelidade, sem multa de saída.' },
   { q: 'Posso usar PF e PJ no mesmo plano?',            a: 'Sim, com o plano PRO você tem acesso aos dois módulos em uma única conta. Se precisar só de um, os planos PF ou PJ são mais indicados e mais baratos.' },
   { q: 'Consigo ter mais de uma empresa cadastrada?',   a: 'Sim. O plano PJ suporta até 3 empresas e o PRO até 5. Ideal para quem opera mais de um CNPJ ou tem diferentes frentes de negócio.' },
   { q: 'Em quanto tempo configuro o SAOOZ?',            a: 'A configuração inicial leva menos de 5 minutos. No mesmo dia você já consegue registrar, analisar e decidir com base em dados reais.' },
@@ -449,7 +449,7 @@ export function SalesLanding() {
                   boxShadow: '0 0 20px color-mix(in oklab, var(--accent-blue) 40%, transparent)',
                 }}
               >
-                Testar 7 dias grátis <ChevronRight className="h-3.5 w-3.5" />
+                Começar agora <ChevronRight className="h-3.5 w-3.5" />
               </Link>
             </div>
           </div>
@@ -511,7 +511,7 @@ export function SalesLanding() {
                     boxShadow: '0 8px 40px color-mix(in oklab, var(--accent-blue) 45%, transparent)',
                   }}
                 >
-                  Testar gratuitamente por 7 dias
+                  Começar agora — 7 dias de garantia
                   <ArrowRight className="h-4 w-4" />
                 </Link>
                 <Link href="#planos" className="theme-outline-button inline-flex h-12 items-center gap-2 rounded-[12px] px-6 text-base font-medium">
@@ -521,9 +521,9 @@ export function SalesLanding() {
 
               {/* Trust */}
               <div className="flex flex-wrap items-center justify-center gap-4 text-xs pt-1" style={{ color: 'var(--text-soft)' }}>
-                <span className="flex items-center gap-1.5"><CreditCard className="h-3.5 w-3.5" /> Cartão obrigatório · cobrança só após o trial</span>
-                <span className="flex items-center gap-1.5"><Shield className="h-3.5 w-3.5" /> Cancele quando quiser</span>
-                <span className="flex items-center gap-1.5"><CheckCircle2 className="h-3.5 w-3.5" /> Sem fidelidade</span>
+                <span className="flex items-center gap-1.5"><Shield className="h-3.5 w-3.5" /> 7 dias de garantia — ou seu dinheiro de volta</span>
+                <span className="flex items-center gap-1.5"><CheckCircle2 className="h-3.5 w-3.5" /> Cancele quando quiser</span>
+                <span className="flex items-center gap-1.5"><CreditCard className="h-3.5 w-3.5" /> Sem fidelidade</span>
               </div>
             </div>
 
@@ -538,10 +538,10 @@ export function SalesLanding() {
             <div className="mx-auto w-full max-w-6xl px-4 py-8 md:px-6">
               <div className="grid grid-cols-2 gap-6 md:grid-cols-4">
                 {[
-                  { value: '7 dias',  label: 'de trial gratuito',       accent: 'var(--accent-blue)' },
-                  { value: 'PF + PJ', label: 'em um único sistema',     accent: '#0ea5e9' },
-                  { value: '3 planos',label: 'sem fidelidade',          accent: '#22c55e' },
-                  { value: 'IA real', label: 'com contexto financeiro', accent: '#a855f7' },
+                  { value: '7 dias',  label: 'de garantia de reembolso', accent: 'var(--accent-blue)' },
+                  { value: 'PF + PJ', label: 'em um único sistema',      accent: '#0ea5e9' },
+                  { value: '3 planos',label: 'sem fidelidade',           accent: '#22c55e' },
+                  { value: 'IA real', label: 'com contexto financeiro',  accent: '#a855f7' },
                 ].map((stat) => (
                   <div key={stat.label} className="text-center">
                     <p className="text-2xl font-black md:text-3xl" style={{ color: stat.accent }}>{stat.value}</p>
@@ -621,7 +621,7 @@ export function SalesLanding() {
               <div className="mt-10 text-center">
                 <Link href="/cadastro" className="inline-flex h-11 items-center gap-2 rounded-[11px] px-6 text-sm font-semibold text-white"
                   style={{ background: 'linear-gradient(135deg, var(--accent-blue), var(--accent-cyan))', boxShadow: '0 4px 20px color-mix(in oklab, var(--accent-blue) 30%, transparent)' }}>
-                  Começar agora — 7 dias grátis <ArrowRight className="h-4 w-4" />
+                  Começar agora <ArrowRight className="h-4 w-4" />
                 </Link>
               </div>
             </div>
@@ -850,14 +850,14 @@ export function SalesLanding() {
                   <p className="mx-auto max-w-xl text-sm md:text-base" style={{ color: 'var(--text-base)' }}>
                     Quanto mais você adia, mais dinheiro invisível continua saindo sem controle. Ative agora — sem risco.
                   </p>
-                  <p className="text-xs" style={{ color: 'var(--text-soft)' }}>Trial gratuito · cartão obrigatório · cobrança só após o período · cancele quando quiser.</p>
+                  <p className="text-xs" style={{ color: 'var(--text-soft)' }}>7 dias de garantia · reembolso total se não estiver satisfeito · cancele quando quiser · sem fidelidade.</p>
                   <div className="flex flex-wrap justify-center gap-3 pt-2">
                     <Link
                       href="/cadastro"
                       className="inline-flex h-12 items-center gap-2 rounded-[12px] px-7 text-base font-bold text-white"
                       style={{ background: 'linear-gradient(135deg, var(--accent-blue), #a855f7)', boxShadow: '0 8px 32px color-mix(in oklab, var(--accent-blue) 45%, transparent)' }}
                     >
-                      Ativar meu trial grátis agora <ArrowRight className="h-5 w-5" />
+                      Assinar com garantia de 7 dias <ArrowRight className="h-5 w-5" />
                     </Link>
                     <Link href="#planos" className="theme-outline-button inline-flex h-12 items-center rounded-[12px] px-7 text-base font-medium">
                       Ver planos detalhados

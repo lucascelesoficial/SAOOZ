@@ -15,12 +15,10 @@ interface PageProps {
 async function PlanoPageContent({ searchParams }: PageProps) {
   const { feature } = await searchParams
 
-  // Fetch billing state — anonymous or new users get null (show default trial CTA)
+  // Fetch billing state — anonymous or new users get null (show default CTA)
   let currentPlanType: SubscriptionPlanType | null = null
   let currentDuration: BillingDuration = 1
-  let isInTrial = false
   let isPaid = false
-  let trialDaysRemaining = 0
 
   try {
     const supabase = await createClient()
@@ -31,25 +29,21 @@ async function PlanoPageContent({ searchParams }: PageProps) {
       // Only consider real Stripe subscriptions (gateway set) — ignore default
       // fake rows (gateway=null) that ensureSubscription() creates for every visitor.
       const hasRealSub = !!snapshot.subscription.gateway
-      if (hasRealSub || snapshot.paidAccess || snapshot.trialAccess) {
+      if (hasRealSub || snapshot.paidAccess) {
         currentPlanType = snapshot.subscription.plan_type as SubscriptionPlanType
         currentDuration = (snapshot.subscription.billing_duration_months ?? 1) as BillingDuration
-        isInTrial = snapshot.trialAccess
         isPaid = snapshot.paidAccess
-        trialDaysRemaining = snapshot.trialDaysRemaining
       }
     }
   } catch {
-    // Fail open — show the default "start trial" view
+    // Fail open — show the default "start" view
   }
 
   return (
     <PlanoClient
       currentPlanType={currentPlanType}
       currentDuration={currentDuration}
-      isInTrial={isInTrial}
       isPaid={isPaid}
-      trialDaysRemaining={trialDaysRemaining}
       feature={feature ?? null}
     />
   )

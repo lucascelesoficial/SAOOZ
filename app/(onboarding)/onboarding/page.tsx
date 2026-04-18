@@ -7,7 +7,7 @@ import { useRouter } from 'next/navigation'
 import type { SubscriptionPlanType, UserMode } from '@/types/database.types'
 
 /**
- * /onboarding — automatic router after trial activation.
+ * /onboarding — automatic router after checkout activation.
  *
  * Deriva o mode direto do plano assinado (sem pedir ao usuário):
  *   plan_type='pf'  → mode='pf'  → /onboarding/pf

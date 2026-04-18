@@ -100,7 +100,7 @@ export function PricingSection() {
             Escolha o plano certo para o seu momento
           </h2>
           <p className="mt-3 text-sm" style={{ color: 'var(--text-soft)' }}>
-            7 dias gratuitos em qualquer plano · sem compromisso · cancele quando quiser
+            7 dias de garantia em qualquer plano · reembolso total se não estiver satisfeito · cancele quando quiser
           </p>
         </div>
 
@@ -234,28 +234,31 @@ export function PricingSection() {
                   ))}
                 </div>
 
-                <Link
-                  href="/cadastro"
-                  className="flex h-11 w-full items-center justify-center gap-2 rounded-[10px] text-sm font-bold text-white transition-all hover:opacity-90"
-                  style={{
-                    background: plan.highlight
-                      ? 'linear-gradient(135deg, var(--accent-blue), var(--accent-cyan))'
-                      : `linear-gradient(135deg, color-mix(in oklab, ${plan.color} 80%, #000), color-mix(in oklab, ${plan.color} 60%, #000))`,
-                    boxShadow: plan.highlight
-                      ? '0 4px 20px color-mix(in oklab, var(--accent-blue) 30%, transparent)'
-                      : `0 4px 16px color-mix(in oklab, ${plan.color} 20%, transparent)`,
-                  }}
-                >
-                  Testar {plan.name} por 7 dias grátis
-                  <ArrowRight className="h-4 w-4" />
-                </Link>
+                <div className="space-y-2">
+                  <Link
+                    href="/cadastro"
+                    className="flex h-11 w-full items-center justify-center gap-2 rounded-[10px] text-sm font-bold text-white transition-all hover:opacity-90"
+                    style={{
+                      background: plan.highlight
+                        ? 'linear-gradient(135deg, var(--accent-blue), var(--accent-cyan))'
+                        : `linear-gradient(135deg, color-mix(in oklab, ${plan.color} 80%, #000), color-mix(in oklab, ${plan.color} 60%, #000))`,
+                      boxShadow: plan.highlight
+                        ? '0 4px 20px color-mix(in oklab, var(--accent-blue) 30%, transparent)'
+                        : `0 4px 16px color-mix(in oklab, ${plan.color} 20%, transparent)`,
+                    }}
+                  >
+                    Assinar {plan.name}
+                    <ArrowRight className="h-4 w-4" />
+                  </Link>
+                  <p className="text-center text-xs" style={{ color: 'var(--text-soft)' }}>7 dias de garantia — ou seu dinheiro de volta</p>
+                </div>
               </article>
             )
           })}
         </div>
 
         <p className="mt-6 text-center text-xs" style={{ color: 'var(--text-soft)' }}>
-          Todos os planos incluem 7 dias gratuitos · sem cobrança durante o trial · cancele quando quiser
+          Todos os planos incluem garantia de 7 dias · reembolso total se não estiver satisfeito · cancele quando quiser
         </p>
       </div>
     </section>
