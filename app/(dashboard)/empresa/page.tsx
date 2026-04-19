@@ -252,8 +252,8 @@ function ProactiveInsightCard({ insight }: { insight: ProactiveInsight }) {
         )}
       </div>
       <div>
-        <p className="text-sm font-bold text-white leading-snug mb-1">{insight.title}</p>
-        <p className="text-xs leading-relaxed" style={{ color: '#8899BB' }}>{insight.body}</p>
+        <p className="text-sm font-bold text-app leading-snug mb-1">{insight.title}</p>
+        <p className="text-xs leading-relaxed text-app-soft">{insight.body}</p>
       </div>
       {insight.action && (
         <Link href={insight.action.href}
@@ -351,7 +351,8 @@ export default function EmpresaPage() {
   if (isLoading) {
     return (
       <div className="flex flex-col items-center justify-center h-64 gap-4">
-        <div className="h-10 w-10 rounded-full border-2 border-[#0ea5e9] border-t-transparent animate-spin" />
+        <div className="h-10 w-10 rounded-full border-2 animate-spin"
+          style={{ borderColor: 'var(--accent-blue)', borderTopColor: 'transparent' }} />
         <p className="text-sm text-[#6B6B6B]">Carregando dados da empresa…</p>
       </div>
     )
@@ -373,15 +374,15 @@ export default function EmpresaPage() {
       <div className="flex items-start justify-between gap-4">
         <div>
           <div className="flex items-center gap-2 mb-1">
-            <Building2 className="h-4 w-4 text-[#0ea5e9]" />
-            <span className="text-sm font-semibold text-white">{business?.name ?? 'Empresa'}</span>
-            <span className="text-[#2A2A2A]">·</span>
-            <span className="text-xs text-[#6B6B6B]">{business ? regimeLabel(business.tax_regime) : ''}</span>
-            <span className="text-[#2A2A2A]">·</span>
-            <span className="text-xs text-[#6B6B6B]">{business ? activityLabel(business.activity) : ''}</span>
+            <Building2 className="h-4 w-4" style={{ color: 'var(--accent-blue)' }} />
+            <span className="text-sm font-semibold text-app">{business?.name ?? 'Empresa'}</span>
+            <span className="text-app-soft">·</span>
+            <span className="text-xs text-app-soft">{business ? regimeLabel(business.tax_regime) : ''}</span>
+            <span className="text-app-soft">·</span>
+            <span className="text-xs text-app-soft">{business ? activityLabel(business.activity) : ''}</span>
           </div>
-          <h1 className="text-xl font-extrabold text-white">Empresa</h1>
-          <p className="text-sm text-[#6B6B6B] mt-0.5">{formatMonth(currentMonth)}</p>
+          <h1 className="text-xl font-extrabold text-app">Empresa</h1>
+          <p className="text-sm text-app-soft mt-0.5">{formatMonth(currentMonth)}</p>
         </div>
 
         <div className="flex items-center gap-3 shrink-0">
@@ -426,7 +427,7 @@ export default function EmpresaPage() {
                 </span>
               </div>
               <div>
-                <p className="text-[9px] text-[#6B6B6B] uppercase tracking-widest leading-none mb-1">Business Score</p>
+                <p className="text-[9px] text-app-soft uppercase tracking-widest leading-none mb-1">Saúde da empresa</p>
                 <p className="text-sm font-extrabold leading-none" style={{ color: scoreColor }}>{scoreLabel}</p>
               </div>
             </div>
@@ -461,29 +462,30 @@ export default function EmpresaPage() {
 
       {/* ── INTELLIGENCE FEED + AI CHAT ────────────────────────────────────── */}
       <div className="rounded-[14px] overflow-hidden"
-        style={{ border: '1px solid #1E293B', background: 'linear-gradient(160deg, #0a1628 0%, #0d1117 100%)' }}>
+        style={{ border: '1px solid var(--panel-border)', background: 'var(--panel-bg)' }}>
 
         {/* Header */}
-        <div className="flex items-center justify-between px-5 py-4 border-b border-[#1E293B]">
+        <div className="flex items-center justify-between px-5 py-4 border-b"
+          style={{ borderColor: 'var(--panel-border)' }}>
           <div className="flex items-center gap-3">
             <div className="h-8 w-8 rounded-[8px] flex items-center justify-center"
-              style={{ background: 'linear-gradient(135deg, #0ea5e9, #0284c7)', boxShadow: '0 0 12px #0ea5e944' }}>
+              style={{ background: 'linear-gradient(135deg, #1E3A8A, #1D4ED8)', boxShadow: '0 0 12px rgba(37,99,235,0.30)' }}>
               <BrainCircuit className="h-4 w-4 text-white" />
             </div>
             <div>
-              <p className="text-sm font-bold text-white flex items-center gap-1.5">
-                SAOOZ <span style={{ color: '#0ea5e9' }}>Intelligence</span>
+              <p className="text-sm font-bold text-app flex items-center gap-1.5">
+                SAOOZ <span style={{ color: 'var(--accent-blue)' }}>Inteligência</span>
                 <span className="h-1.5 w-1.5 rounded-full bg-[#22c55e] animate-pulse" />
               </p>
-              <p className="text-[10px] text-[#6B6B6B]">
+              <p className="text-[10px] text-app-soft">
                 {intelligence.length > 0
-                  ? `${intelligence.length} insight${intelligence.length > 1 ? 's' : ''} gerado${intelligence.length > 1 ? 's' : ''} a partir dos seus dados`
-                  : 'Registre dados para insights personalizados'}
+                  ? `${intelligence.length} análise${intelligence.length > 1 ? 's' : ''} gerada${intelligence.length > 1 ? 's' : ''} com base nos seus dados`
+                  : 'Registre dados para ver análises personalizadas'}
               </p>
             </div>
           </div>
           <span className="flex items-center gap-1 rounded-full px-2.5 py-1 text-[9px] font-bold uppercase tracking-widest"
-            style={{ background: '#22c55e10', color: '#22c55e', border: '1px solid #22c55e20' }}>
+            style={{ background: '#22c55e12', color: '#22c55e', border: '1px solid #22c55e25' }}>
             <Sparkles className="h-2.5 w-2.5" /> ao vivo
           </span>
         </div>
@@ -497,10 +499,10 @@ export default function EmpresaPage() {
           </div>
         ) : (
           <div className="flex flex-col items-center justify-center py-8 px-4 text-center">
-            <Rocket className="h-8 w-8 text-[#383838] mb-3" />
-            <p className="text-sm text-white font-semibold mb-1">Nenhum dado ainda</p>
-            <p className="text-xs text-[#6B6B6B] max-w-xs">
-              Registre faturamento, despesas e dados da equipe para que a IA gere insights personalizados.
+            <Rocket className="h-8 w-8 text-app-soft mb-3 opacity-40" />
+            <p className="text-sm text-app font-semibold mb-1">Nenhum dado ainda</p>
+            <p className="text-xs text-app-soft max-w-xs">
+              Registre faturamento, despesas e dados da equipe para que a IA gere análises personalizadas.
             </p>
           </div>
         )}
@@ -511,7 +513,8 @@ export default function EmpresaPage() {
             <SaoozAIPJ userId={userId} />
           ) : (
             <div className="h-20 flex items-center justify-center">
-              <div className="h-5 w-5 rounded-full border-2 border-[#0ea5e9] border-t-transparent animate-spin" />
+              <div className="h-5 w-5 rounded-full border-2 animate-spin"
+                style={{ borderColor: 'var(--accent-blue)', borderTopColor: 'transparent' }} />
             </div>
           )}
         </div>
@@ -526,7 +529,7 @@ export default function EmpresaPage() {
           <div>
             <div className="flex items-center gap-1.5 mb-1.5">
               <ArrowUpRight className="h-3.5 w-3.5 text-[#22c55e]" />
-              <span className="text-[10px] font-bold uppercase tracking-widest text-[#6B6B6B]">A Receber</span>
+              <span className="text-[10px] font-bold uppercase tracking-widest text-app-soft">A Receber</span>
               {arAp && arAp.overdueRevenues > 0 && (
                 <span className="rounded-full bg-[#f87171] px-1.5 py-0.5 text-[9px] font-bold text-white">
                   {arAp.overdueRevenues} atrasado{arAp.overdueRevenues > 1 ? 's' : ''}
@@ -546,7 +549,7 @@ export default function EmpresaPage() {
           <div>
             <div className="flex items-center gap-1.5 mb-1.5">
               <ArrowDownLeft className="h-3.5 w-3.5 text-[#f87171]" />
-              <span className="text-[10px] font-bold uppercase tracking-widest text-[#6B6B6B]">A Pagar</span>
+              <span className="text-[10px] font-bold uppercase tracking-widest text-app-soft">A Pagar</span>
               {arAp && arAp.overdueExpenses > 0 && (
                 <span className="rounded-full bg-[#f87171] px-1.5 py-0.5 text-[9px] font-bold text-white">
                   {arAp.overdueExpenses} vencido{arAp.overdueExpenses > 1 ? 's' : ''}
@@ -566,12 +569,12 @@ export default function EmpresaPage() {
           <div>
             <div className="flex items-center gap-1.5 mb-1.5">
               <Users2 className="h-3.5 w-3.5 text-[#0ea5e9]" />
-              <span className="text-[10px] font-bold uppercase tracking-widest text-[#6B6B6B]">Equipe</span>
+              <span className="text-[10px] font-bold uppercase tracking-widest text-app-soft">Equipe</span>
             </div>
             <p className="text-xl font-extrabold tabular-nums text-[#0ea5e9]">
               {comprehensive !== null ? `${comprehensive.employeeCount}` : '—'}
             </p>
-            <p className="text-[11px] text-[#6B6B6B] mt-0.5">
+            <p className="text-[11px] text-app-soft mt-0.5">
               colaborador{comprehensive && comprehensive.employeeCount !== 1 ? 'es' : ''}
             </p>
           </div>
@@ -584,12 +587,12 @@ export default function EmpresaPage() {
           <div>
             <div className="flex items-center gap-1.5 mb-1.5">
               <Handshake className="h-3.5 w-3.5 text-[#22c55e]" />
-              <span className="text-[10px] font-bold uppercase tracking-widest text-[#6B6B6B]">Clientes</span>
+              <span className="text-[10px] font-bold uppercase tracking-widest text-app-soft">Clientes</span>
             </div>
             <p className="text-xl font-extrabold tabular-nums text-[#22c55e]">
               {comprehensive !== null ? `${comprehensive.clienteCount}` : '—'}
             </p>
-            <p className="text-[11px] text-[#6B6B6B] mt-0.5">
+            <p className="text-[11px] text-app-soft mt-0.5">
               ativo{comprehensive && comprehensive.clienteCount !== 1 ? 's' : ''}
             </p>
           </div>

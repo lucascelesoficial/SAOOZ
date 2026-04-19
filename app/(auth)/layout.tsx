@@ -24,23 +24,23 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
 
       {/* ── Painel esquerdo — branding ────────────────────────── */}
       <div
-        className="hidden lg:flex lg:w-[52%] xl:w-[56%] relative flex-col justify-center items-center p-12 overflow-hidden bg-white"
-        style={{ borderRight: '1px solid #E2E8F0' }}
+        className="hidden lg:flex lg:w-[52%] xl:w-[56%] relative flex-col justify-center items-center p-12 overflow-hidden"
+        style={{ background: 'linear-gradient(150deg, #1E3A8A 0%, #1D4ED8 60%, #2563EB 100%)' }}
       >
-        {/* Grid de pontos azuis sutis */}
+        {/* Pontos brancos sutis */}
         <div className="pointer-events-none absolute inset-0 overflow-hidden">
           <div
             className="absolute -top-40 -right-40 w-[500px] h-[500px] rounded-full"
-            style={{ background: 'radial-gradient(circle, #2563EB08 0%, transparent 65%)' }}
+            style={{ background: 'radial-gradient(circle, rgba(255,255,255,0.06) 0%, transparent 65%)' }}
           />
           <div
             className="absolute -bottom-32 -left-32 w-[400px] h-[400px] rounded-full"
-            style={{ background: 'radial-gradient(circle, #2563EB06 0%, transparent 65%)' }}
+            style={{ background: 'radial-gradient(circle, rgba(255,255,255,0.04) 0%, transparent 65%)' }}
           />
           <svg className="absolute inset-0 w-full h-full" xmlns="http://www.w3.org/2000/svg">
             <defs>
               <pattern id="dots-auth" width="28" height="28" patternUnits="userSpaceOnUse">
-                <circle cx="2" cy="2" r="1.2" fill="#2563EB" fillOpacity="0.08" />
+                <circle cx="2" cy="2" r="1.2" fill="white" fillOpacity="0.10" />
               </pattern>
             </defs>
             <rect width="100%" height="100%" fill="url(#dots-auth)" />
@@ -51,7 +51,8 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
         <div className="relative flex flex-col items-center text-center gap-5 mb-12">
           <div style={{
             borderRadius: 24,
-            boxShadow: '0 4px 24px rgba(37,99,235,0.18), 0 0 0 1px rgba(0,0,0,0.06)',
+            background: '#ffffff',
+            boxShadow: '0 8px 32px rgba(0,0,0,0.25), 0 0 0 1px rgba(255,255,255,0.15)',
             overflow: 'hidden',
             display: 'inline-flex',
           }}>
@@ -66,10 +67,10 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
           </div>
 
           <div>
-            <p className="text-3xl font-extrabold text-slate-900 tracking-tight" style={{ letterSpacing: '0.06em' }}>
+            <p className="text-3xl font-extrabold tracking-tight" style={{ color: '#ffffff', letterSpacing: '0.06em' }}>
               SAOOZ
             </p>
-            <p className="mt-1.5 text-sm font-medium tracking-widest uppercase" style={{ color: '#2563EB' }}>
+            <p className="mt-1.5 text-sm font-medium tracking-widest uppercase" style={{ color: 'rgba(255,255,255,0.75)' }}>
               Centro da sua vida financeira
             </p>
           </div>
@@ -82,19 +83,19 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
               <span
                 className="h-8 w-8 rounded-[8px] flex items-center justify-center shrink-0"
                 style={{
-                  background: '#EFF6FF',
-                  border: '1px solid #BFDBFE',
+                  background: 'rgba(255,255,255,0.15)',
+                  border: '1px solid rgba(255,255,255,0.25)',
                 }}
               >
-                <Icon className="h-4 w-4" style={{ color: '#2563EB' }} aria-hidden />
+                <Icon className="h-4 w-4" style={{ color: '#ffffff' }} aria-hidden />
               </span>
-              <span className="text-sm text-slate-600">{text}</span>
+              <span className="text-sm" style={{ color: 'rgba(255,255,255,0.85)' }}>{text}</span>
             </li>
           ))}
         </ul>
 
         {/* Rodapé */}
-        <p className="absolute bottom-8 text-xs font-mono tracking-widest" style={{ color: '#94A3B8' }}>
+        <p className="absolute bottom-8 text-xs font-mono tracking-widest" style={{ color: 'rgba(255,255,255,0.40)' }}>
           SAOOZ · SEU SISTEMA FINANCEIRO
         </p>
       </div>

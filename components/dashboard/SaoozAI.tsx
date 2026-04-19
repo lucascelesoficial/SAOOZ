@@ -493,7 +493,7 @@ export function SaoozAI({ totals, categoryData }: SaoozAIProps) {
               value={input}
               onChange={(event) => setInput(event.target.value)}
               onKeyDown={handleKeyDown}
-              placeholder="Escreva algo ou toque no núcleo para falar..."
+              placeholder="Escreva sua mensagem..."
               disabled={loading}
               className="flex-1 bg-transparent text-sm text-app outline-none placeholder:text-app-soft disabled:opacity-50"
             />
@@ -514,11 +514,6 @@ export function SaoozAI({ totals, categoryData }: SaoozAIProps) {
               )}
             </button>
           </div>
-          {isSupported && (
-            <p className="mt-1.5 text-center text-[10px] text-app-soft">
-              Toque no núcleo para modo voz contínuo
-            </p>
-          )}
         </div>
       )}
     </div>
