@@ -1,94 +1,34 @@
 import Link from 'next/link'
 import {
   ArrowRight, BadgeCheck, Brain, Briefcase, Building2,
-  Clock3, CreditCard, Layers,
-  Shield, TrendingUp, User, CircleAlert, BarChart3,
-  CheckCircle2, Star,
-  Mail, ChevronRight,
+  CheckCircle2, ChevronRight, Clock3, CreditCard, Layers,
+  Mail, Shield, Star, TrendingUp, User, Zap,
 } from 'lucide-react'
 import { SaoozWordmark } from '@/components/ui/SaoozLogo'
 import { PricingSection } from '@/components/marketing/PricingSection'
 
 // ─── Data ─────────────────────────────────────────────────────────────────────
 
-const PAIN_POINTS = [
-  { icon: CircleAlert, title: 'Fim de mês no escuro', description: 'Você fecha o mês sem saber para onde o dinheiro foi — e já é tarde para corrigir qualquer coisa.' },
-  { icon: Briefcase,  title: 'PF e PJ misturados',    description: 'Conta pessoal e empresarial se confundem. Qualquer decisão vira tentativa e erro.' },
-  { icon: BarChart3,  title: 'Planilha que não fecha', description: 'A planilha paralela nunca está atualizada. Você não confia nos números porque sabe que estão errados.' },
-  { icon: Brain,      title: 'IA que não entende seu contexto', description: 'Ferramentas genéricas não conhecem seu histórico real. As respostas não se aplicam ao seu momento.' },
-]
-
-const STEPS = [
-  { num: '01', icon: User,       title: 'Crie sua conta',       description: 'Cadastro em menos de 2 minutos. Nome, e-mail e senha — sem burocracia.' },
-  { num: '02', icon: Layers,     title: 'Configure seu modo',   description: 'Escolha PF, PJ ou ambos. O sistema monta o painel certo para o seu contexto automaticamente.' },
-  { num: '03', icon: TrendingUp, title: 'Opere com clareza',    description: 'Registre, analise e decida com base em dados reais — sem planilha paralela.' },
-]
-
-const FEATURES = [
-  {
-    id: 'pf', tag: 'Módulo PF', tagColor: '#2563EB', icon: User,
-    title: 'Controle financeiro pessoal com método real',
-    description: 'Painel centralizado com visão de caixa, categorias de gastos, metas de reserva e inteligência IA para identificar onde o dinheiro some antes do fim do mês.',
-    bullets: [
-      'Dashboard com saldo, renda e gastos do mês',
-      'Categorias de despesas inteligentes (16 tipos)',
-      'Módulo de investimentos com carteira e posições',
-      'Reserva de emergência com meta e progresso',
-      'Assistente IA com contexto financeiro real',
-    ],
-  },
-  {
-    id: 'pj', tag: 'Módulo PJ', tagColor: '#60A5FA', icon: Building2,
-    title: 'Operação financeira empresarial enxuta',
-    description: 'Faturamento, despesas, impostos e pró-labore em um único painel. Suporte a múltiplas empresas com separação real entre pessoal e empresarial.',
-    bullets: [
-      'Painel de receita × despesa empresarial',
-      'Cálculo de impostos (MEI, Simples, Presumido, Real)',
-      'Gestão de pró-labore por período',
-      'Suporte a até 5 empresas (plano PRO)',
-      'Investimentos e reserva empresarial separados',
-    ],
-  },
-  {
-    id: 'ia', tag: 'Assistente IA', tagColor: '#1D4ED8', icon: Brain,
-    title: 'IA que conhece o seu financeiro de verdade',
-    description: 'O assistente acessa seus dados reais — renda, gastos, categorias e contexto PF/PJ — e entrega análises orientadas à decisão, não respostas genéricas.',
-    bullets: [
-      'Análise de padrões de gasto e desvios',
-      'Recomendações de corte e priorização',
-      'Ação direta: registra despesas por comando de voz ou texto',
-      'Insights semanais e alertas de anomalia',
-      'Resposta em voz com Text-to-Speech (ElevenLabs)',
-    ],
-  },
-]
-
 const FOR_WHOM = [
-  { icon: User,     color: '#2563EB', title: 'Profissional com renda variável',    description: 'Freelancers, consultores e autônomos que precisam de previsibilidade e método sem depender de contador para entender o básico.' },
-  { icon: Building2,color: '#60A5FA', title: 'Empresário com operação PJ',         description: 'MEIs e pequenas empresas que precisam separar pessoa e empresa sem planilha paralela ou ferramenta adicional.' },
-  { icon: Layers,   color: '#22c55e', title: 'Operação PF + PJ unificada',         description: 'Quem tem renda pessoal e empresarial e precisa de visão total do dinheiro em um único sistema, sem retrabalho.' },
+  { icon: User,      color: '#2563EB', title: 'Profissional com renda variável',    description: 'Freelancers, consultores e autônomos que precisam de previsibilidade e método sem depender de contador para entender o básico.' },
+  { icon: Building2, color: '#1D4ED8', title: 'Empresário com operação PJ',         description: 'MEIs e pequenas empresas que precisam separar pessoa e empresa sem planilha paralela ou ferramenta adicional.' },
+  { icon: Layers,    color: '#2563EB', title: 'Operação PF + PJ unificada',         description: 'Quem tem renda pessoal e empresarial e precisa de visão total do dinheiro em um único sistema, sem retrabalho.' },
 ]
 
 const TESTIMONIALS = [
-  { name: 'Lucas M.',    role: 'Designer · MEI',         quote: 'Finalmente consegui separar o pessoal do empresarial. Em uma semana já vi para onde o dinheiro estava indo todo mês.', stars: 5 },
-  { name: 'Fernanda C.', role: 'Consultora PJ',          quote: 'O módulo de impostos me economiza tempo toda semana. Antes abria 3 ferramentas diferentes só para montar o número básico.', stars: 5 },
+  { name: 'Lucas M.',    role: 'Designer · MEI',               quote: 'Finalmente consegui separar o pessoal do empresarial. Em uma semana já vi para onde o dinheiro estava indo todo mês.', stars: 5 },
+  { name: 'Fernanda C.', role: 'Consultora PJ',                quote: 'O módulo de impostos me economiza tempo toda semana. Antes abria 3 ferramentas diferentes só para montar o número básico.', stars: 5 },
   { name: 'Rafael S.',   role: 'Gestor de tráfego · Autônomo', quote: 'A IA identifica onde está o vazamento antes do fim do mês. Muda completamente como tomo decisão sobre investimento e gasto.', stars: 5 },
 ]
 
-const RESULTS = [
-  { icon: Clock3,     metric: 'Horas',        label: 'para fechar o mês',        description: 'Em vez de dias de planilha e retrabalho.',               color: '#2563EB' },
-  { icon: TrendingUp, metric: 'Tempo real',   label: 'de visibilidade de caixa', description: 'Sem esperar o fim do mês para saber o saldo.',           color: '#22c55e' },
-  { icon: Brain,      metric: 'Antes do impacto', label: 'detecção de desvio',   description: 'A IA identifica o problema antes que vire crise.',       color: '#1D4ED8' },
-]
-
 const FAQ_ITEMS = [
-  { q: 'O que é a garantia de 7 dias?',                 a: 'Se você assinar qualquer plano e não estiver satisfeito nos primeiros 7 dias, devolvemos 100% do valor pago. Sem perguntas, sem burocracia.' },
-  { q: 'Quando começa a cobrança?',                      a: 'Imediatamente após a confirmação do pagamento. Se decidir cancelar nos primeiros 7 dias, reembolsamos o valor integral. Sem fidelidade, sem multa de saída.' },
-  { q: 'Posso usar PF e PJ no mesmo plano?',            a: 'Sim, com o plano PRO você tem acesso aos dois módulos em uma única conta. Se precisar só de um, os planos PF ou PJ são mais indicados e mais baratos.' },
-  { q: 'Consigo ter mais de uma empresa cadastrada?',   a: 'Sim. O plano PJ suporta até 3 empresas e o PRO até 5. Ideal para quem opera mais de um CNPJ ou tem diferentes frentes de negócio.' },
-  { q: 'Em quanto tempo configuro o SAOOZ?',            a: 'A configuração inicial leva menos de 5 minutos. No mesmo dia você já consegue registrar, analisar e decidir com base em dados reais.' },
-  { q: 'O assistente IA usa meus dados reais?',         a: 'Sim. O assistente conhece seu contexto financeiro real — renda, gastos, categorias e operação PF/PJ — e entrega análises orientadas ao seu momento, não respostas genéricas de ChatGPT.' },
-  { q: 'Posso migrar de plano depois?',                 a: 'Sim. Você pode trocar de plano a qualquer momento pelo painel de configurações. Sem perda de dados, sem burocracia.' },
+  { q: 'O que é a garantia de 7 dias?',                a: 'Se você assinar qualquer plano e não estiver satisfeito nos primeiros 7 dias, devolvemos 100% do valor pago. Sem perguntas, sem burocracia.' },
+  { q: 'Quando começa a cobrança?',                     a: 'Imediatamente após a confirmação do pagamento. Se decidir cancelar nos primeiros 7 dias, reembolsamos o valor integral. Sem fidelidade, sem multa de saída.' },
+  { q: 'Posso usar PF e PJ no mesmo plano?',           a: 'Sim, com o plano PRO você tem acesso aos dois módulos em uma única conta. Se precisar só de um, os planos PF ou PJ são mais indicados e mais baratos.' },
+  { q: 'Consigo ter mais de uma empresa cadastrada?',  a: 'Sim. O plano PJ suporta até 3 empresas e o PRO até 5. Ideal para quem opera mais de um CNPJ ou tem diferentes frentes de negócio.' },
+  { q: 'Em quanto tempo configuro o SAOOZ?',           a: 'A configuração inicial leva menos de 5 minutos. No mesmo dia você já consegue registrar, analisar e decidir com base em dados reais.' },
+  { q: 'O assistente IA usa meus dados reais?',        a: 'Sim. O assistente conhece seu contexto financeiro real — renda, gastos, categorias e operação PF/PJ — e entrega análises orientadas ao seu momento, não respostas genéricas de ChatGPT.' },
+  { q: 'Posso migrar de plano depois?',                a: 'Sim. Você pode trocar de plano a qualquer momento pelo painel de configurações. Sem perda de dados, sem burocracia.' },
 ]
 
 // ─── Orbital Ring System (pure SVG + CSS) ────────────────────────────────────
@@ -189,11 +129,11 @@ function OrbitalSystem() {
 function DashboardMockup() {
   const bars = [35, 55, 42, 70, 48, 65, 82, 58, 72, 88, 45, 90]
   const cats = [
-    { name: 'Moradia',       pct: 32, val: 'R$ 1.400', color: '#2563EB' },
-    { name: 'Alimentação',   pct: 22, val: 'R$ 963',   color: '#60A5FA' },
-    { name: 'Transporte',    pct: 15, val: 'R$ 656',   color: '#22c55e' },
-    { name: 'Assinaturas',   pct: 9,  val: 'R$ 394',   color: '#1D4ED8' },
-    { name: 'Outros',        pct: 22, val: 'R$ 963',   color: '#f59e0b' },
+    { name: 'Moradia',     pct: 32, val: 'R$ 1.400', color: '#2563EB' },
+    { name: 'Alimentação', pct: 22, val: 'R$ 963',   color: '#60A5FA' },
+    { name: 'Transporte',  pct: 15, val: 'R$ 656',   color: '#22c55e' },
+    { name: 'Assinaturas', pct: 9,  val: 'R$ 394',   color: '#1D4ED8' },
+    { name: 'Outros',      pct: 22, val: 'R$ 963',   color: '#f59e0b' },
   ]
   return (
     <div
@@ -205,7 +145,7 @@ function DashboardMockup() {
         aria-hidden
         style={{
           position: 'absolute', inset: '-20px 40px', bottom: -40,
-          background: 'radial-gradient(ellipse at 50% 100%, color-mix(in oklab, var(--accent-blue) 30%, transparent), transparent 70%)',
+          background: 'radial-gradient(ellipse at 50% 100%, rgba(37,99,235,0.18), transparent 70%)',
           filter: 'blur(30px)',
           zIndex: 0,
         }}
@@ -219,8 +159,8 @@ function DashboardMockup() {
           transformOrigin: 'center top',
           borderRadius: 20,
           overflow: 'hidden',
-          border: '1px solid color-mix(in oklab, var(--accent-blue) 35%, transparent)',
-          boxShadow: '0 40px 100px color-mix(in oklab, var(--accent-blue) 20%, transparent), 0 0 0 1px color-mix(in oklab, var(--panel-border) 40%, transparent), inset 0 1px 0 color-mix(in oklab, white 8%, transparent)',
+          border: '1px solid rgba(37,99,235,0.25)',
+          boxShadow: '0 40px 100px rgba(37,99,235,0.14), 0 0 0 1px rgba(226,232,240,0.4), inset 0 1px 0 rgba(255,255,255,0.08)',
         }}
       >
         {/* Browser chrome */}
@@ -228,8 +168,8 @@ function DashboardMockup() {
           style={{
             display: 'flex', alignItems: 'center', gap: 8,
             padding: '10px 16px',
-            background: 'color-mix(in oklab, var(--panel-bg) 95%, transparent)',
-            borderBottom: '1px solid var(--panel-border)',
+            background: '#F8FAFC',
+            borderBottom: '1px solid #E2E8F0',
           }}
         >
           <span style={{ width: 12, height: 12, borderRadius: '50%', background: '#ff5f57', display: 'inline-block' }} />
@@ -238,8 +178,9 @@ function DashboardMockup() {
           <div
             style={{
               marginLeft: 12, flex: 1, borderRadius: 6, padding: '4px 12px',
-              background: 'var(--panel-bg-soft)',
-              fontSize: 11, color: 'var(--text-soft)',
+              background: '#FFFFFF',
+              border: '1px solid #E2E8F0',
+              fontSize: 11, color: '#94A3B8',
               display: 'flex', alignItems: 'center', gap: 6,
             }}
           >
@@ -249,7 +190,7 @@ function DashboardMockup() {
         </div>
 
         {/* Dashboard body */}
-        <div style={{ background: 'var(--app-bg)', padding: 0 }}>
+        <div style={{ background: '#FFFFFF', padding: 0 }}>
 
           {/* Sidebar + content */}
           <div style={{ display: 'grid', gridTemplateColumns: '56px 1fr' }}>
@@ -257,15 +198,15 @@ function DashboardMockup() {
             {/* Mini sidebar */}
             <div
               style={{
-                background: 'var(--panel-bg)',
-                borderRight: '1px solid var(--panel-border)',
+                background: '#F8FAFC',
+                borderRight: '1px solid #E2E8F0',
                 padding: '12px 0',
                 display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10,
               }}
             >
               {['#2563EB','#60A5FA','#22c55e','#1D4ED8','#f59e0b'].map((c, i) => (
-                <div key={i} style={{ width: 28, height: 28, borderRadius: 8, background: i === 0 ? `color-mix(in oklab, ${c} 25%, transparent)` : 'var(--panel-bg-soft)', border: `1px solid ${i === 0 ? `color-mix(in oklab, ${c} 40%, transparent)` : 'var(--panel-border)'}`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <div style={{ width: 10, height: 10, borderRadius: i === 0 ? '50%' : 2, background: i === 0 ? c : 'var(--text-muted)', opacity: i === 0 ? 1 : 0.5 }} />
+                <div key={i} style={{ width: 28, height: 28, borderRadius: 8, background: i === 0 ? `rgba(37,99,235,0.15)` : '#F1F5F9', border: `1px solid ${i === 0 ? 'rgba(37,99,235,0.3)' : '#E2E8F0'}`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <div style={{ width: 10, height: 10, borderRadius: i === 0 ? '50%' : 2, background: i === 0 ? c : '#CBD5E1', opacity: i === 0 ? 1 : 0.6 }} />
                 </div>
               ))}
             </div>
@@ -276,12 +217,12 @@ function DashboardMockup() {
               {/* Top header */}
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
                 <div>
-                  <div style={{ fontSize: 11, color: 'var(--text-soft)', marginBottom: 2 }}>Central financeira</div>
-                  <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-strong)' }}>Abril 2026</div>
+                  <div style={{ fontSize: 11, color: '#94A3B8', marginBottom: 2 }}>Central financeira</div>
+                  <div style={{ fontSize: 14, fontWeight: 700, color: '#0F172A' }}>Abril 2026</div>
                 </div>
                 <div style={{ display: 'flex', gap: 6 }}>
                   {['PF','PJ'].map((t, i) => (
-                    <span key={t} style={{ fontSize: 10, fontWeight: 700, padding: '3px 8px', borderRadius: 6, background: i === 0 ? 'color-mix(in oklab, #2563EB 20%, transparent)' : 'var(--panel-bg-soft)', color: i === 0 ? '#2563EB' : 'var(--text-soft)', border: `1px solid ${i === 0 ? 'color-mix(in oklab, #2563EB 30%, transparent)' : 'var(--panel-border)'}` }}>{t}</span>
+                    <span key={t} style={{ fontSize: 10, fontWeight: 700, padding: '3px 8px', borderRadius: 6, background: i === 0 ? 'rgba(37,99,235,0.12)' : '#F1F5F9', color: i === 0 ? '#2563EB' : '#64748B', border: `1px solid ${i === 0 ? 'rgba(37,99,235,0.25)' : '#E2E8F0'}` }}>{t}</span>
                   ))}
                 </div>
               </div>
@@ -294,10 +235,10 @@ function DashboardMockup() {
                   { label: 'Saídas do mês',    value: 'R$ 4.380',  color: '#f87171', delta: '-8%' },
                   { label: 'Consumo mensal',   value: '34%',       color: '#1D4ED8', delta: 'ideal' },
                 ].map((m) => (
-                  <div key={m.label} style={{ background: 'var(--panel-bg)', border: '1px solid var(--panel-border)', borderRadius: 10, padding: '10px 12px' }}>
-                    <div style={{ fontSize: 9, color: 'var(--text-soft)', marginBottom: 4, textTransform: 'uppercase', letterSpacing: '0.05em' }}>{m.label}</div>
+                  <div key={m.label} style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: 10, padding: '10px 12px' }}>
+                    <div style={{ fontSize: 9, color: '#94A3B8', marginBottom: 4, textTransform: 'uppercase', letterSpacing: '0.05em' }}>{m.label}</div>
                     <div style={{ fontSize: 15, fontWeight: 800, color: m.color }}>{m.value}</div>
-                    <div style={{ fontSize: 9, marginTop: 3, padding: '1px 5px', borderRadius: 4, background: `color-mix(in oklab, ${m.color} 10%, transparent)`, display: 'inline-block', color: m.color }}>{m.delta}</div>
+                    <div style={{ fontSize: 9, marginTop: 3, padding: '1px 5px', borderRadius: 4, background: `rgba(0,0,0,0.05)`, display: 'inline-block', color: m.color }}>{m.delta}</div>
                   </div>
                 ))}
               </div>
@@ -306,31 +247,31 @@ function DashboardMockup() {
               <div style={{ display: 'grid', gridTemplateColumns: '1.6fr 1fr', gap: 8, marginBottom: 12 }}>
 
                 {/* Bar chart */}
-                <div style={{ background: 'var(--panel-bg)', border: '1px solid var(--panel-border)', borderRadius: 10, padding: '10px 12px' }}>
-                  <div style={{ fontSize: 9, color: 'var(--text-soft)', marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Fluxo de caixa — 2026</div>
+                <div style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: 10, padding: '10px 12px' }}>
+                  <div style={{ fontSize: 9, color: '#94A3B8', marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Fluxo de caixa — 2026</div>
                   <div style={{ display: 'flex', alignItems: 'flex-end', gap: 3, height: 56 }}>
                     {bars.map((h, i) => (
-                      <div key={i} style={{ flex: 1, borderRadius: '3px 3px 0 0', height: `${h}%`, background: i >= 10 ? `color-mix(in oklab, #2563EB 35%, transparent)` : `color-mix(in oklab, #2563EB ${50 + h / 5}%, transparent)`, border: i === 11 ? '1px solid color-mix(in oklab, #2563EB 60%, transparent)' : 'none' }} />
+                      <div key={i} style={{ flex: 1, borderRadius: '3px 3px 0 0', height: `${h}%`, background: i >= 10 ? `rgba(37,99,235,0.25)` : `rgba(37,99,235,${0.4 + h / 200})`, border: i === 11 ? '1px solid rgba(37,99,235,0.5)' : 'none' }} />
                     ))}
                   </div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 4 }}>
                     {['Jan','Fev','Mar','Abr'].map(m => (
-                      <span key={m} style={{ fontSize: 8, color: 'var(--text-muted)' }}>{m}</span>
+                      <span key={m} style={{ fontSize: 8, color: '#CBD5E1' }}>{m}</span>
                     ))}
                   </div>
                 </div>
 
                 {/* Category breakdown */}
-                <div style={{ background: 'var(--panel-bg)', border: '1px solid var(--panel-border)', borderRadius: 10, padding: '10px 12px' }}>
-                  <div style={{ fontSize: 9, color: 'var(--text-soft)', marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Categorias</div>
+                <div style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: 10, padding: '10px 12px' }}>
+                  <div style={{ fontSize: 9, color: '#94A3B8', marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Categorias</div>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
                     {cats.slice(0, 4).map((c) => (
                       <div key={c.name} style={{ marginBottom: 6 }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 2 }}>
-                          <span style={{ fontSize: 9, color: 'var(--text-base)' }}>{c.name}</span>
+                          <span style={{ fontSize: 9, color: '#475569' }}>{c.name}</span>
                           <span style={{ fontSize: 9, color: c.color, fontWeight: 700 }}>{c.pct}%</span>
                         </div>
-                        <div style={{ height: 3, borderRadius: 2, background: 'var(--panel-bg-soft)' }}>
+                        <div style={{ height: 3, borderRadius: 2, background: '#F1F5F9' }}>
                           <div style={{ height: '100%', borderRadius: 2, width: `${c.pct}%`, background: c.color }} />
                         </div>
                       </div>
@@ -340,16 +281,16 @@ function DashboardMockup() {
               </div>
 
               {/* AI chat preview */}
-              <div style={{ background: 'var(--panel-bg)', border: '1px solid var(--panel-border)', borderRadius: 10, padding: '10px 12px' }}>
-                <div style={{ fontSize: 9, color: 'var(--text-soft)', marginBottom: 7, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Assistente IA · Saooz</div>
+              <div style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: 10, padding: '10px 12px' }}>
+                <div style={{ fontSize: 9, color: '#94A3B8', marginBottom: 7, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Assistente IA · Saooz</div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
-                  <div style={{ alignSelf: 'flex-start', maxWidth: '75%', background: 'color-mix(in oklab, #1D4ED8 12%, transparent)', border: '1px solid color-mix(in oklab, #1D4ED8 20%, transparent)', borderRadius: '0 8px 8px 8px', padding: '6px 10px', fontSize: 10, color: 'var(--text-base)', lineHeight: 1.5 }}>
+                  <div style={{ alignSelf: 'flex-start', maxWidth: '75%', background: 'rgba(29,78,216,0.08)', border: '1px solid rgba(29,78,216,0.15)', borderRadius: '0 8px 8px 8px', padding: '6px 10px', fontSize: 10, color: '#334155', lineHeight: 1.5 }}>
                     Seus gastos com alimentação subiram 18% em abril. Deseja revisar a meta da categoria?
                   </div>
-                  <div style={{ alignSelf: 'flex-end', maxWidth: '60%', background: 'var(--panel-bg-soft)', borderRadius: '8px 0 8px 8px', padding: '6px 10px', fontSize: 10, color: 'var(--text-base)' }}>
+                  <div style={{ alignSelf: 'flex-end', maxWidth: '60%', background: '#F1F5F9', borderRadius: '8px 0 8px 8px', padding: '6px 10px', fontSize: 10, color: '#334155' }}>
                     Sim — sugira um valor realista.
                   </div>
-                  <div style={{ alignSelf: 'flex-start', maxWidth: '80%', background: 'color-mix(in oklab, #1D4ED8 12%, transparent)', border: '1px solid color-mix(in oklab, #1D4ED8 20%, transparent)', borderRadius: '0 8px 8px 8px', padding: '6px 10px', fontSize: 10, color: 'var(--text-base)', lineHeight: 1.5 }}>
+                  <div style={{ alignSelf: 'flex-start', maxWidth: '80%', background: 'rgba(29,78,216,0.08)', border: '1px solid rgba(29,78,216,0.15)', borderRadius: '0 8px 8px 8px', padding: '6px 10px', fontSize: 10, color: '#334155', lineHeight: 1.5 }}>
                     Com base no histórico, R$ 1.100/mês mantém o padrão sem pressão no caixa.
                   </div>
                 </div>
@@ -365,10 +306,139 @@ function DashboardMockup() {
         aria-hidden
         style={{
           position: 'absolute', bottom: 0, left: 0, right: 0, height: 100,
-          background: 'linear-gradient(to top, var(--app-bg), transparent)',
+          background: 'linear-gradient(to top, #FFFFFF, transparent)',
           pointerEvents: 'none', zIndex: 2,
         }}
       />
+    </div>
+  )
+}
+
+// ─── Feature Visual Cards ──────────────────────────────────────────────────────
+
+function FeatureVisualPanels() {
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 12, width: '100%', maxWidth: 380 }}>
+      {/* PF Card */}
+      <div style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: 14, padding: '14px 16px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+          <span style={{ fontSize: 11, fontWeight: 700, color: '#2563EB' }}>Pessoal (PF)</span>
+          <span style={{ fontSize: 10, background: 'rgba(37,99,235,0.1)', color: '#2563EB', padding: '2px 7px', borderRadius: 6, border: '1px solid rgba(37,99,235,0.2)' }}>Abril 2026</span>
+        </div>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+          <div style={{ background: '#F8FAFC', borderRadius: 10, padding: '10px 12px' }}>
+            <div style={{ fontSize: 9, color: '#94A3B8', marginBottom: 3 }}>Saldo</div>
+            <div style={{ fontSize: 16, fontWeight: 800, color: '#22c55e' }}>R$ 8.420</div>
+          </div>
+          <div style={{ background: '#F8FAFC', borderRadius: 10, padding: '10px 12px' }}>
+            <div style={{ fontSize: 9, color: '#94A3B8', marginBottom: 3 }}>Saídas</div>
+            <div style={{ fontSize: 16, fontWeight: 800, color: '#f87171' }}>R$ 4.380</div>
+          </div>
+        </div>
+      </div>
+      {/* PJ Card */}
+      <div style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: 14, padding: '14px 16px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+          <span style={{ fontSize: 11, fontWeight: 700, color: '#1D4ED8' }}>Empresa (PJ)</span>
+          <span style={{ fontSize: 10, background: 'rgba(29,78,216,0.1)', color: '#1D4ED8', padding: '2px 7px', borderRadius: 6, border: '1px solid rgba(29,78,216,0.2)' }}>Abril 2026</span>
+        </div>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+          <div style={{ background: '#F8FAFC', borderRadius: 10, padding: '10px 12px' }}>
+            <div style={{ fontSize: 9, color: '#94A3B8', marginBottom: 3 }}>Faturamento</div>
+            <div style={{ fontSize: 16, fontWeight: 800, color: '#1D4ED8' }}>R$ 28.5k</div>
+          </div>
+          <div style={{ background: '#F8FAFC', borderRadius: 10, padding: '10px 12px' }}>
+            <div style={{ fontSize: 9, color: '#94A3B8', marginBottom: 3 }}>Lucro</div>
+            <div style={{ fontSize: 16, fontWeight: 800, color: '#22c55e' }}>R$ 15.8k</div>
+          </div>
+        </div>
+      </div>
+      {/* Toggle hint */}
+      <div style={{ display: 'flex', justifyContent: 'center', gap: 8 }}>
+        <span style={{ fontSize: 11, background: 'rgba(37,99,235,0.1)', color: '#2563EB', padding: '4px 12px', borderRadius: 20, border: '1px solid rgba(37,99,235,0.2)', fontWeight: 600 }}>PF</span>
+        <span style={{ fontSize: 11, background: '#F1F5F9', color: '#64748B', padding: '4px 12px', borderRadius: 20, border: '1px solid #E2E8F0', fontWeight: 600 }}>PJ</span>
+        <span style={{ fontSize: 11, background: '#F1F5F9', color: '#64748B', padding: '4px 12px', borderRadius: 20, border: '1px solid #E2E8F0', fontWeight: 600 }}>Ambos</span>
+      </div>
+    </div>
+  )
+}
+
+function FeatureVisualCategories() {
+  const cats = [
+    { name: 'Moradia',     pct: 32, color: '#2563EB' },
+    { name: 'Alimentação', pct: 22, color: '#f87171' },
+    { name: 'Transporte',  pct: 15, color: '#22c55e' },
+    { name: 'Lazer',       pct: 9,  color: '#f59e0b' },
+  ]
+  return (
+    <div style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: 20, padding: '20px 22px', width: '100%', maxWidth: 380, boxShadow: '0 20px 60px rgba(30,58,138,0.10)' }}>
+      <div style={{ fontSize: 12, fontWeight: 700, color: '#0F172A', marginBottom: 14 }}>Gastos por categoria</div>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+        {cats.map((c) => (
+          <div key={c.name}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 5 }}>
+              <span style={{ fontSize: 12, color: '#475569', fontWeight: 500 }}>{c.name}</span>
+              <span style={{ fontSize: 12, color: c.color, fontWeight: 700 }}>{c.pct}%</span>
+            </div>
+            <div style={{ height: 6, borderRadius: 3, background: '#F1F5F9' }}>
+              <div style={{ height: '100%', borderRadius: 3, width: `${c.pct * 2.8}%`, background: c.color }} />
+            </div>
+          </div>
+        ))}
+      </div>
+      {/* Alert chip */}
+      <div style={{ marginTop: 14, background: 'rgba(248,113,113,0.08)', border: '1px solid rgba(248,113,113,0.25)', borderRadius: 10, padding: '8px 12px', display: 'flex', alignItems: 'center', gap: 8 }}>
+        <span style={{ fontSize: 14 }}>⚠</span>
+        <span style={{ fontSize: 11, color: '#f87171', fontWeight: 600 }}>↑ Alimentação +18% este mês</span>
+      </div>
+    </div>
+  )
+}
+
+function FeatureVisualDRE() {
+  return (
+    <div style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: 20, padding: '20px 22px', width: '100%', maxWidth: 380, boxShadow: '0 20px 60px rgba(30,58,138,0.10)' }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+        <span style={{ fontSize: 12, fontWeight: 700, color: '#0F172A' }}>DRE — Abril 2026</span>
+        <span style={{ fontSize: 10, background: 'rgba(37,99,235,0.1)', color: '#2563EB', padding: '3px 9px', borderRadius: 6, border: '1px solid rgba(37,99,235,0.2)', fontWeight: 600 }}>Simples Nacional</span>
+      </div>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+        {[
+          { label: 'Faturamento', value: 'R$ 28.500', color: '#22c55e' },
+          { label: 'Despesas',    value: 'R$ 11.200', color: '#f87171' },
+          { label: 'Imposto',     value: 'R$ 1.425',  color: '#f59e0b' },
+          { label: 'Lucro',       value: 'R$ 15.875', color: '#2563EB' },
+        ].map((row) => (
+          <div key={row.label} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 14px', background: '#F8FAFC', borderRadius: 10, border: '1px solid #E2E8F0' }}>
+            <span style={{ fontSize: 12, color: '#475569', fontWeight: 500 }}>{row.label}</span>
+            <span style={{ fontSize: 14, fontWeight: 800, color: row.color }}>{row.value}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+function FeatureVisualChat() {
+  return (
+    <div style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: 20, padding: '20px 22px', width: '100%', maxWidth: 380, boxShadow: '0 20px 60px rgba(30,58,138,0.10)' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
+        <div style={{ width: 28, height: 28, borderRadius: '50%', background: 'linear-gradient(135deg, #1E3A8A, #2563EB)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <Brain style={{ width: 14, height: 14, color: '#fff' }} />
+        </div>
+        <span style={{ fontSize: 12, fontWeight: 700, color: '#0F172A' }}>Assistente IA · SAOOZ</span>
+      </div>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+        <div style={{ alignSelf: 'flex-start', maxWidth: '88%', background: 'rgba(29,78,216,0.07)', border: '1px solid rgba(29,78,216,0.15)', borderRadius: '0 12px 12px 12px', padding: '10px 13px', fontSize: 12, color: '#334155', lineHeight: 1.5 }}>
+          Em abril você gastou R$ 4.380, 12% mais que março. Quer ver onde subiu?
+        </div>
+        <div style={{ alignSelf: 'flex-end', maxWidth: '60%', background: '#F1F5F9', borderRadius: '12px 0 12px 12px', padding: '10px 13px', fontSize: 12, color: '#334155' }}>
+          Sim, onde foi?
+        </div>
+        <div style={{ alignSelf: 'flex-start', maxWidth: '88%', background: 'rgba(29,78,216,0.07)', border: '1px solid rgba(29,78,216,0.15)', borderRadius: '0 12px 12px 12px', padding: '10px 13px', fontSize: 12, color: '#334155', lineHeight: 1.5 }}>
+          Alimentação +R$ 340 e assinaturas +R$ 180. Posso sugerir ajuste?
+        </div>
+      </div>
     </div>
   )
 }
@@ -387,7 +457,7 @@ export function SalesLanding() {
         @keyframes saooz-orbit3r { to { transform: rotate(-360deg); } }
         @keyframes saooz-float   { 0%,100% { transform: translateY(0px); } 50% { transform: translateY(-24px); } }
         @keyframes saooz-pulse   { 0%,100% { opacity: 0.5; } 50% { opacity: 1; } }
-        @keyframes saooz-shimmer { from { transform: translateX(-100%); } to { transform: translateX(200%); } }
+        @keyframes saooz-shimmer { from { background-position: -200% center; } to { background-position: 200% center; } }
         @keyframes saooz-spin-slow { to { transform: rotate(360deg); } }
         @keyframes saooz-grid-fade { 0%,100%{opacity:0.04} 50%{opacity:0.08} }
       `}</style>
@@ -395,157 +465,135 @@ export function SalesLanding() {
       <div className="force-light relative min-h-screen overflow-x-hidden" style={{ background: '#FFFFFF', color: '#334155' }}>
 
         {/* ══════════════════════════════════════════════════════════
-            GLOBAL BG — mesh gradient + grid overlay
-        ══════════════════════════════════════════════════════════ */}
-        <div aria-hidden style={{ position: 'fixed', inset: 0, zIndex: 0, pointerEvents: 'none' }}>
-          {/* Primary glow blobs — animated */}
-          <div style={{
-            position: 'absolute', inset: 0,
-            background: 'radial-gradient(ellipse 800px 600px at 20% -10%, color-mix(in oklab, #2563EB 22%, transparent), transparent 60%), radial-gradient(ellipse 700px 500px at 80% 5%, color-mix(in oklab, #1D4ED8 14%, transparent), transparent 60%), radial-gradient(ellipse 600px 400px at 50% 80%, color-mix(in oklab, #60A5FA 10%, transparent), transparent 60%)',
-          }} />
-          {/* Floating accent blobs */}
-          <div style={{ position: 'absolute', top: '10%', right: '5%', width: 400, height: 400, borderRadius: '50%', background: 'radial-gradient(circle, color-mix(in oklab, #1D4ED8 15%, transparent), transparent)', filter: 'blur(60px)', animation: 'saooz-float 12s ease-in-out infinite' }} />
-          <div style={{ position: 'absolute', top: '40%', left: '2%', width: 300, height: 300, borderRadius: '50%', background: 'radial-gradient(circle, color-mix(in oklab, #22c55e 10%, transparent), transparent)', filter: 'blur(50px)', animation: 'saooz-float 18s ease-in-out infinite 4s' }} />
-          {/* Tech grid overlay */}
-          <div style={{
-            position: 'absolute', inset: 0,
-            backgroundImage: 'linear-gradient(color-mix(in oklab, #2563EB 6%, transparent) 1px, transparent 1px), linear-gradient(90deg, color-mix(in oklab, #2563EB 6%, transparent) 1px, transparent 1px)',
-            backgroundSize: '60px 60px',
-            animation: 'saooz-grid-fade 8s ease-in-out infinite',
-          }} />
-          {/* Horizontal scan line */}
-          <div style={{
-            position: 'absolute', top: 0, left: 0, right: 0, height: 1,
-            background: 'linear-gradient(90deg, transparent, color-mix(in oklab, #2563EB 60%, transparent), transparent)',
-            animation: 'saooz-float 6s ease-in-out infinite',
-          }} />
-        </div>
-
-        {/* ══════════════════════════════════════════════════════════
-            NAV
+            NAVBAR
         ══════════════════════════════════════════════════════════ */}
         <header
           className="relative z-20 sticky top-0"
           style={{
-            borderBottom: '1px solid color-mix(in oklab, var(--panel-border) 60%, transparent)',
-            backdropFilter: 'blur(20px)',
-            background: 'color-mix(in oklab, var(--app-bg) 75%, transparent)',
+            borderBottom: '1px solid #E2E8F0',
+            background: 'rgba(255,255,255,0.92)',
+            backdropFilter: 'blur(16px)',
+            boxShadow: '0 1px 8px rgba(30,58,138,0.06)',
           }}
         >
           <div className="mx-auto flex w-full max-w-6xl items-center justify-between px-4 py-4 md:px-6">
             <SaoozWordmark size="sm" />
             <nav className="hidden items-center gap-6 md:flex">
-              {[['#como-funciona','Como funciona'],['#funcionalidades','Funcionalidades'],['#planos','Planos'],['#faq','FAQ']].map(([href,label]) => (
-                <Link key={href} href={href} className="text-sm transition-colors hover:text-white" style={{ color: 'var(--text-soft)' }}>{label}</Link>
+              {[
+                ['#como-funciona', 'Como funciona'],
+                ['#recursos', 'Recursos'],
+                ['#precos', 'Preços'],
+                ['#faq', 'FAQ'],
+              ].map(([href, label]) => (
+                <Link
+                  key={href}
+                  href={href}
+                  className="text-sm font-medium transition-colors"
+                  style={{ color: '#475569' }}
+                  onMouseEnter={e => (e.currentTarget.style.color = '#1E3A8A')}
+                  onMouseLeave={e => (e.currentTarget.style.color = '#475569')}
+                >
+                  {label}
+                </Link>
               ))}
             </nav>
             <div className="flex items-center gap-2">
-              <Link href="/login" className="theme-outline-button hidden md:inline-flex h-9 items-center rounded-[9px] px-4 text-sm font-medium">Entrar</Link>
+              <Link
+                href="/login"
+                className="hidden md:inline-flex h-9 items-center rounded-[9px] px-4 text-sm font-medium transition-colors"
+                style={{ color: '#475569', border: '2px solid #E2E8F0' }}
+              >
+                Entrar
+              </Link>
               <Link
                 href="/cadastro"
                 className="inline-flex h-9 items-center gap-1.5 rounded-[9px] px-4 text-sm font-semibold text-white"
-                style={{
-                  background: 'linear-gradient(135deg, var(--accent-blue), var(--accent-cyan))',
-                  boxShadow: '0 0 20px color-mix(in oklab, var(--accent-blue) 40%, transparent)',
-                }}
+                style={{ background: 'linear-gradient(135deg, #1E3A8A, #1D4ED8)' }}
               >
-                Começar agora <ChevronRight className="h-3.5 w-3.5" />
+                Começar grátis <ChevronRight className="h-3.5 w-3.5" />
               </Link>
             </div>
           </div>
         </header>
 
-        <main className="relative z-10">
+        <main>
 
           {/* ══════════════════════════════════════════════════════════
               HERO
           ══════════════════════════════════════════════════════════ */}
           <section className="relative mx-auto w-full max-w-6xl px-4 pt-16 pb-0 md:px-6 md:pt-24">
-            {/* Orbital system behind hero text */}
+            {/* Orbital system behind hero */}
             <OrbitalSystem />
 
             <div className="mx-auto max-w-4xl text-center space-y-6 relative">
-              {/* Social proof strip — sem badge, sem ícone, sem pill */}
-              <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2">
-                {[
-                  { num: '1.200+', label: 'usuários ativos' },
-                  { num: 'R$ 2,1 bi', label: 'em movimentações' },
-                  { num: '4.8 / 5',  label: 'avaliação média' },
-                ].map((s, i) => (
-                  <div key={i} className="flex items-baseline gap-1.5">
-                    <span style={{ fontSize: 15, fontWeight: 800, color: 'var(--text-strong)', letterSpacing: '-0.02em' }}>{s.num}</span>
-                    <span style={{ fontSize: 12, color: 'var(--text-soft)' }}>{s.label}</span>
-                    {i < 2 && <span style={{ marginLeft: 6, color: 'var(--panel-border)', fontSize: 16, lineHeight: 1 }}>·</span>}
-                  </div>
-                ))}
+              {/* Pill tag */}
+              <div className="inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-sm font-semibold"
+                style={{ background: '#EFF6FF', color: '#1E3A8A', border: '1px solid #BFDBFE' }}>
+                PF · PJ · IA em um único sistema
               </div>
 
               {/* H1 */}
-              <h1 style={{ fontSize: 'clamp(2.2rem, 6vw, 4rem)', fontWeight: 900, lineHeight: 1.1, color: 'var(--text-strong)' }}>
-                Seu financeiro pessoal e<br />
-                empresarial,{' '}
-                <span style={{
-                  background: 'linear-gradient(135deg, var(--accent-blue), #1D4ED8, var(--accent-cyan))',
-                  WebkitBackgroundClip: 'text',
-                  WebkitTextFillColor: 'transparent',
-                  backgroundClip: 'text',
-                  backgroundSize: '200% 200%',
-                  animation: 'saooz-shimmer 3s linear infinite',
-                }}>
-                  finalmente sob controle.
-                </span>
+              <h1 style={{ fontSize: 'clamp(2rem, 5.5vw, 3.75rem)', fontWeight: 900, lineHeight: 1.1, color: '#0F172A' }}>
+                Entenda para onde vai o seu dinheiro —{' '}
+                <br className="hidden md:block" />
+                pessoal e empresarial
               </h1>
 
-              {/* Subheadline */}
-              <p className="mx-auto max-w-2xl text-base leading-relaxed md:text-lg" style={{ color: 'var(--text-base)' }}>
-                O SAOOZ unifica PF e PJ em um único sistema inteligente. Você para de apagar incêndio financeiro e começa a operar com previsibilidade real.
+              {/* Subtitle */}
+              <p className="mx-auto max-w-2xl text-base leading-relaxed md:text-lg" style={{ color: '#64748B' }}>
+                Um painel para controlar renda, gastos, impostos e IA. Para pessoa física, empresa ou os dois ao mesmo tempo.
               </p>
 
               {/* CTAs */}
               <div className="flex flex-wrap items-center justify-center gap-3">
                 <Link
                   href="/cadastro"
-                  className="inline-flex h-12 items-center gap-2 rounded-[12px] px-6 text-base font-bold text-white"
-                  style={{
-                    background: 'linear-gradient(135deg, var(--accent-blue), #1D4ED8)',
-                    boxShadow: '0 8px 40px color-mix(in oklab, var(--accent-blue) 45%, transparent)',
-                  }}
+                  className="inline-flex h-12 items-center gap-2 rounded-[12px] px-7 text-base font-bold text-white"
+                  style={{ background: 'linear-gradient(135deg, #1E3A8A, #1D4ED8)', boxShadow: '0 8px 32px rgba(30,58,138,0.3)' }}
                 >
-                  Começar agora — 7 dias de garantia
-                  <ArrowRight className="h-4 w-4" />
+                  Começar agora — é grátis <ArrowRight className="h-4 w-4" />
                 </Link>
-                <Link href="#planos" className="theme-outline-button inline-flex h-12 items-center gap-2 rounded-[12px] px-6 text-base font-medium">
-                  Ver planos
+                <Link
+                  href="#como-funciona"
+                  className="inline-flex h-12 items-center gap-2 rounded-[12px] px-7 text-base font-medium"
+                  style={{ border: '2px solid #1E3A8A', color: '#1E3A8A', background: '#FFFFFF' }}
+                >
+                  Ver como funciona
                 </Link>
               </div>
 
-              {/* Trust */}
-              <div className="flex flex-wrap items-center justify-center gap-4 text-xs pt-1" style={{ color: 'var(--text-soft)' }}>
-                <span className="flex items-center gap-1.5"><Shield className="h-3.5 w-3.5" /> 7 dias de garantia — ou seu dinheiro de volta</span>
-                <span className="flex items-center gap-1.5"><CheckCircle2 className="h-3.5 w-3.5" /> Cancele quando quiser</span>
-                <span className="flex items-center gap-1.5"><CreditCard className="h-3.5 w-3.5" /> Sem fidelidade</span>
+              {/* Social proof */}
+              <div className="flex items-center justify-center gap-2 text-sm" style={{ color: '#94A3B8' }}>
+                <span style={{ color: '#f59e0b', fontSize: 16 }}>★★★★★</span>
+                <span style={{ color: '#64748B', fontWeight: 500 }}>Mais de 1.200 usuários ativos</span>
               </div>
             </div>
 
-            {/* Dashboard mockup with 3D tilt */}
+            {/* Dashboard Mockup */}
             <DashboardMockup />
           </section>
 
           {/* ══════════════════════════════════════════════════════════
-              STATS BAR
+              TRUST BAR / LOGOS
           ══════════════════════════════════════════════════════════ */}
-          <section style={{ borderTop: '1px solid var(--panel-border)', borderBottom: '1px solid var(--panel-border)', background: 'color-mix(in oklab, var(--panel-bg) 60%, transparent)', backdropFilter: 'blur(8px)' }}>
-            <div className="mx-auto w-full max-w-6xl px-4 py-8 md:px-6">
+          <section style={{ borderTop: '1px solid #E2E8F0', borderBottom: '1px solid #E2E8F0', background: '#FFFFFF' }}>
+            <div className="mx-auto w-full max-w-6xl px-4 py-10 md:px-6">
+              <p className="text-center text-sm font-medium mb-8" style={{ color: '#64748B' }}>
+                Feito para funcionar do jeito que você já pensa em dinheiro
+              </p>
               <div className="grid grid-cols-2 gap-6 md:grid-cols-4">
                 {[
-                  { value: '7 dias',  label: 'de garantia de reembolso', accent: 'var(--accent-blue)' },
-                  { value: 'PF + PJ', label: 'em um único sistema',      accent: '#60A5FA' },
-                  { value: '3 planos',label: 'sem fidelidade',           accent: '#22c55e' },
-                  { value: 'IA real', label: 'com contexto financeiro',  accent: '#1D4ED8' },
-                ].map((stat) => (
-                  <div key={stat.label} className="text-center">
-                    <p className="text-2xl font-black md:text-3xl" style={{ color: stat.accent }}>{stat.value}</p>
-                    <p className="mt-1 text-xs" style={{ color: 'var(--text-soft)' }}>{stat.label}</p>
+                  { Icon: Shield,      label: 'Dados criptografados' },
+                  { Icon: BadgeCheck,  label: 'Sem acesso a senhas' },
+                  { Icon: Shield,      label: 'Somente leitura dos dados' },
+                  { Icon: Zap,         label: 'IA com contexto real' },
+                ].map(({ Icon, label }) => (
+                  <div key={label} className="flex flex-col items-center gap-2 text-center">
+                    <div className="inline-flex h-10 w-10 items-center justify-center rounded-[10px]"
+                      style={{ background: '#EFF6FF', border: '1px solid #BFDBFE' }}>
+                      <Icon className="h-5 w-5" style={{ color: '#1E3A8A' }} />
+                    </div>
+                    <span className="text-sm font-medium" style={{ color: '#475569' }}>{label}</span>
                   </div>
                 ))}
               </div>
@@ -553,173 +601,267 @@ export function SalesLanding() {
           </section>
 
           {/* ══════════════════════════════════════════════════════════
-              PAIN
+              COMO FUNCIONA
           ══════════════════════════════════════════════════════════ */}
-          <section className="mx-auto w-full max-w-6xl px-4 py-20 md:px-6">
-            <div className="mb-10 text-center">
-              <p className="text-sm font-semibold uppercase tracking-widest mb-2" style={{ color: 'var(--text-soft)' }}>O problema</p>
-              <h2 className="text-3xl font-black md:text-4xl" style={{ color: 'var(--text-strong)' }}>Você se identifica com algum disso?</h2>
-              <p className="mt-3 text-sm" style={{ color: 'var(--text-soft)' }}>Se sim, você precisa de um sistema. Não de mais uma planilha.</p>
-            </div>
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-              {PAIN_POINTS.map((item) => {
-                const Icon = item.icon
-                return (
-                  <article
-                    key={item.title}
-                    className="panel-card rounded-[16px] p-5 space-y-3"
-                    style={{
-                      background: 'color-mix(in oklab, #f87171 4%, var(--panel-bg))',
-                      border: '1px solid color-mix(in oklab, #f87171 15%, var(--panel-border))',
-                      transition: 'border-color 0.2s',
-                    }}
-                  >
-                    <div className="inline-flex h-10 w-10 items-center justify-center rounded-[10px]" style={{ background: 'color-mix(in oklab, #f87171 12%, transparent)', border: '1px solid color-mix(in oklab, #f87171 22%, transparent)' }}>
-                      <Icon className="h-5 w-5" style={{ color: '#f87171' }} />
-                    </div>
-                    <h3 className="font-semibold text-sm" style={{ color: 'var(--text-strong)' }}>{item.title}</h3>
-                    <p className="text-xs leading-relaxed" style={{ color: 'var(--text-soft)' }}>{item.description}</p>
-                  </article>
-                )
-              })}
-            </div>
-            <div className="mt-12 text-center">
-              <div className="inline-flex items-center gap-3 rounded-full border px-5 py-2.5 text-sm font-semibold"
-                style={{ borderColor: 'color-mix(in oklab, var(--accent-blue) 35%, transparent)', background: 'color-mix(in oklab, var(--accent-blue) 8%, transparent)', color: 'var(--accent-blue)' }}>
-                O SAOOZ foi criado para resolver exatamente isso.
-              </div>
-            </div>
-          </section>
-
-          {/* ══════════════════════════════════════════════════════════
-              HOW IT WORKS
-          ══════════════════════════════════════════════════════════ */}
-          <section id="como-funciona" style={{ borderTop: '1px solid var(--panel-border)' }}>
+          <section id="como-funciona" style={{ background: '#FFFFFF' }}>
             <div className="mx-auto w-full max-w-6xl px-4 py-20 md:px-6">
-              <div className="mb-10 text-center">
-                <p className="text-sm font-semibold uppercase tracking-widest mb-2" style={{ color: 'var(--text-soft)' }}>Como funciona</p>
-                <h2 className="text-3xl font-black md:text-4xl" style={{ color: 'var(--text-strong)' }}>Em 3 passos você já opera com controle real</h2>
+              <div className="mb-14 text-center">
+                <h2 className="text-3xl font-black md:text-4xl" style={{ color: '#0F172A' }}>
+                  Simples de começar, poderoso para usar
+                </h2>
               </div>
-              <div className="relative grid gap-8 md:grid-cols-3">
-                <div className="absolute top-8 left-1/4 right-1/4 hidden h-px md:block" style={{ background: 'linear-gradient(90deg, transparent, var(--accent-blue), transparent)' }} />
-                {STEPS.map((step) => {
-                  const Icon = step.icon
-                  return (
-                    <article key={step.num} className="panel-card relative rounded-[18px] p-6 text-center space-y-4"
-                      style={{ background: 'color-mix(in oklab, var(--accent-blue) 3%, var(--panel-bg))' }}>
-                      <div className="mx-auto h-14 w-14 rounded-[14px] flex items-center justify-center"
-                        style={{ background: 'linear-gradient(135deg, var(--accent-blue), var(--accent-cyan))', boxShadow: '0 8px 24px color-mix(in oklab, var(--accent-blue) 35%, transparent)' }}>
-                        <Icon className="h-6 w-6 text-white" />
-                      </div>
-                      <span className="absolute top-5 right-5 text-4xl font-black opacity-8" style={{ color: 'var(--accent-blue)', opacity: 0.08 }}>{step.num}</span>
-                      <h3 className="text-base font-bold" style={{ color: 'var(--text-strong)' }}>{step.title}</h3>
-                      <p className="text-sm leading-relaxed" style={{ color: 'var(--text-soft)' }}>{step.description}</p>
-                    </article>
-                  )
-                })}
-              </div>
-              <div className="mt-10 text-center">
-                <Link href="/cadastro" className="inline-flex h-11 items-center gap-2 rounded-[11px] px-6 text-sm font-semibold text-white"
-                  style={{ background: 'linear-gradient(135deg, var(--accent-blue), var(--accent-cyan))', boxShadow: '0 4px 20px color-mix(in oklab, var(--accent-blue) 30%, transparent)' }}>
-                  Começar agora <ArrowRight className="h-4 w-4" />
-                </Link>
+              <div className="grid gap-8 md:grid-cols-3">
+                {[
+                  { num: '1', title: 'Crie sua conta',      desc: 'Menos de 2 minutos. Nome, e-mail e senha.' },
+                  { num: '2', title: 'Escolha seu modo',    desc: 'PF, PJ ou os dois. O painel monta sozinho.' },
+                  { num: '3', title: 'Tenha controle real', desc: 'Registre, analise e decida com dados — sem planilha.' },
+                ].map((step) => (
+                  <div key={step.num} className="relative text-center space-y-4 p-8 rounded-[18px]"
+                    style={{ border: '1px solid #E2E8F0', background: '#FFFFFF' }}>
+                    <div className="mx-auto h-14 w-14 rounded-full flex items-center justify-center text-2xl font-black text-white"
+                      style={{ background: 'linear-gradient(135deg, #1E3A8A, #1D4ED8)' }}>
+                      {step.num}
+                    </div>
+                    <h3 className="text-base font-bold" style={{ color: '#0F172A' }}>{step.title}</h3>
+                    <p className="text-sm leading-relaxed" style={{ color: '#64748B' }}>{step.desc}</p>
+                  </div>
+                ))}
               </div>
             </div>
           </section>
 
           {/* ══════════════════════════════════════════════════════════
-              FEATURES
+              FEATURE SECTIONS (alternadas, estilo Pierre)
           ══════════════════════════════════════════════════════════ */}
-          <section id="funcionalidades" style={{ borderTop: '1px solid var(--panel-border)' }}>
-            <div className="mx-auto w-full max-w-6xl px-4 py-20 md:px-6 space-y-6">
-              <div className="text-center mb-10">
-                <p className="text-sm font-semibold uppercase tracking-widest mb-2" style={{ color: 'var(--text-soft)' }}>Funcionalidades</p>
-                <h2 className="text-3xl font-black md:text-4xl" style={{ color: 'var(--text-strong)' }}>Tudo que você precisa em um único sistema</h2>
-              </div>
-              {FEATURES.map((feat, i) => {
-                const Icon = feat.icon
-                const isReversed = i % 2 !== 0
-                return (
-                  <article key={feat.id} className={`panel-card rounded-[20px] overflow-hidden grid md:grid-cols-2 gap-0 ${isReversed ? 'md:[direction:rtl]' : ''}`}
-                    style={{ border: `1px solid color-mix(in oklab, ${feat.tagColor} 18%, var(--panel-border))` }}>
-                    <div className={`p-7 md:p-10 space-y-5 ${isReversed ? 'md:[direction:ltr]' : ''}`}>
-                      <span className="inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-bold uppercase tracking-wider"
-                        style={{ background: `color-mix(in oklab, ${feat.tagColor} 12%, transparent)`, border: `1px solid color-mix(in oklab, ${feat.tagColor} 25%, transparent)`, color: feat.tagColor }}>
-                        <Icon className="h-3.5 w-3.5" /> {feat.tag}
-                      </span>
-                      <h3 className="text-xl font-bold md:text-2xl" style={{ color: 'var(--text-strong)' }}>{feat.title}</h3>
-                      <p className="text-sm leading-relaxed" style={{ color: 'var(--text-soft)' }}>{feat.description}</p>
-                      <ul className="space-y-2">
-                        {feat.bullets.map((b) => (
-                          <li key={b} className="flex items-start gap-2 text-sm" style={{ color: 'var(--text-base)' }}>
-                            <BadgeCheck className="h-4 w-4 shrink-0 mt-0.5" style={{ color: feat.tagColor }} /> {b}
-                          </li>
-                        ))}
-                      </ul>
-                      <Link href="/cadastro" className="inline-flex items-center gap-1.5 text-sm font-semibold transition-colors hover:opacity-80" style={{ color: feat.tagColor }}>
-                        Testar este módulo <ArrowRight className="h-3.5 w-3.5" />
-                      </Link>
-                    </div>
-                    <div
-                      className={`relative flex items-center justify-center p-6 min-h-[240px] ${isReversed ? 'md:[direction:ltr]' : ''}`}
-                      style={{
-                        background: `linear-gradient(135deg, color-mix(in oklab, ${feat.tagColor} 10%, transparent), color-mix(in oklab, ${feat.tagColor} 4%, transparent))`,
-                        borderLeft: isReversed ? 'none' : '1px solid var(--panel-border)',
-                        borderRight: isReversed ? '1px solid var(--panel-border)' : 'none',
-                      }}
-                    >
-                      <div className="absolute inset-0" style={{ background: `radial-gradient(400px at 50% 50%, color-mix(in oklab, ${feat.tagColor} 18%, transparent), transparent)` }} />
-                      <div className="relative w-full max-w-xs space-y-3">
-                        {feat.id === 'pf' && ['Saldo mensal — R$ 8.420','Maior gasto — Moradia 32%','Reserva — 68% da meta'].map((t, j) => (
-                          <div key={t} className="panel-card rounded-[10px] px-4 py-3 text-sm" style={{ color: j === 0 ? '#22c55e' : j === 1 ? feat.tagColor : '#f59e0b', fontWeight: 700 }}>{t}</div>
-                        ))}
-                        {feat.id === 'pj' && ['Faturamento — R$ 28.500','Despesas PJ — R$ 11.200','Imposto — R$ 1.425 · Simples','Lucro líquido — R$ 15.875'].map((t, j) => (
-                          <div key={t} className="panel-card rounded-[10px] px-4 py-3 text-sm" style={{ color: j === 0 ? feat.tagColor : j === 1 ? '#f87171' : j === 2 ? '#f59e0b' : '#22c55e', fontWeight: 700 }}>{t}</div>
-                        ))}
-                        {feat.id === 'ia' && (
-                          <div className="panel-card rounded-[14px] p-4 space-y-3">
-                            {[
-                              { role: 'saooz', text: 'Alimentação subiu 18% em abril. Revisar meta?' },
-                              { role: 'user',  text: 'Sim — sugira um valor realista.' },
-                              { role: 'saooz', text: 'R$ 1.100/mês mantém o padrão sem pressão no caixa.' },
-                            ].map((m, j) => (
-                              <div key={j} className={`rounded-[8px] p-3 text-xs`} style={m.role === 'saooz' ? { background: `color-mix(in oklab, ${feat.tagColor} 10%, transparent)`, border: `1px solid color-mix(in oklab, ${feat.tagColor} 20%, transparent)`, color: 'var(--text-base)' } : { background: 'var(--panel-bg-soft)', textAlign: 'right', color: 'var(--text-base)' }}>{m.text}</div>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </article>
-                )
-              })}
-            </div>
-          </section>
+          <section id="recursos" style={{ background: '#F8FAFC' }}>
 
-          {/* ══════════════════════════════════════════════════════════
-              FOR WHOM
-          ══════════════════════════════════════════════════════════ */}
-          <section style={{ borderTop: '1px solid var(--panel-border)' }}>
+            {/* Feature 1 — texto esquerda, visual direita */}
             <div className="mx-auto w-full max-w-6xl px-4 py-20 md:px-6">
-              <div className="mb-10 text-center">
-                <p className="text-sm font-semibold uppercase tracking-widest mb-2" style={{ color: 'var(--text-soft)' }}>Para quem é</p>
-                <h2 className="text-3xl font-black md:text-4xl" style={{ color: 'var(--text-strong)' }}>O SAOOZ é para você se…</h2>
+              <div className="grid gap-12 md:grid-cols-2 md:items-center">
+                {/* Texto */}
+                <div className="space-y-6">
+                  <span className="inline-block rounded-full px-3 py-1 text-xs font-bold uppercase tracking-wider"
+                    style={{ background: '#EFF6FF', color: '#1E3A8A', border: '1px solid #BFDBFE' }}>
+                    Visão geral
+                  </span>
+                  <h2 className="text-3xl font-black md:text-4xl" style={{ color: '#0F172A', lineHeight: 1.15 }}>
+                    Pessoal e empresa separados, mas em um só painel
+                  </h2>
+                  <p className="text-base leading-relaxed" style={{ color: '#475569' }}>
+                    Chega de misturar conta pessoal com empresarial. No SAOOZ você tem um painel para cada lado — e ainda vê os dois juntos quando quiser.
+                  </p>
+                  <ul className="space-y-3">
+                    {[
+                      'Dashboard de PF separado do PJ',
+                      'Troca de modo com um clique',
+                      'Saldo, renda e gastos em tempo real',
+                      'Histórico por mês sem perder nada',
+                    ].map((b) => (
+                      <li key={b} className="flex items-center gap-3 text-sm" style={{ color: '#334155' }}>
+                        <BadgeCheck className="h-5 w-5 shrink-0" style={{ color: '#1E3A8A' }} />
+                        {b}
+                      </li>
+                    ))}
+                  </ul>
+                  <Link href="/cadastro" className="inline-flex h-11 items-center gap-2 rounded-[11px] px-6 text-sm font-bold text-white"
+                    style={{ background: 'linear-gradient(135deg, #1E3A8A, #1D4ED8)' }}>
+                    Criar minha conta <ArrowRight className="h-4 w-4" />
+                  </Link>
+                </div>
+                {/* Visual */}
+                <div className="flex justify-center md:justify-end">
+                  <div style={{ borderRadius: 20, padding: 24, background: '#FFFFFF', boxShadow: '0 20px 60px rgba(30,58,138,0.12)', border: '1px solid #E2E8F0', width: '100%', maxWidth: 400 }}>
+                    <FeatureVisualPanels />
+                  </div>
+                </div>
               </div>
-              <div className="grid gap-5 md:grid-cols-3">
+            </div>
+
+            {/* Feature 2 — texto direita, visual esquerda */}
+            <div style={{ background: '#FFFFFF' }}>
+              <div className="mx-auto w-full max-w-6xl px-4 py-20 md:px-6">
+                <div className="grid gap-12 md:grid-cols-2 md:items-center">
+                  {/* Visual (esquerda) */}
+                  <div className="flex justify-center md:justify-start order-2 md:order-1">
+                    <FeatureVisualCategories />
+                  </div>
+                  {/* Texto (direita) */}
+                  <div className="space-y-6 order-1 md:order-2">
+                    <span className="inline-block rounded-full px-3 py-1 text-xs font-bold uppercase tracking-wider"
+                      style={{ background: '#EFF6FF', color: '#1E3A8A', border: '1px solid #BFDBFE' }}>
+                      Controle pessoal
+                    </span>
+                    <h2 className="text-3xl font-black md:text-4xl" style={{ color: '#0F172A', lineHeight: 1.15 }}>
+                      Saiba exatamente para onde foi cada real
+                    </h2>
+                    <p className="text-base leading-relaxed" style={{ color: '#475569' }}>
+                      A IA categoriza seus gastos e mostra os padrões antes que virem problema. Você vê em segundos onde o dinheiro some.
+                    </p>
+                    <ul className="space-y-3">
+                      {[
+                        '16 categorias de gasto inteligentes',
+                        'Alertas quando um gasto sobe além do padrão',
+                        'Meta de reserva de emergência com progresso',
+                        'Assistente que registra por texto ou voz',
+                      ].map((b) => (
+                        <li key={b} className="flex items-center gap-3 text-sm" style={{ color: '#334155' }}>
+                          <BadgeCheck className="h-5 w-5 shrink-0" style={{ color: '#1E3A8A' }} />
+                          {b}
+                        </li>
+                      ))}
+                    </ul>
+                    <Link href="/cadastro" className="inline-flex h-11 items-center gap-2 rounded-[11px] px-6 text-sm font-bold text-white"
+                      style={{ background: 'linear-gradient(135deg, #1E3A8A, #1D4ED8)' }}>
+                      Controlar meus gastos <ArrowRight className="h-4 w-4" />
+                    </Link>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Feature 3 — texto esquerda, visual direita */}
+            <div style={{ background: '#F8FAFC' }}>
+              <div className="mx-auto w-full max-w-6xl px-4 py-20 md:px-6">
+                <div className="grid gap-12 md:grid-cols-2 md:items-center">
+                  {/* Texto */}
+                  <div className="space-y-6">
+                    <span className="inline-block rounded-full px-3 py-1 text-xs font-bold uppercase tracking-wider"
+                      style={{ background: '#EFF6FF', color: '#1E3A8A', border: '1px solid #BFDBFE' }}>
+                      Módulo Empresarial
+                    </span>
+                    <h2 className="text-3xl font-black md:text-4xl" style={{ color: '#0F172A', lineHeight: 1.15 }}>
+                      DRE, imposto e fluxo de caixa no mesmo lugar
+                    </h2>
+                    <p className="text-base leading-relaxed" style={{ color: '#475569' }}>
+                      Faturamento, despesas fixas, pró-labore e estimativa de imposto — tudo calculado automaticamente. Suporte a MEI, Simples, Lucro Presumido e Lucro Real.
+                    </p>
+                    <ul className="space-y-3">
+                      {[
+                        'Cálculo automático de imposto por regime',
+                        'DRE mensal sem contador',
+                        'Fluxo de caixa com vencimentos futuros',
+                        'Até 5 empresas no mesmo plano PRO',
+                      ].map((b) => (
+                        <li key={b} className="flex items-center gap-3 text-sm" style={{ color: '#334155' }}>
+                          <BadgeCheck className="h-5 w-5 shrink-0" style={{ color: '#1E3A8A' }} />
+                          {b}
+                        </li>
+                      ))}
+                    </ul>
+                    <Link href="/cadastro" className="inline-flex h-11 items-center gap-2 rounded-[11px] px-6 text-sm font-bold text-white"
+                      style={{ background: 'linear-gradient(135deg, #1E3A8A, #1D4ED8)' }}>
+                      Gerenciar minha empresa <ArrowRight className="h-4 w-4" />
+                    </Link>
+                  </div>
+                  {/* Visual */}
+                  <div className="flex justify-center md:justify-end">
+                    <FeatureVisualDRE />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Feature 4 — texto direita, visual esquerda */}
+            <div style={{ background: '#FFFFFF' }}>
+              <div className="mx-auto w-full max-w-6xl px-4 py-20 md:px-6">
+                <div className="grid gap-12 md:grid-cols-2 md:items-center">
+                  {/* Visual (esquerda) */}
+                  <div className="flex justify-center md:justify-start order-2 md:order-1">
+                    <FeatureVisualChat />
+                  </div>
+                  {/* Texto (direita) */}
+                  <div className="space-y-6 order-1 md:order-2">
+                    <span className="inline-block rounded-full px-3 py-1 text-xs font-bold uppercase tracking-wider"
+                      style={{ background: '#EFF6FF', color: '#1E3A8A', border: '1px solid #BFDBFE' }}>
+                      Assistente IA
+                    </span>
+                    <h2 className="text-3xl font-black md:text-4xl" style={{ color: '#0F172A', lineHeight: 1.15 }}>
+                      Pergunte do seu jeito. A resposta vem com seus dados reais.
+                    </h2>
+                    <p className="text-base leading-relaxed" style={{ color: '#475569' }}>
+                      O assistente acessa seu histórico real — renda, gastos, categorias PF e PJ — e responde com análises do seu momento, não respostas genéricas.
+                    </p>
+                    <ul className="space-y-3">
+                      {[
+                        'Contexto real: sabe o que entrou e saiu',
+                        'Registra despesa por comando de texto ou voz',
+                        'Análise comparativa de meses',
+                        'Funciona para PF e PJ simultaneamente',
+                      ].map((b) => (
+                        <li key={b} className="flex items-center gap-3 text-sm" style={{ color: '#334155' }}>
+                          <BadgeCheck className="h-5 w-5 shrink-0" style={{ color: '#1E3A8A' }} />
+                          {b}
+                        </li>
+                      ))}
+                    </ul>
+                    <Link href="/cadastro" className="inline-flex h-11 items-center gap-2 rounded-[11px] px-6 text-sm font-bold text-white"
+                      style={{ background: 'linear-gradient(135deg, #1E3A8A, #1D4ED8)' }}>
+                      Falar com a IA <ArrowRight className="h-4 w-4" />
+                    </Link>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </section>
+
+          {/* ══════════════════════════════════════════════════════════
+              SEGURANÇA
+          ══════════════════════════════════════════════════════════ */}
+          <section style={{ background: '#F8FAFC', borderTop: '1px solid #E2E8F0', borderBottom: '1px solid #E2E8F0' }}>
+            <div className="mx-auto w-full max-w-6xl px-4 py-20 md:px-6">
+              <div className="mb-12 text-center space-y-3">
+                <h2 className="text-3xl font-black md:text-4xl" style={{ color: '#0F172A' }}>
+                  Seus dados só são seus
+                </h2>
+                <p className="text-base" style={{ color: '#64748B' }}>
+                  Construído com os mesmos padrões de segurança dos bancos digitais.
+                </p>
+              </div>
+              <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+                {[
+                  { Icon: Shield,       title: 'Criptografia ponta a ponta', desc: 'Seus dados são protegidos com AES-256, o mesmo padrão usado por bancos.' },
+                  { Icon: Shield,       title: 'Sem acesso a senhas',         desc: 'Conectamos via integrações seguras. Nunca pedimos e nunca armazenamos sua senha bancária.' },
+                  { Icon: BadgeCheck,   title: 'Somente leitura',             desc: 'A IA analisa seus dados mas não realiza transações. Você tem controle total.' },
+                  { Icon: CheckCircle2, title: 'Você controla tudo',          desc: 'Apague seus dados quando quiser. Sem burocracia, sem multa de saída.' },
+                ].map(({ Icon, title, desc }) => (
+                  <div key={title} className="p-6 rounded-[16px] space-y-4"
+                    style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: 16 }}>
+                    <div className="inline-flex h-12 w-12 items-center justify-center rounded-[14px]"
+                      style={{ background: '#EFF6FF', border: '1px solid #BFDBFE' }}>
+                      <Icon className="h-6 w-6" style={{ color: '#1E3A8A' }} />
+                    </div>
+                    <h3 className="text-sm font-bold" style={{ color: '#0F172A' }}>{title}</h3>
+                    <p className="text-sm leading-relaxed" style={{ color: '#64748B' }}>{desc}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </section>
+
+          {/* ══════════════════════════════════════════════════════════
+              PARA QUEM É
+          ══════════════════════════════════════════════════════════ */}
+          <section style={{ background: '#FFFFFF' }}>
+            <div className="mx-auto w-full max-w-6xl px-4 py-20 md:px-6">
+              <div className="mb-12 text-center">
+                <h2 className="text-3xl font-black md:text-4xl" style={{ color: '#0F172A' }}>
+                  Para quem o SAOOZ foi feito
+                </h2>
+              </div>
+              <div className="grid gap-6 md:grid-cols-3">
                 {FOR_WHOM.map((profile) => {
                   const Icon = profile.icon
                   return (
-                    <article key={profile.title} className="panel-card rounded-[18px] p-6 space-y-4"
-                      style={{ borderColor: `color-mix(in oklab, ${profile.color} 22%, transparent)`, background: `color-mix(in oklab, ${profile.color} 3%, var(--panel-bg))` }}>
-                      <div className="inline-flex h-12 w-12 items-center justify-center rounded-[12px]"
-                        style={{ background: `color-mix(in oklab, ${profile.color} 14%, transparent)`, border: `1px solid color-mix(in oklab, ${profile.color} 28%, transparent)` }}>
-                        <Icon className="h-6 w-6" style={{ color: profile.color }} />
+                    <div key={profile.title} className="p-6 rounded-[16px] space-y-4"
+                      style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: 16 }}>
+                      <div className="inline-flex h-12 w-12 items-center justify-center rounded-[14px]"
+                        style={{ background: '#EFF6FF', border: '1px solid #BFDBFE' }}>
+                        <Icon className="h-6 w-6" style={{ color: '#1E3A8A' }} />
                       </div>
-                      <h3 className="text-base font-bold" style={{ color: 'var(--text-strong)' }}>{profile.title}</h3>
-                      <p className="text-sm leading-relaxed" style={{ color: 'var(--text-soft)' }}>{profile.description}</p>
-                      <Link href="/cadastro" className="inline-flex items-center gap-1 text-xs font-semibold" style={{ color: profile.color }}>
-                        Testar agora <ArrowRight className="h-3 w-3" />
-                      </Link>
-                    </article>
+                      <h3 className="text-base font-bold" style={{ color: '#0F172A' }}>{profile.title}</h3>
+                      <p className="text-sm leading-relaxed" style={{ color: '#64748B' }}>{profile.description}</p>
+                    </div>
                   )
                 })}
               </div>
@@ -727,99 +869,111 @@ export function SalesLanding() {
           </section>
 
           {/* ══════════════════════════════════════════════════════════
-              RESULTS
+              DEPOIMENTOS
           ══════════════════════════════════════════════════════════ */}
-          <section style={{ borderTop: '1px solid var(--panel-border)', background: 'color-mix(in oklab, var(--accent-blue) 3%, transparent)' }}>
+          <section style={{ background: '#F8FAFC', borderTop: '1px solid #E2E8F0' }}>
             <div className="mx-auto w-full max-w-6xl px-4 py-20 md:px-6">
-              <div className="mb-10 text-center">
-                <p className="text-sm font-semibold uppercase tracking-widest mb-2" style={{ color: 'var(--text-soft)' }}>O que você vai notar</p>
-                <h2 className="text-3xl font-black md:text-4xl" style={{ color: 'var(--text-strong)' }}>Impacto real nos primeiros 30 dias</h2>
+              <div className="mb-12 text-center">
+                <h2 className="text-3xl font-black md:text-4xl" style={{ color: '#0F172A' }}>
+                  O que dizem quem já usa
+                </h2>
               </div>
-              <div className="grid gap-5 md:grid-cols-3">
-                {RESULTS.map((r) => {
-                  const Icon = r.icon
-                  return (
-                    <article key={r.label} className="panel-card rounded-[18px] p-6 text-center space-y-3"
-                      style={{ border: `1px solid color-mix(in oklab, ${r.color} 20%, var(--panel-border))`, background: `color-mix(in oklab, ${r.color} 4%, var(--panel-bg))` }}>
-                      <div className="mx-auto inline-flex h-12 w-12 items-center justify-center rounded-[12px]"
-                        style={{ background: `color-mix(in oklab, ${r.color} 14%, transparent)`, border: `1px solid color-mix(in oklab, ${r.color} 28%, transparent)` }}>
-                        <Icon className="h-6 w-6" style={{ color: r.color }} />
-                      </div>
-                      <p className="text-2xl font-black" style={{ color: r.color }}>{r.metric}</p>
-                      <p className="text-sm font-semibold" style={{ color: 'var(--text-strong)' }}>{r.label}</p>
-                      <p className="text-xs" style={{ color: 'var(--text-soft)' }}>{r.description}</p>
-                    </article>
-                  )
-                })}
-              </div>
-            </div>
-          </section>
-
-          {/* ══════════════════════════════════════════════════════════
-              TESTIMONIALS
-          ══════════════════════════════════════════════════════════ */}
-          <section style={{ borderTop: '1px solid var(--panel-border)' }}>
-            <div className="mx-auto w-full max-w-6xl px-4 py-20 md:px-6">
-              <div className="mb-10 text-center">
-                <p className="text-sm font-semibold uppercase tracking-widest mb-2" style={{ color: 'var(--text-soft)' }}>O que dizem os usuários</p>
-                <h2 className="text-3xl font-black md:text-4xl" style={{ color: 'var(--text-strong)' }}>Quem usa não volta para planilha</h2>
-              </div>
-              <div className="grid gap-5 md:grid-cols-3">
+              <div className="grid gap-6 md:grid-cols-3">
                 {TESTIMONIALS.map((t) => (
-                  <article key={t.name} className="panel-card rounded-[18px] p-6 space-y-4"
-                    style={{ background: 'color-mix(in oklab, var(--accent-blue) 3%, var(--panel-bg))' }}>
+                  <div key={t.name} className="p-6 rounded-[16px] space-y-4"
+                    style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: 16 }}>
                     <div className="flex gap-0.5">
                       {Array.from({ length: t.stars }).map((_, i) => (
                         <Star key={i} className="h-4 w-4 fill-current" style={{ color: '#f59e0b' }} />
                       ))}
                     </div>
-                    <p className="text-sm leading-relaxed" style={{ color: 'var(--text-base)' }}>&ldquo;{t.quote}&rdquo;</p>
+                    <p className="text-sm leading-relaxed" style={{ color: '#334155' }}>&ldquo;{t.quote}&rdquo;</p>
                     <div className="flex items-center gap-3 pt-1">
                       <div className="h-9 w-9 rounded-full flex items-center justify-center text-sm font-bold text-white"
-                        style={{ background: 'linear-gradient(135deg, var(--accent-blue), #1D4ED8)' }}>
+                        style={{ background: 'linear-gradient(135deg, #1E3A8A, #1D4ED8)' }}>
                         {t.name.charAt(0)}
                       </div>
                       <div>
-                        <p className="text-sm font-semibold" style={{ color: 'var(--text-strong)' }}>{t.name}</p>
-                        <p className="text-xs" style={{ color: 'var(--text-soft)' }}>{t.role}</p>
+                        <p className="text-sm font-semibold" style={{ color: '#0F172A' }}>{t.name}</p>
+                        <p className="text-xs" style={{ color: '#94A3B8' }}>{t.role}</p>
                       </div>
                     </div>
-                  </article>
+                  </div>
                 ))}
               </div>
             </div>
           </section>
 
           {/* ══════════════════════════════════════════════════════════
-              PLANS — client component with duration tabs
+              RESULTADOS
           ══════════════════════════════════════════════════════════ */}
-          <PricingSection />
+          <section style={{ background: '#1E3A8A' }}>
+            <div className="mx-auto w-full max-w-6xl px-4 py-20 md:px-6">
+              <div className="mb-12 text-center">
+                <h2 className="text-3xl font-black md:text-4xl" style={{ color: '#FFFFFF' }}>
+                  O que muda quando você tem controle de verdade
+                </h2>
+              </div>
+              <div className="grid gap-8 md:grid-cols-3">
+                {[
+                  { metric: '5 min',          label: 'para fechar o mês',        desc: 'Em vez de dias de planilha e retrabalho.' },
+                  { metric: 'Tempo real',      label: 'visão do seu caixa',       desc: 'Sem esperar o fim do mês para saber o saldo.' },
+                  { metric: 'Antes do impacto', label: 'detecção de desvio pela IA', desc: 'A IA identifica o problema antes que vire crise.' },
+                ].map((r) => (
+                  <div key={r.label} className="text-center space-y-2">
+                    <p className="text-4xl font-black md:text-5xl" style={{ color: '#FFFFFF' }}>{r.metric}</p>
+                    <p className="text-base font-semibold" style={{ color: '#93C5FD' }}>{r.label}</p>
+                    <p className="text-sm" style={{ color: 'rgba(255,255,255,0.6)' }}>{r.desc}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </section>
+
+          {/* ══════════════════════════════════════════════════════════
+              PREÇOS
+          ══════════════════════════════════════════════════════════ */}
+          <section id="precos" style={{ background: '#FFFFFF' }}>
+            <div className="mx-auto w-full max-w-6xl px-4 pt-20 pb-4 md:px-6 text-center space-y-3">
+              <h2 className="text-3xl font-black md:text-4xl" style={{ color: '#0F172A' }}>
+                Escolha o plano certo para você
+              </h2>
+              <p className="text-base" style={{ color: '#64748B' }}>
+                Comece grátis por 7 dias. Cancele quando quiser, sem multa.
+              </p>
+            </div>
+            <PricingSection />
+          </section>
 
           {/* ══════════════════════════════════════════════════════════
               FAQ
           ══════════════════════════════════════════════════════════ */}
-          <section id="faq" style={{ borderTop: '1px solid var(--panel-border)' }}>
+          <section id="faq" style={{ background: '#F8FAFC', borderTop: '1px solid #E2E8F0' }}>
             <div className="mx-auto w-full max-w-3xl px-4 py-20 md:px-6">
-              <div className="mb-10 text-center">
-                <p className="text-sm font-semibold uppercase tracking-widest mb-2" style={{ color: 'var(--text-soft)' }}>FAQ</p>
-                <h2 className="text-3xl font-black md:text-4xl" style={{ color: 'var(--text-strong)' }}>Perguntas frequentes</h2>
+              <div className="mb-12 text-center">
+                <h2 className="text-3xl font-black md:text-4xl" style={{ color: '#0F172A' }}>
+                  Perguntas frequentes
+                </h2>
               </div>
               <div className="space-y-3">
                 {FAQ_ITEMS.map((item) => (
-                  <details key={item.q} className="panel-card group rounded-[14px] overflow-hidden">
-                    <summary className="flex cursor-pointer list-none items-center justify-between px-5 py-4 text-sm font-semibold select-none" style={{ color: 'var(--text-strong)' }}>
+                  <details key={item.q} className="group" style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: 14, overflow: 'hidden' }}>
+                    <summary
+                      className="flex cursor-pointer list-none items-center justify-between px-5 py-4 text-sm font-semibold select-none"
+                      style={{ color: '#0F172A' }}
+                    >
                       {item.q}
-                      <ChevronRight className="h-4 w-4 shrink-0 transition-transform duration-200 group-open:rotate-90" style={{ color: 'var(--text-soft)' }} />
+                      <ChevronRight className="h-4 w-4 shrink-0 transition-transform duration-200 group-open:rotate-90" style={{ color: '#94A3B8' }} />
                     </summary>
                     <div className="px-5 pb-4 pt-0">
-                      <p className="text-sm leading-relaxed" style={{ color: 'var(--text-soft)' }}>{item.a}</p>
+                      <p className="text-sm leading-relaxed" style={{ color: '#64748B' }}>{item.a}</p>
                     </div>
                   </details>
                 ))}
               </div>
-              <div className="mt-8 text-center text-sm" style={{ color: 'var(--text-soft)' }}>
+              <div className="mt-8 text-center text-sm" style={{ color: '#94A3B8' }}>
                 Ainda tem dúvida?{' '}
-                <a href="mailto:suporte@saooz.com" className="font-semibold transition-colors hover:text-white" style={{ color: 'var(--accent-blue)' }}>
+                <a href="/suporte" className="font-semibold" style={{ color: '#1E3A8A' }}>
                   Fale com o suporte
                 </a>
               </div>
@@ -827,44 +981,26 @@ export function SalesLanding() {
           </section>
 
           {/* ══════════════════════════════════════════════════════════
-              FINAL CTA
+              CTA FINAL
           ══════════════════════════════════════════════════════════ */}
-          <section style={{ borderTop: '1px solid var(--panel-border)' }}>
-            <div className="mx-auto w-full max-w-6xl px-4 py-20 md:px-6">
-              <div
-                className="relative overflow-hidden rounded-[24px] px-8 py-14 text-center md:px-14"
-                style={{
-                  background: 'linear-gradient(135deg, color-mix(in oklab, var(--accent-blue) 15%, transparent), color-mix(in oklab, #1D4ED8 10%, transparent), color-mix(in oklab, var(--accent-cyan) 10%, transparent))',
-                  border: '1px solid color-mix(in oklab, var(--accent-blue) 35%, transparent)',
-                }}
+          <section style={{ background: 'linear-gradient(135deg, #1E3A8A, #1D4ED8, #2563EB)' }}>
+            <div className="mx-auto w-full max-w-6xl px-4 py-24 md:px-6 text-center space-y-6">
+              <h2 className="text-3xl font-black md:text-4xl" style={{ color: '#FFFFFF' }}>
+                Comece a entender seu dinheiro hoje
+              </h2>
+              <p className="mx-auto max-w-xl text-base" style={{ color: 'rgba(255,255,255,0.7)' }}>
+                Configuração em menos de 5 minutos. Sem planilha, sem contador.
+              </p>
+              <Link
+                href="/cadastro"
+                className="inline-flex h-12 items-center gap-2 rounded-[12px] px-7 text-base font-bold"
+                style={{ background: '#FFFFFF', color: '#1E3A8A' }}
               >
-                {/* Animated grid inside CTA */}
-                <div aria-hidden style={{ position: 'absolute', inset: 0, backgroundImage: 'linear-gradient(color-mix(in oklab, #2563EB 8%, transparent) 1px, transparent 1px), linear-gradient(90deg, color-mix(in oklab, #2563EB 8%, transparent) 1px, transparent 1px)', backgroundSize: '40px 40px', opacity: 0.5 }} />
-                {/* Glow orb */}
-                <div aria-hidden style={{ position: 'absolute', top: '-30%', right: '-10%', width: 400, height: 400, borderRadius: '50%', background: 'radial-gradient(circle, color-mix(in oklab, #1D4ED8 25%, transparent), transparent)', filter: 'blur(60px)', animation: 'saooz-float 10s ease-in-out infinite' }} />
-                <div className="relative space-y-5">
-                  <p className="text-xs font-bold uppercase tracking-widest" style={{ color: 'var(--text-soft)' }}>Comece agora</p>
-                  <h2 className="text-3xl font-black md:text-4xl" style={{ color: 'var(--text-strong)' }}>
-                    Seu financeiro pode virar vantagem competitiva<br className="hidden md:block" /> nos próximos 7 dias.
-                  </h2>
-                  <p className="mx-auto max-w-xl text-sm md:text-base" style={{ color: 'var(--text-base)' }}>
-                    Quanto mais você adia, mais dinheiro invisível continua saindo sem controle. Ative agora — sem risco.
-                  </p>
-                  <p className="text-xs" style={{ color: 'var(--text-soft)' }}>7 dias de garantia · reembolso total se não estiver satisfeito · cancele quando quiser · sem fidelidade.</p>
-                  <div className="flex flex-wrap justify-center gap-3 pt-2">
-                    <Link
-                      href="/cadastro"
-                      className="inline-flex h-12 items-center gap-2 rounded-[12px] px-7 text-base font-bold text-white"
-                      style={{ background: 'linear-gradient(135deg, var(--accent-blue), #1D4ED8)', boxShadow: '0 8px 32px color-mix(in oklab, var(--accent-blue) 45%, transparent)' }}
-                    >
-                      Assinar com garantia de 7 dias <ArrowRight className="h-5 w-5" />
-                    </Link>
-                    <Link href="#planos" className="theme-outline-button inline-flex h-12 items-center rounded-[12px] px-7 text-base font-medium">
-                      Ver planos detalhados
-                    </Link>
-                  </div>
-                </div>
-              </div>
+                Criar conta grátis <ArrowRight className="h-4 w-4" />
+              </Link>
+              <p className="text-sm" style={{ color: 'rgba(255,255,255,0.5)' }}>
+                7 dias grátis · Cancela quando quiser · Sem cartão de crédito agora
+              </p>
             </div>
           </section>
 
@@ -873,46 +1009,55 @@ export function SalesLanding() {
         {/* ══════════════════════════════════════════════════════════
             FOOTER
         ══════════════════════════════════════════════════════════ */}
-        <footer className="relative z-10" style={{ borderTop: '1px solid var(--panel-border)' }}>
+        <footer style={{ background: '#FFFFFF', borderTop: '1px solid #E2E8F0' }}>
           <div className="mx-auto w-full max-w-6xl px-4 py-12 md:px-6">
             <div className="grid gap-8 md:grid-cols-4">
               <div className="md:col-span-2 space-y-3">
                 <SaoozWordmark size="sm" />
-                <p className="text-sm max-w-xs leading-relaxed" style={{ color: 'var(--text-soft)' }}>
-                  Sistema financeiro premium com IA para PF e PJ. Controle, clareza e previsibilidade em um único lugar.
+                <p className="text-sm max-w-xs leading-relaxed" style={{ color: '#64748B' }}>
+                  Seu sistema financeiro pessoal e empresarial
                 </p>
-                <div className="flex flex-col gap-1.5 pt-1">
-                  <a href="https://instagram.com/saoozia" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 text-sm transition-colors hover:text-white" style={{ color: 'var(--text-soft)' }}>
-                    <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ color: 'var(--accent-blue)' }}><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="0.5" fill="currentColor"/></svg>
-                    @SAOOZIA
-                  </a>
-                  <a href="mailto:suporte@saooz.com" className="inline-flex items-center gap-2 text-sm transition-colors hover:text-white" style={{ color: 'var(--text-soft)' }}>
-                    <Mail className="h-4 w-4" style={{ color: 'var(--accent-blue)' }} /> suporte@saooz.com
-                  </a>
-                </div>
+                <a href="mailto:suporte@saooz.com" className="inline-flex items-center gap-2 text-sm" style={{ color: '#64748B' }}>
+                  <Mail className="h-4 w-4" style={{ color: '#1E3A8A' }} /> suporte@saooz.com
+                </a>
               </div>
               <div>
-                <p className="text-xs font-bold uppercase tracking-wider mb-4" style={{ color: 'var(--text-soft)' }}>Produto</p>
+                <p className="text-xs font-bold uppercase tracking-wider mb-4" style={{ color: '#94A3B8' }}>Legal</p>
                 <div className="space-y-2">
-                  {[['#funcionalidades','Funcionalidades'],['#planos','Planos'],['#como-funciona','Como funciona'],['#faq','FAQ']].map(([h,l]) => (
-                    <Link key={h} href={h} className="block text-sm transition-colors hover:text-white" style={{ color: 'var(--text-soft)' }}>{l}</Link>
+                  {[
+                    ['/termos', 'Termos'],
+                    ['/privacidade', 'Privacidade'],
+                    ['/suporte', 'Suporte'],
+                    ['/contato', 'Contato'],
+                  ].map(([href, label]) => (
+                    <Link key={href} href={href} className="block text-sm transition-colors" style={{ color: '#64748B' }}>
+                      {label}
+                    </Link>
                   ))}
                 </div>
               </div>
               <div>
-                <p className="text-xs font-bold uppercase tracking-wider mb-4" style={{ color: 'var(--text-soft)' }}>Conta</p>
+                <p className="text-xs font-bold uppercase tracking-wider mb-4" style={{ color: '#94A3B8' }}>Produto</p>
                 <div className="space-y-2">
-                  {[['/login','Entrar'],['/cadastro','Criar conta'],['/suporte','Suporte'],['/contato','Contato']].map(([h,l]) => (
-                    <Link key={h} href={h} className="block text-sm transition-colors hover:text-white" style={{ color: 'var(--text-soft)' }}>{l}</Link>
+                  {[
+                    ['#como-funciona', 'Como funciona'],
+                    ['#recursos', 'Recursos'],
+                    ['#precos', 'Preços'],
+                    ['#faq', 'FAQ'],
+                  ].map(([href, label]) => (
+                    <Link key={href} href={href} className="block text-sm transition-colors" style={{ color: '#64748B' }}>
+                      {label}
+                    </Link>
                   ))}
                 </div>
               </div>
             </div>
-            <div className="mt-10 pt-6 text-center text-xs" style={{ borderTop: '1px solid var(--panel-border)', color: 'var(--text-muted)' }}>
-              © {new Date().getFullYear()} SAOOZ. Todos os direitos reservados.
+            <div className="mt-10 pt-6 text-center text-xs" style={{ borderTop: '1px solid #E2E8F0', color: '#CBD5E1' }}>
+              © 2025 SAOOZ · Todos os direitos reservados
             </div>
           </div>
         </footer>
+
       </div>
     </>
   )
