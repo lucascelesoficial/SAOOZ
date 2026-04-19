@@ -30,14 +30,15 @@ export async function GET() {
 
   try {
     const supabase = await createClient()
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const db = supabase as any
 
     // Load all items + accounts from DB
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { data: rawItems, error } = await (supabase as any)
+    const { data: rawItems, error } = await db
       .from('bank_items')
       .select('*, bank_accounts(*)')
       .eq('user_id', auth.user.id)
-      .order('created_at', { ascending: false })
+      .order('created_at', { ascending: false }) as { data: DbBankItem[] | null; error: unknown }
 
     if (error) throw error
     const dbItems = (rawItems ?? []) as DbBankItem[]
@@ -66,7 +67,7 @@ export async function GET() {
             // Sync status back to DB if changed
             const newStatus = normalizeItemStatus(liveItem.status)
             if (newStatus !== item.status) {
-              await supabase
+              await db
                 .from('bank_items')
                 .update({ status: newStatus, last_updated_at: liveItem.lastUpdatedAt, updated_at: new Date().toISOString() })
                 .eq('id', item.id)
@@ -75,7 +76,7 @@ export async function GET() {
             // Sync account balances
             await Promise.all(
               accounts.map((acc) =>
-                supabase
+                db
                   .from('bank_accounts')
                   .update({ balance: acc.balance, updated_at: new Date().toISOString() })
                   .eq('pluggy_account_id', acc.id)
@@ -119,9 +120,11 @@ export async function POST(request: NextRequest) {
     const accounts = await getAccounts(apiKey, body.pluggyItemId)
 
     const supabase = await createClient()
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const db = supabase as any
 
     // Upsert item
-    const { data: dbItem, error: itemError } = await supabase
+    const { data: dbItem, error: itemError } = await db
       .from('bank_items')
       .upsert(
         {
@@ -136,13 +139,14 @@ export async function POST(request: NextRequest) {
         { onConflict: 'pluggy_item_id' }
       )
       .select()
-      .single()
+      .single() as { data: DbBankItem | null; error: unknown }
 
     if (itemError) throw itemError
+    if (!dbItem) throw new Error('Failed to upsert bank item')
 
     // Upsert accounts
     if (accounts.length > 0) {
-      const { error: accError } = await supabase
+      const { error: accError } = await db
         .from('bank_accounts')
         .upsert(
           accounts.map((acc) => ({
@@ -158,7 +162,7 @@ export async function POST(request: NextRequest) {
             updated_at: new Date().toISOString(),
           })),
           { onConflict: 'pluggy_account_id' }
-        )
+        ) as { error: unknown }
 
       if (accError) throw accError
     }
@@ -189,14 +193,16 @@ export async function DELETE(request: NextRequest) {
     }
 
     const supabase = await createClient()
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const db = supabase as any
 
     // Fetch the item to get pluggy_item_id, and verify ownership
-    const { data: dbItem, error: fetchError } = await supabase
+    const { data: dbItem, error: fetchError } = await db
       .from('bank_items')
       .select('id, pluggy_item_id')
       .eq('id', id)
       .eq('user_id', auth.user.id)
-      .single()
+      .single() as { data: { id: string; pluggy_item_id: string } | null; error: unknown }
 
     if (fetchError || !dbItem) {
       return withSecurityHeaders(NextResponse.json({ error: 'Item não encontrado.' }, { status: 404 }))
@@ -211,11 +217,11 @@ export async function DELETE(request: NextRequest) {
     }
 
     // Delete from DB (cascade deletes bank_accounts and bank_imported_transactions)
-    const { error: deleteError } = await supabase
+    const { error: deleteError } = await db
       .from('bank_items')
       .delete()
       .eq('id', id)
-      .eq('user_id', auth.user.id)
+      .eq('user_id', auth.user.id) as { error: unknown }
 
     if (deleteError) throw deleteError
 
