@@ -175,7 +175,9 @@ export async function middleware(request: NextRequest) {
     const hasCompletedOnboarding = !!profile?.mode
 
     // ── No real subscription → force plan selection ──────────────────────
-    if (!hasRealSubscription && !isOnboardingPlano && !isTrialConfirmRoute) {
+    // Em desenvolvimento, bypass para facilitar testes locais
+    const isDev = process.env.NODE_ENV === 'development'
+    if (!isDev && !hasRealSubscription && !isOnboardingPlano && !isTrialConfirmRoute) {
       if (isAuthRoute || isProtectedRoute || isOnboardingRoute) {
         return applySecurityHeaders(
           NextResponse.redirect(new URL('/onboarding/plano', request.url))
@@ -184,15 +186,15 @@ export async function middleware(request: NextRequest) {
     }
 
     // ── Has real subscription but onboarding incomplete → block dashboard ─
-    if (hasRealSubscription && !hasCompletedOnboarding && isProtectedRoute) {
+    if (!isDev && hasRealSubscription && !hasCompletedOnboarding && isProtectedRoute) {
       return applySecurityHeaders(
         NextResponse.redirect(new URL('/onboarding', request.url))
       )
     }
 
     // ── Auth route for user who already finished onboarding → dash ────────
-    if (isAuthRoute && hasRealSubscription) {
-      const dest = hasCompletedOnboarding ? '/central' : '/onboarding'
+    if (isAuthRoute && (hasRealSubscription || isDev)) {
+      const dest = (hasCompletedOnboarding || isDev) ? '/central' : '/onboarding'
       return applySecurityHeaders(
         NextResponse.redirect(new URL(dest, request.url))
       )
