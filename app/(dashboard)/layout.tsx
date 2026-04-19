@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import type { Database } from '@/types/database.types'
 import { redirect } from 'next/navigation'
 import { resolveUserAccessPolicy } from '@/lib/billing/policy'
 import {
@@ -73,7 +74,8 @@ export default async function DashboardLayout({
   const isDev = process.env.NODE_ENV === 'development'
 
   // Em dev, garante profile mínimo para não quebrar componentes downstream
-  let profile = profileData ?? (isDev ? {
+  type ProfileRow = Database['public']['Tables']['profiles']['Row']
+  let profile: ProfileRow | null = profileData ?? (isDev ? {
     id: user.id,
     mode: 'pf' as const,
     name: 'Dev User',
@@ -87,7 +89,7 @@ export default async function DashboardLayout({
     city: null,
     state: null,
     onboarding_completed_at: null,
-  } : null)
+  } as ProfileRow : null)
 
   // ── Layer 2 guard (middleware é layer 1) ──────────────────────────────────
   if (!profile?.mode) {
