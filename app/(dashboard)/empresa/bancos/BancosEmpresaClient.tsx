@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback, useRef } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import {
   Landmark,
   Loader2,
@@ -21,10 +21,7 @@ import { formatCurrency } from '@/lib/utils/formatters'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
-interface Business {
-  id: string
-  name: string
-}
+interface Business { id: string; name: string }
 
 interface BankAccount {
   id: string
@@ -56,84 +53,23 @@ interface Props {
   businesses: Business[]
 }
 
-// ── Pluggy widget typings (loaded via CDN) ────────────────────────────────────
+// ── Script loader ─────────────────────────────────────────────────────────────
 
-declare global {
-  interface Window {
-    PluggyConnect: new (options: {
-      connectToken: string
-      onSuccess: (data: { item: { id: string } }) => void
-      onError: (error: { message: string }) => void
-      onClose?: () => void
-    }) => { open: () => void; close: () => void }
-  }
-}
+function loadPluggyScript(): Promise<void> {
+  return new Promise((resolve, reject) => {
+    if (window.PluggyConnect) return resolve()
 
-// ── Helpers ───────────────────────────────────────────────────────────────────
-
-function accountTypeIcon(type: string) {
-  switch (type.toUpperCase()) {
-    case 'CREDIT':
-      return CreditCard
-    case 'INVESTMENT':
-      return TrendingUp
-    default:
-      return Banknote
-  }
-}
-
-function statusBadge(status: BankItem['status']) {
-  switch (status) {
-    case 'updated':
-      return { icon: CheckCircle2, label: 'Atualizado', color: '#22c55e' }
-    case 'updating':
-      return { icon: RefreshCw, label: 'Atualizando…', color: 'var(--accent-blue)' }
-    case 'waiting_user_input':
-      return { icon: Clock, label: 'Aguardando ação', color: '#f59e0b' }
-    case 'error':
-      return { icon: AlertCircle, label: 'Erro', color: '#f87171' }
-  }
-}
-
-function formatDate(iso: string | null): string {
-  if (!iso) return 'Nunca'
-  return new Date(iso).toLocaleDateString('pt-BR', {
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  })
-}
-
-// ── Main component ────────────────────────────────────────────────────────────
-
-export default function BancosEmpresaClient({ activeBusinessId, businesses }: Props) {
-  const [selectedBusinessId, setSelectedBusinessId] = useState<string | null>(activeBusinessId ?? businesses[0]?.id ?? null)
-  const [items, setItems] = useState<BankItem[]>([])
-  const [isLoading, setIsLoading] = useState(true)
-  const [connectingBank, setConnectingBank] = useState(false)
-  const [syncingItem, setSyncingItem] = useState<string | null>(null)
-  const [deletingItem, setDeletingItem] = useState<string | null>(null)
-  const [pluggyReady, setPluggyReady] = useState(false)
-  const pluggyLoadAttempted = useRef(false)
-
-  // Preload Pluggy Connect script on mount
-  useEffect(() => {
-    if (pluggyLoadAttempted.current) return
-    pluggyLoadAttempted.current = true
-
-    if (typeof window !== 'undefined' && window.PluggyConnect) {
-      setPluggyReady(true)
-      return
-    }
+    const old = document.getElementById('pluggy-connect-script')
+    if (old && old.getAttribute('data-error') === '1') old.remove()
 
     const existing = document.getElementById('pluggy-connect-script')
     if (existing) {
-      existing.addEventListener('load', () => setPluggyReady(true), { once: true })
-      if ((existing as HTMLElement & { dataset: DOMStringMap }).dataset.loaded === 'true') {
-        setPluggyReady(true)
-      }
+      const tid = setTimeout(
+        () => reject(new Error('Timeout: widget demorou demais para carregar.')),
+        15_000
+      )
+      existing.addEventListener('load', () => { clearTimeout(tid); resolve() }, { once: true })
+      existing.addEventListener('error', () => { clearTimeout(tid); reject(new Error('Falha ao carregar widget.')) }, { once: true })
       return
     }
 
@@ -141,22 +77,59 @@ export default function BancosEmpresaClient({ activeBusinessId, businesses }: Pr
     script.id = 'pluggy-connect-script'
     script.src = 'https://cdn.pluggy.ai/pluggy-connect/v2/pluggy-connect.js'
     script.async = true
-    script.onload = () => {
-      script.dataset.loaded = 'true'
-      setPluggyReady(true)
-    }
+    script.onload = () => resolve()
     script.onerror = () => {
-      console.error('[Pluggy] Falha ao carregar script do widget bancário.')
+      script.setAttribute('data-error', '1')
+      reject(new Error(
+        'Não foi possível carregar o widget bancário. ' +
+        'Verifique sua conexão ou desative extensões de bloqueio.'
+      ))
     }
     document.head.appendChild(script)
-  }, [])
+  })
+}
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+
+function accountTypeIcon(type: string) {
+  switch (type.toUpperCase()) {
+    case 'CREDIT': return CreditCard
+    case 'INVESTMENT': return TrendingUp
+    default: return Banknote
+  }
+}
+
+function statusBadge(status: BankItem['status']) {
+  switch (status) {
+    case 'updated':            return { icon: CheckCircle2, label: 'Atualizado',      color: '#22c55e' }
+    case 'updating':           return { icon: RefreshCw,    label: 'Atualizando…',    color: 'var(--accent-blue)' }
+    case 'waiting_user_input': return { icon: Clock,        label: 'Aguardando ação', color: '#f59e0b' }
+    case 'error':              return { icon: AlertCircle,  label: 'Erro',            color: '#f87171' }
+  }
+}
+
+function formatDate(iso: string | null): string {
+  if (!iso) return 'Nunca'
+  return new Date(iso).toLocaleDateString('pt-BR', {
+    day: '2-digit', month: '2-digit', year: 'numeric',
+    hour: '2-digit', minute: '2-digit',
+  })
+}
+
+// ── Main component ────────────────────────────────────────────────────────────
+
+export default function BancosEmpresaClient({ activeBusinessId, businesses }: Props) {
+  const [selectedBusinessId, setSelectedBusinessId] = useState<string | null>(
+    activeBusinessId ?? businesses[0]?.id ?? null
+  )
+  const [items, setItems] = useState<BankItem[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+  const [connectingBank, setConnectingBank] = useState(false)
+  const [syncingItem, setSyncingItem] = useState<string | null>(null)
+  const [deletingItem, setDeletingItem] = useState<string | null>(null)
 
   const loadItems = useCallback(async () => {
-    if (!selectedBusinessId) {
-      setItems([])
-      setIsLoading(false)
-      return
-    }
+    if (!selectedBusinessId) { setItems([]); setIsLoading(false); return }
     setIsLoading(true)
     try {
       const res = await fetch(`/api/banking/items?mode=pj&businessId=${selectedBusinessId}`)
@@ -170,36 +143,26 @@ export default function BancosEmpresaClient({ activeBusinessId, businesses }: Pr
     }
   }, [selectedBusinessId])
 
-  useEffect(() => {
-    loadItems()
-  }, [loadItems])
+  useEffect(() => { loadItems() }, [loadItems])
 
   async function handleConnectBank() {
-    if (!selectedBusinessId) {
-      toast.error('Selecione uma empresa primeiro.')
-      return
-    }
+    if (!selectedBusinessId) { toast.error('Selecione uma empresa primeiro.'); return }
 
-    // Clique duplo serve como cancelar
-    if (connectingBank) {
-      setConnectingBank(false)
-      return
-    }
-
-    if (!window.PluggyConnect) {
-      toast.error(pluggyReady
-        ? 'Erro ao inicializar widget. Recarregue a página.'
-        : 'Widget ainda carregando, aguarde e tente novamente.')
-      return
-    }
+    // Clique enquanto conectando = cancelar
+    if (connectingBank) { setConnectingBank(false); return }
 
     setConnectingBank(true)
-
     const safetyTimer = setTimeout(() => setConnectingBank(false), 5 * 60 * 1000)
 
     try {
+      await loadPluggyScript()
+
+      if (!window.PluggyConnect) {
+        throw new Error('Widget não disponível. Desative extensões de bloqueio e tente novamente.')
+      }
+
       const res = await fetch('/api/banking/connect-token')
-      if (!res.ok) throw new Error('Falha ao obter token.')
+      if (!res.ok) throw new Error('Falha ao obter token de conexão.')
       const { connectToken } = await res.json()
 
       const widget = new window.PluggyConnect({
@@ -270,7 +233,7 @@ export default function BancosEmpresaClient({ activeBusinessId, businesses }: Pr
   }
 
   async function handleDelete(itemId: string, connectorName: string) {
-    if (!confirm(`Desconectar ${connectorName}? As receitas e despesas já importadas serão mantidas.`)) return
+    if (!confirm(`Desconectar ${connectorName}? Receitas e despesas já importadas serão mantidas.`)) return
     setDeletingItem(itemId)
     try {
       const res = await fetch(`/api/banking/items?id=${itemId}`, { method: 'DELETE' })
@@ -305,34 +268,28 @@ export default function BancosEmpresaClient({ activeBusinessId, businesses }: Pr
         </div>
         <Button
           onClick={handleConnectBank}
-          disabled={!pluggyReady || !selectedBusinessId}
+          disabled={!selectedBusinessId}
           size="sm"
           className="rounded-[8px] text-white gap-1.5"
           style={{
             background: connectingBank
               ? 'linear-gradient(135deg, #6b7280, #4b5563)'
-              : 'linear-gradient(135deg, var(--accent-blue), var(--accent-cyan))'
+              : 'linear-gradient(135deg, var(--accent-blue), var(--accent-cyan))',
           }}
         >
-          {!pluggyReady ? (
-            <Loader2 className="h-4 w-4 animate-spin" />
-          ) : connectingBank ? (
-            <span className="h-4 w-4 flex items-center justify-center text-xs font-bold">✕</span>
-          ) : (
-            <Plus className="h-4 w-4" />
-          )}
+          {connectingBank
+            ? <Loader2 className="h-4 w-4 animate-spin" />
+            : <Plus className="h-4 w-4" />}
           <span className="hidden sm:inline">
-            {!pluggyReady ? 'Carregando…' : connectingBank ? 'Cancelar' : 'Conectar banco'}
+            {connectingBank ? 'Cancelar' : 'Conectar banco'}
           </span>
         </Button>
       </div>
 
-      {/* Business selector (if multiple businesses) */}
+      {/* Business selector */}
       {businesses.length > 1 && (
         <div className="mb-5">
-          <label className="text-xs font-semibold uppercase tracking-wider text-app-soft block mb-1.5">
-            Empresa
-          </label>
+          <label className="text-xs font-semibold uppercase tracking-wider text-app-soft block mb-1.5">Empresa</label>
           <div className="flex flex-wrap gap-2">
             {businesses.map((b) => (
               <button
@@ -349,8 +306,7 @@ export default function BancosEmpresaClient({ activeBusinessId, businesses }: Pr
                   color: selectedBusinessId === b.id ? 'var(--accent-blue)' : 'var(--text-base)',
                 }}
               >
-                <Building2 className="h-3.5 w-3.5" />
-                {b.name}
+                <Building2 className="h-3.5 w-3.5" />{b.name}
               </button>
             ))}
           </div>
@@ -368,13 +324,10 @@ export default function BancosEmpresaClient({ activeBusinessId, businesses }: Pr
         >
           <Building2 className="mx-auto mb-3 h-10 w-10" style={{ color: 'var(--accent-blue)' }} />
           <p className="font-semibold text-app">Nenhuma empresa cadastrada</p>
-          <p className="mt-1 text-sm text-app-soft">
-            Cadastre uma empresa primeiro para conectar bancos empresariais.
-          </p>
+          <p className="mt-1 text-sm text-app-soft">Cadastre uma empresa primeiro para conectar bancos empresariais.</p>
         </div>
       )}
 
-      {/* Loading */}
       {isLoading && selectedBusinessId && (
         <div className="flex items-center justify-center py-20">
           <Loader2 className="h-6 w-6 animate-spin" style={{ color: 'var(--accent-blue)' }} />
@@ -395,37 +348,27 @@ export default function BancosEmpresaClient({ activeBusinessId, businesses }: Pr
               <Landmark className="mx-auto mb-3 h-10 w-10" style={{ color: 'var(--accent-blue)' }} />
               <p className="font-semibold text-app">Nenhum banco conectado</p>
               <p className="mt-1 text-sm text-app-soft">
-                Conecte a conta bancária de {selectedBusiness?.name ?? 'sua empresa'} para importar receitas e despesas automaticamente.
+                Conecte a conta de {selectedBusiness?.name ?? 'sua empresa'} para importar receitas e despesas automaticamente.
               </p>
               <Button
                 onClick={handleConnectBank}
-                disabled={connectingBank || !pluggyReady}
                 className="mt-4 rounded-[8px] text-white"
                 style={{ background: 'linear-gradient(135deg, var(--accent-blue), var(--accent-cyan))' }}
               >
-                {(connectingBank || !pluggyReady) ? (
-                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                ) : (
-                  <Plus className="h-4 w-4 mr-2" />
-                )}
-                {!pluggyReady ? 'Carregando…' : 'Conectar banco'}
+                <Plus className="h-4 w-4 mr-2" />
+                Conectar banco
               </Button>
             </div>
           )}
 
-          {/* Summary card */}
+          {/* Summary */}
           {items.length > 0 && (
             <div
               className="panel-card rounded-[12px] p-5"
               style={{ background: 'linear-gradient(135deg, color-mix(in oklab, var(--accent-blue) 10%, transparent), color-mix(in oklab, var(--accent-cyan) 8%, transparent))' }}
             >
-              <p className="text-xs font-semibold uppercase tracking-wider text-app-soft">
-                Saldo total em conta corrente
-              </p>
-              <p
-                className="mt-1 text-3xl font-extrabold tabular-nums"
-                style={{ color: 'var(--text-strong)' }}
-              >
+              <p className="text-xs font-semibold uppercase tracking-wider text-app-soft">Saldo total em conta corrente</p>
+              <p className="mt-1 text-3xl font-extrabold tabular-nums" style={{ color: 'var(--text-strong)' }}>
                 {formatCurrency(totalBalance)}
               </p>
               <p className="mt-1 text-xs text-app-soft">
@@ -438,14 +381,9 @@ export default function BancosEmpresaClient({ activeBusinessId, businesses }: Pr
           {items.map((item) => {
             const badge = statusBadge(item.status)
             const StatusIcon = badge.icon
-
             return (
               <div key={item.id} className="panel-card rounded-[12px] overflow-hidden">
-                {/* Item header */}
-                <div
-                  className="flex items-center justify-between px-4 py-3 border-b"
-                  style={{ borderColor: 'var(--panel-border)' }}
-                >
+                <div className="flex items-center justify-between px-4 py-3 border-b" style={{ borderColor: 'var(--panel-border)' }}>
                   <div className="flex items-center gap-3 min-w-0">
                     <div
                       className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[8px]"
@@ -461,20 +399,16 @@ export default function BancosEmpresaClient({ activeBusinessId, businesses }: Pr
                       </div>
                     </div>
                   </div>
-
                   <div className="flex items-center gap-2 shrink-0">
                     <Button
-                      variant="outline"
-                      size="sm"
+                      variant="outline" size="sm"
                       onClick={() => handleSync(item.id)}
                       disabled={syncingItem === item.id}
                       className="rounded-[7px] gap-1.5 h-8 text-xs"
                     >
-                      {syncingItem === item.id ? (
-                        <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                      ) : (
-                        <RefreshCw className="h-3.5 w-3.5" />
-                      )}
+                      {syncingItem === item.id
+                        ? <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                        : <RefreshCw className="h-3.5 w-3.5" />}
                       <span className="hidden sm:inline">Sincronizar</span>
                     </Button>
                     <button
@@ -483,36 +417,24 @@ export default function BancosEmpresaClient({ activeBusinessId, businesses }: Pr
                       className="rounded-[7px] p-1.5 text-app-soft hover:text-[#f87171] transition-colors"
                       title="Desconectar banco"
                     >
-                      {deletingItem === item.id ? (
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                      ) : (
-                        <Trash2 className="h-4 w-4" />
-                      )}
+                      {deletingItem === item.id
+                        ? <Loader2 className="h-4 w-4 animate-spin" />
+                        : <Trash2 className="h-4 w-4" />}
                     </button>
                   </div>
                 </div>
 
-                {/* Last updated */}
                 {item.last_updated_at && (
-                  <div
-                    className="px-4 py-1.5 text-xs text-app-soft border-b"
-                    style={{ borderColor: 'var(--panel-border)', background: 'var(--panel-bg-soft)' }}
-                  >
+                  <div className="px-4 py-1.5 text-xs text-app-soft border-b" style={{ borderColor: 'var(--panel-border)', background: 'var(--panel-bg-soft)' }}>
                     Última atualização: {formatDate(item.last_updated_at)}
                   </div>
                 )}
-
-                {/* Error message */}
                 {item.status === 'error' && item.error_message && (
-                  <div
-                    className="px-4 py-2 text-xs"
-                    style={{ background: 'color-mix(in oklab, #f87171 8%, transparent)', color: '#f87171' }}
-                  >
+                  <div className="px-4 py-2 text-xs" style={{ background: 'color-mix(in oklab, #f87171 8%, transparent)', color: '#f87171' }}>
                     {item.error_message}
                   </div>
                 )}
 
-                {/* Accounts */}
                 {item.bank_accounts.length === 0 ? (
                   <div className="px-4 py-4 text-sm text-app-soft text-center">Nenhuma conta encontrada</div>
                 ) : (
@@ -526,21 +448,13 @@ export default function BancosEmpresaClient({ activeBusinessId, businesses }: Pr
                             <AccIcon className="h-4 w-4 shrink-0 text-app-soft" />
                             <div className="min-w-0">
                               <p className="text-sm font-medium text-app truncate">{account.name}</p>
-                              {account.number && (
-                                <p className="text-xs text-app-soft">
-                                  {account.subtype ?? account.type} · {account.number}
-                                </p>
-                              )}
-                              {!account.number && account.subtype && (
-                                <p className="text-xs text-app-soft">{account.subtype}</p>
-                              )}
+                              {account.number
+                                ? <p className="text-xs text-app-soft">{account.subtype ?? account.type} · {account.number}</p>
+                                : account.subtype && <p className="text-xs text-app-soft">{account.subtype}</p>}
                             </div>
                           </div>
                           <div className="text-right shrink-0 ml-4">
-                            <p
-                              className="text-sm font-semibold tabular-nums"
-                              style={{ color: isCredit ? '#f87171' : 'var(--text-strong)' }}
-                            >
+                            <p className="text-sm font-semibold tabular-nums" style={{ color: isCredit ? '#f87171' : 'var(--text-strong)' }}>
                               {formatCurrency(account.balance)}
                             </p>
                             {account.last_synced_at && (
@@ -558,7 +472,6 @@ export default function BancosEmpresaClient({ activeBusinessId, businesses }: Pr
             )
           })}
 
-          {/* Info box */}
           {items.length > 0 && (
             <div
               className="rounded-[10px] px-4 py-3 text-xs text-app-soft"
@@ -567,11 +480,11 @@ export default function BancosEmpresaClient({ activeBusinessId, businesses }: Pr
                 border: '1px solid color-mix(in oklab, var(--accent-blue) 20%, transparent)',
               }}
             >
-              <p className="font-semibold text-app mb-1">Como funciona a sincronização empresarial?</p>
+              <p className="font-semibold text-app mb-1">Como funciona?</p>
               <p>
-                Débitos da conta corrente → <strong>Despesas</strong> da empresa.{' '}
-                Créditos (entradas) → <strong>Receitas</strong> da empresa.{' '}
-                Faturas de cartão → <strong>Despesas</strong> da empresa.{' '}
+                Débitos de conta corrente → <strong>Despesas</strong>.
+                Créditos em conta → <strong>Receitas</strong>.
+                Cartão de crédito → <strong>Despesas</strong>.
                 Transações já importadas não são duplicadas.
               </p>
             </div>

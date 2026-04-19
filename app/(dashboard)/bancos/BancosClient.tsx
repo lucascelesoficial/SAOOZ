@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback, useRef } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import {
   Landmark,
   Loader2,
@@ -43,7 +43,7 @@ interface BankItem {
   bank_accounts: BankAccount[]
 }
 
-// ── Pluggy widget typings (loaded via CDN) ────────────────────────────────────
+// ── Pluggy widget typings ─────────────────────────────────────────────────────
 
 declare global {
   interface Window {
@@ -56,40 +56,70 @@ declare global {
   }
 }
 
+// ── Script loader — carrega sob demanda, com retry automático ─────────────────
+
+function loadPluggyScript(): Promise<void> {
+  return new Promise((resolve, reject) => {
+    // Já carregado
+    if (window.PluggyConnect) return resolve()
+
+    // Remove script com erro anterior para permitir retry
+    const old = document.getElementById('pluggy-connect-script')
+    if (old && old.getAttribute('data-error') === '1') old.remove()
+
+    // Já existe e está carregando — aguarda evento
+    const existing = document.getElementById('pluggy-connect-script')
+    if (existing) {
+      const tid = setTimeout(
+        () => reject(new Error('Timeout: widget demorou demais para carregar.')),
+        15_000
+      )
+      existing.addEventListener('load', () => { clearTimeout(tid); resolve() }, { once: true })
+      existing.addEventListener('error', () => { clearTimeout(tid); reject(new Error('Falha ao carregar widget.')) }, { once: true })
+      return
+    }
+
+    // Injeta novo script
+    const script = document.createElement('script')
+    script.id = 'pluggy-connect-script'
+    script.src = 'https://cdn.pluggy.ai/pluggy-connect/v2/pluggy-connect.js'
+    script.async = true
+    script.onload = () => resolve()
+    script.onerror = () => {
+      script.setAttribute('data-error', '1')
+      reject(new Error(
+        'Não foi possível carregar o widget bancário. ' +
+        'Verifique sua conexão ou desative extensões de bloqueio de anúncios.'
+      ))
+    }
+    document.head.appendChild(script)
+  })
+}
+
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
 function accountTypeIcon(type: string) {
   switch (type.toUpperCase()) {
-    case 'CREDIT':
-      return CreditCard
-    case 'INVESTMENT':
-      return TrendingUp
-    default:
-      return Banknote
+    case 'CREDIT': return CreditCard
+    case 'INVESTMENT': return TrendingUp
+    default: return Banknote
   }
 }
 
 function statusBadge(status: BankItem['status']) {
   switch (status) {
-    case 'updated':
-      return { icon: CheckCircle2, label: 'Atualizado', color: '#22c55e' }
-    case 'updating':
-      return { icon: RefreshCw, label: 'Atualizando…', color: 'var(--accent-blue)' }
-    case 'waiting_user_input':
-      return { icon: Clock, label: 'Aguardando ação', color: '#f59e0b' }
-    case 'error':
-      return { icon: AlertCircle, label: 'Erro', color: '#f87171' }
+    case 'updated':        return { icon: CheckCircle2, label: 'Atualizado',     color: '#22c55e' }
+    case 'updating':       return { icon: RefreshCw,    label: 'Atualizando…',   color: 'var(--accent-blue)' }
+    case 'waiting_user_input': return { icon: Clock,    label: 'Aguardando ação',color: '#f59e0b' }
+    case 'error':          return { icon: AlertCircle,  label: 'Erro',           color: '#f87171' }
   }
 }
 
 function formatDate(iso: string | null): string {
   if (!iso) return 'Nunca'
   return new Date(iso).toLocaleDateString('pt-BR', {
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
+    day: '2-digit', month: '2-digit', year: 'numeric',
+    hour: '2-digit', minute: '2-digit',
   })
 }
 
@@ -101,45 +131,6 @@ export default function BancosClient() {
   const [connectingBank, setConnectingBank] = useState(false)
   const [syncingItem, setSyncingItem] = useState<string | null>(null)
   const [deletingItem, setDeletingItem] = useState<string | null>(null)
-  const [pluggyReady, setPluggyReady] = useState(false)
-  const pluggyLoadAttempted = useRef(false)
-
-  // Preload Pluggy Connect script on mount (não no clique — evita lentidão)
-  useEffect(() => {
-    if (pluggyLoadAttempted.current) return
-    pluggyLoadAttempted.current = true
-
-    // Já disponível (ex: hot-reload)
-    if (typeof window !== 'undefined' && window.PluggyConnect) {
-      setPluggyReady(true)
-      return
-    }
-
-    // Script já foi injetado por outra instância
-    const existing = document.getElementById('pluggy-connect-script')
-    if (existing) {
-      // Escuta o evento load do script já existente
-      existing.addEventListener('load', () => setPluggyReady(true), { once: true })
-      // Se já carregou (dataset.loaded), resolve direto
-      if ((existing as HTMLScriptElement & { dataset: DOMStringMap }).dataset.loaded === 'true') {
-        setPluggyReady(true)
-      }
-      return
-    }
-
-    const script = document.createElement('script')
-    script.id = 'pluggy-connect-script'
-    script.src = 'https://cdn.pluggy.ai/pluggy-connect/v2/pluggy-connect.js'
-    script.async = true
-    script.onload = () => {
-      script.dataset.loaded = 'true'
-      setPluggyReady(true)
-    }
-    script.onerror = () => {
-      console.error('[Pluggy] Falha ao carregar script do widget bancário.')
-    }
-    document.head.appendChild(script)
-  }, [])
 
   const loadItems = useCallback(async () => {
     setIsLoading(true)
@@ -155,32 +146,28 @@ export default function BancosClient() {
     }
   }, [])
 
-  useEffect(() => {
-    loadItems()
-  }, [loadItems])
+  useEffect(() => { loadItems() }, [loadItems])
 
   async function handleConnectBank() {
-    // Se já está conectando, o clique serve como cancelar
+    // Clique enquanto conectando = cancelar
     if (connectingBank) {
       setConnectingBank(false)
       return
     }
 
-    if (!window.PluggyConnect) {
-      toast.error(pluggyReady
-        ? 'Erro ao inicializar widget. Recarregue a página.'
-        : 'Widget ainda carregando, aguarde e tente novamente.')
-      return
-    }
-
     setConnectingBank(true)
-
-    // Timeout de segurança: reseta após 5 min se onClose nunca disparar
     const safetyTimer = setTimeout(() => setConnectingBank(false), 5 * 60 * 1000)
 
     try {
+      // Carrega o script se ainda não carregou
+      await loadPluggyScript()
+
+      if (!window.PluggyConnect) {
+        throw new Error('Widget não disponível. Desative extensões de bloqueio e tente novamente.')
+      }
+
       const res = await fetch('/api/banking/connect-token')
-      if (!res.ok) throw new Error('Falha ao obter token.')
+      if (!res.ok) throw new Error('Falha ao obter token de conexão.')
       const { connectToken } = await res.json()
 
       const widget = new window.PluggyConnect({
@@ -188,23 +175,23 @@ export default function BancosClient() {
         onSuccess: async ({ item }) => {
           clearTimeout(safetyTimer)
           toast.loading('Registrando banco…', { id: 'bank-register' })
-
           try {
             const postRes = await fetch('/api/banking/items', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ pluggyItemId: item.id }),
             })
-
             if (!postRes.ok) {
               const errData = await postRes.json().catch(() => ({}))
               throw new Error(errData.error ?? 'Falha ao registrar banco.')
             }
-
             toast.success('Banco conectado!', { id: 'bank-register' })
             await loadItems()
           } catch (err) {
-            toast.error(err instanceof Error ? err.message : 'Erro ao conectar banco.', { id: 'bank-register' })
+            toast.error(
+              err instanceof Error ? err.message : 'Erro ao conectar banco.',
+              { id: 'bank-register' }
+            )
           }
         },
         onError: (err) => {
@@ -229,7 +216,6 @@ export default function BancosClient() {
   async function handleSync(itemId: string) {
     setSyncingItem(itemId)
     toast.loading('Sincronizando transações…', { id: `sync-${itemId}` })
-
     try {
       const res = await fetch('/api/banking/sync', {
         method: 'POST',
@@ -237,16 +223,17 @@ export default function BancosClient() {
         body: JSON.stringify({ itemId, months: 3 }),
       })
       const data = await res.json()
-
       if (!res.ok) throw new Error(data.error ?? 'Falha ao sincronizar.')
-
       toast.success(
         `Sincronizado! ${data.imported} transações importadas, ${data.skipped} ignoradas.`,
         { id: `sync-${itemId}` }
       )
       await loadItems()
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'Erro ao sincronizar.', { id: `sync-${itemId}` })
+      toast.error(
+        err instanceof Error ? err.message : 'Erro ao sincronizar.',
+        { id: `sync-${itemId}` }
+      )
     } finally {
       setSyncingItem(null)
     }
@@ -254,16 +241,13 @@ export default function BancosClient() {
 
   async function handleDelete(itemId: string, connectorName: string) {
     if (!confirm(`Desconectar ${connectorName}? As despesas já importadas serão mantidas.`)) return
-
     setDeletingItem(itemId)
-
     try {
       const res = await fetch(`/api/banking/items?id=${itemId}`, { method: 'DELETE' })
       if (!res.ok) {
         const data = await res.json().catch(() => ({}))
         throw new Error(data.error ?? 'Falha ao desconectar.')
       }
-
       toast.success(`${connectorName} desconectado.`)
       setItems((prev) => prev.filter((i) => i.id !== itemId))
     } catch (err) {
@@ -272,8 +256,6 @@ export default function BancosClient() {
       setDeletingItem(null)
     }
   }
-
-  // ── Totals ──────────────────────────────────────────────────────────────────
 
   const totalBalance = items
     .flatMap((i) => i.bank_accounts)
@@ -292,24 +274,19 @@ export default function BancosClient() {
         </div>
         <Button
           onClick={handleConnectBank}
-          disabled={!pluggyReady}
           size="sm"
           className="rounded-[8px] text-white gap-1.5"
           style={{
             background: connectingBank
               ? 'linear-gradient(135deg, #6b7280, #4b5563)'
-              : 'linear-gradient(135deg, var(--accent-blue), var(--accent-cyan))'
+              : 'linear-gradient(135deg, var(--accent-blue), var(--accent-cyan))',
           }}
         >
-          {(!pluggyReady) ? (
-            <Loader2 className="h-4 w-4 animate-spin" />
-          ) : connectingBank ? (
-            <span className="h-4 w-4 flex items-center justify-center text-xs font-bold">✕</span>
-          ) : (
-            <Plus className="h-4 w-4" />
-          )}
+          {connectingBank
+            ? <Loader2 className="h-4 w-4 animate-spin" />
+            : <Plus className="h-4 w-4" />}
           <span className="hidden sm:inline">
-            {!pluggyReady ? 'Carregando…' : connectingBank ? 'Cancelar' : 'Conectar banco'}
+            {connectingBank ? 'Cancelar' : 'Conectar banco'}
           </span>
         </Button>
       </div>
@@ -332,26 +309,18 @@ export default function BancosClient() {
                 border: '1px dashed color-mix(in oklab, var(--accent-blue) 30%, transparent)',
               }}
             >
-              <Landmark
-                className="mx-auto mb-3 h-10 w-10"
-                style={{ color: 'var(--accent-blue)' }}
-              />
+              <Landmark className="mx-auto mb-3 h-10 w-10" style={{ color: 'var(--accent-blue)' }} />
               <p className="font-semibold text-app">Nenhum banco conectado</p>
               <p className="mt-1 text-sm text-app-soft">
                 Conecte sua conta bancária para importar despesas automaticamente.
               </p>
               <Button
                 onClick={handleConnectBank}
-                disabled={!pluggyReady}
                 className="mt-4 rounded-[8px] text-white"
                 style={{ background: 'linear-gradient(135deg, var(--accent-blue), var(--accent-cyan))' }}
               >
-                {!pluggyReady ? (
-                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                ) : (
-                  <Plus className="h-4 w-4 mr-2" />
-                )}
-                {!pluggyReady ? 'Carregando…' : 'Conectar banco'}
+                <Plus className="h-4 w-4 mr-2" />
+                Conectar banco
               </Button>
             </div>
           )}
@@ -365,10 +334,7 @@ export default function BancosClient() {
               <p className="text-xs font-semibold uppercase tracking-wider text-app-soft">
                 Saldo total em conta corrente
               </p>
-              <p
-                className="mt-1 text-3xl font-extrabold tabular-nums"
-                style={{ color: 'var(--text-strong)' }}
-              >
+              <p className="mt-1 text-3xl font-extrabold tabular-nums" style={{ color: 'var(--text-strong)' }}>
                 {formatCurrency(totalBalance)}
               </p>
               <p className="mt-1 text-xs text-app-soft">
@@ -384,7 +350,6 @@ export default function BancosClient() {
 
             return (
               <div key={item.id} className="panel-card rounded-[12px] overflow-hidden">
-                {/* Item header */}
                 <div
                   className="flex items-center justify-between px-4 py-3 border-b"
                   style={{ borderColor: 'var(--panel-border)' }}
@@ -399,13 +364,8 @@ export default function BancosClient() {
                     <div className="min-w-0">
                       <p className="font-semibold text-app truncate">{item.connector_name}</p>
                       <div className="flex items-center gap-1 mt-0.5">
-                        <StatusIcon
-                          className="h-3 w-3 shrink-0"
-                          style={{ color: badge.color }}
-                        />
-                        <span className="text-xs" style={{ color: badge.color }}>
-                          {badge.label}
-                        </span>
+                        <StatusIcon className="h-3 w-3 shrink-0" style={{ color: badge.color }} />
+                        <span className="text-xs" style={{ color: badge.color }}>{badge.label}</span>
                       </div>
                     </div>
                   </div>
@@ -418,11 +378,9 @@ export default function BancosClient() {
                       disabled={syncingItem === item.id}
                       className="rounded-[7px] gap-1.5 h-8 text-xs"
                     >
-                      {syncingItem === item.id ? (
-                        <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                      ) : (
-                        <RefreshCw className="h-3.5 w-3.5" />
-                      )}
+                      {syncingItem === item.id
+                        ? <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                        : <RefreshCw className="h-3.5 w-3.5" />}
                       <span className="hidden sm:inline">Sincronizar</span>
                     </Button>
 
@@ -432,16 +390,13 @@ export default function BancosClient() {
                       className="rounded-[7px] p-1.5 text-app-soft hover:text-[#f87171] transition-colors"
                       title="Desconectar banco"
                     >
-                      {deletingItem === item.id ? (
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                      ) : (
-                        <Trash2 className="h-4 w-4" />
-                      )}
+                      {deletingItem === item.id
+                        ? <Loader2 className="h-4 w-4 animate-spin" />
+                        : <Trash2 className="h-4 w-4" />}
                     </button>
                   </div>
                 </div>
 
-                {/* Last sync info */}
                 {item.last_updated_at && (
                   <div
                     className="px-4 py-1.5 text-xs text-app-soft border-b"
@@ -451,43 +406,28 @@ export default function BancosClient() {
                   </div>
                 )}
 
-                {/* Error message */}
                 {item.status === 'error' && item.error_message && (
                   <div
                     className="px-4 py-2 text-xs"
-                    style={{
-                      background: 'color-mix(in oklab, #f87171 8%, transparent)',
-                      color: '#f87171',
-                    }}
+                    style={{ background: 'color-mix(in oklab, #f87171 8%, transparent)', color: '#f87171' }}
                   >
                     {item.error_message}
                   </div>
                 )}
 
-                {/* Accounts */}
                 {item.bank_accounts.length === 0 ? (
-                  <div className="px-4 py-4 text-sm text-app-soft text-center">
-                    Nenhuma conta encontrada
-                  </div>
+                  <div className="px-4 py-4 text-sm text-app-soft text-center">Nenhuma conta encontrada</div>
                 ) : (
                   <div className="divide-y" style={{ borderColor: 'var(--panel-border)' }}>
                     {item.bank_accounts.map((account) => {
                       const AccIcon = accountTypeIcon(account.type)
                       const isCredit = account.type === 'CREDIT'
-
                       return (
-                        <div
-                          key={account.id}
-                          className="flex items-center justify-between px-4 py-3"
-                        >
+                        <div key={account.id} className="flex items-center justify-between px-4 py-3">
                           <div className="flex items-center gap-2.5 min-w-0">
-                            <AccIcon
-                              className="h-4 w-4 shrink-0 text-app-soft"
-                            />
+                            <AccIcon className="h-4 w-4 shrink-0 text-app-soft" />
                             <div className="min-w-0">
-                              <p className="text-sm font-medium text-app truncate">
-                                {account.name}
-                              </p>
+                              <p className="text-sm font-medium text-app truncate">{account.name}</p>
                               {account.number && (
                                 <p className="text-xs text-app-soft">
                                   {account.subtype ?? account.type} · {account.number}
@@ -498,7 +438,6 @@ export default function BancosClient() {
                               )}
                             </div>
                           </div>
-
                           <div className="text-right shrink-0 ml-4">
                             <p
                               className="text-sm font-semibold tabular-nums"
@@ -521,7 +460,6 @@ export default function BancosClient() {
             )
           })}
 
-          {/* Info box */}
           {items.length > 0 && (
             <div
               className="rounded-[10px] px-4 py-3 text-xs text-app-soft"
@@ -532,8 +470,8 @@ export default function BancosClient() {
             >
               <p className="font-semibold text-app mb-1">Como funciona a sincronização?</p>
               <p>
-                Ao clicar em &quot;Sincronizar&quot;, os últimos 3 meses de transações são importados automaticamente.
-                Débitos de conta corrente e compras de cartão de crédito viram <strong>despesas</strong>.
+                Ao clicar em &quot;Sincronizar&quot;, os últimos 3 meses de transações são importados.
+                Débitos e cartão de crédito viram <strong>despesas</strong>.
                 Transações já importadas não são duplicadas.
               </p>
             </div>
