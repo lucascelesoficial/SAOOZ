@@ -1,0 +1,140 @@
+<svg width="800" height="400" viewBox="0 0 800 400" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- Background gradient -->
+    <linearGradient id="bg-grad" x1="0" y1="0" x2="800" y2="400" gradientUnits="userSpaceOnUse">
+      <stop offset="0%"   stop-color="#06080f"/>
+      <stop offset="100%" stop-color="#0d0f1e"/>
+    </linearGradient>
+
+    <!-- Purple glow behind nucleus -->
+    <radialGradient id="glow-bg" cx="50%" cy="50%" r="50%" gradientUnits="userSpaceOnUse"
+      fx="400" fy="180" cx="400" cy="180">
+      <stop offset="0%"   stop-color="#6c47ff" stop-opacity="0.18"/>
+      <stop offset="100%" stop-color="#06080f" stop-opacity="0"/>
+    </radialGradient>
+
+    <!-- Ring glow filter -->
+    <filter id="glow" x="-60%" y="-60%" width="220%" height="220%">
+      <feGaussianBlur stdDeviation="3" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+
+    <!-- Core glow filter -->
+    <filter id="glow-core" x="-120%" y="-120%" width="340%" height="340%">
+      <feGaussianBlur stdDeviation="4" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+
+    <!-- Text glow -->
+    <filter id="text-glow" x="-10%" y="-10%" width="120%" height="120%">
+      <feGaussianBlur stdDeviation="6" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+
+    <radialGradient id="core-grad" cx="50%" cy="50%" r="50%">
+      <stop offset="0%"   stop-color="#a5f3fc" stop-opacity="0.9"/>
+      <stop offset="100%" stop-color="#3b82f6" stop-opacity="0"/>
+    </radialGradient>
+
+    <!-- Subtle grid pattern -->
+    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+      <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#ffffff" stroke-width="0.3" stroke-opacity="0.04"/>
+    </pattern>
+  </defs>
+
+  <!-- Background -->
+  <rect width="800" height="400" fill="url(#bg-grad)"/>
+  <rect width="800" height="400" fill="url(#grid)"/>
+
+  <!-- Purple ambient glow -->
+  <ellipse cx="400" cy="185" rx="260" ry="180" fill="url(#glow-bg)"/>
+
+  <!-- ─── Nucleus icon (centered at 400, 185) ─── -->
+  <!-- Ring 1: outermost, blue dashed -->
+  <circle cx="400" cy="185" r="80"
+    stroke="#3b82f6" stroke-width="1.2" stroke-dasharray="6 10"
+    stroke-opacity="0.55" fill="none"
+    filter="url(#glow)"/>
+
+  <!-- Ring 2: solid cyan-blue -->
+  <circle cx="400" cy="185" r="64"
+    stroke="#60a5fa" stroke-width="1.5"
+    stroke-opacity="0.7" fill="none"
+    filter="url(#glow)"/>
+
+  <!-- Ring 3: indigo -->
+  <circle cx="400" cy="185" r="49"
+    stroke="#818cf8" stroke-width="2"
+    stroke-opacity="0.75" fill="none"
+    filter="url(#glow)"/>
+
+  <!-- Ring 4: violet -->
+  <circle cx="400" cy="185" r="34"
+    stroke="#a78bfa" stroke-width="2.2"
+    stroke-opacity="0.8" fill="none"
+    filter="url(#glow)"/>
+
+  <!-- Ring 5: innermost, magenta-violet -->
+  <circle cx="400" cy="185" r="20"
+    stroke="#c084fc" stroke-width="2"
+    stroke-opacity="0.85" fill="none"
+    filter="url(#glow)"/>
+
+  <!-- Core ambient halo -->
+  <circle cx="400" cy="185" r="14"
+    fill="url(#core-grad)" opacity="0.5"
+    filter="url(#glow-core)"/>
+
+  <!-- Core bright dot -->
+  <circle cx="400" cy="185" r="6"
+    fill="#a5f3fc" opacity="0.95"
+    filter="url(#glow-core)"/>
+
+  <!-- ─── "SA" text (left of nucleus) ─── -->
+  <text x="118" y="224"
+    font-family="-apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', Arial, sans-serif"
+    font-size="130" font-weight="900"
+    letter-spacing="-4"
+    fill="#ffffff"
+    filter="url(#text-glow)">SA</text>
+
+  <!-- ─── "OZ" text (right of nucleus) ─── -->
+  <text x="456" y="224"
+    font-family="-apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', Arial, sans-serif"
+    font-size="130" font-weight="900"
+    letter-spacing="-4"
+    fill="#ffffff"
+    filter="url(#text-glow)">OZ</text>
+
+  <!-- ─── Tagline ─── -->
+  <text x="400" y="306"
+    font-family="-apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', Arial, sans-serif"
+    font-size="15" font-weight="400"
+    letter-spacing="5"
+    fill="#818cf8"
+    text-anchor="middle"
+    opacity="0.85">GESTÃO FINANCEIRA INTELIGENTE</text>
+
+  <!-- ─── Divider line ─── -->
+  <line x1="300" y1="325" x2="500" y2="325"
+    stroke="#6c47ff" stroke-width="0.8" stroke-opacity="0.4"/>
+
+  <!-- ─── saooz.com ─── -->
+  <text x="400" y="352"
+    font-family="-apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', Arial, sans-serif"
+    font-size="13" font-weight="500"
+    letter-spacing="2"
+    fill="#60a5fa"
+    text-anchor="middle"
+    opacity="0.6">saooz.com</text>
+</svg>
