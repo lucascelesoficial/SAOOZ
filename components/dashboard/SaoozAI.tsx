@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import { CheckCircle2, Loader2, Send, ShieldCheck, X } from 'lucide-react'
-import { NucleusIcon, NucleusOrb } from '@/components/ui/SaoozLogo'
+import { SaoozIcon } from '@/components/ui/SaoozLogo'
 import type { OrbState } from '@/components/ui/SaoozLogo'
 import { useFinancialData } from '@/lib/hooks/useFinancialData'
 import { useVoice } from '@/lib/hooks/useVoice'
@@ -304,41 +304,29 @@ export function SaoozAI({ totals, categoryData }: SaoozAIProps) {
       <div
         className="flex items-center gap-3 border-b px-4 py-3"
         style={{
-          borderColor: 'var(--panel-border)',
-          background: 'color-mix(in oklab, var(--accent-blue) 3%, transparent)',
+          borderColor: 'transparent',
+          background: 'linear-gradient(135deg, #1E3A8A, #1D4ED8)',
         }}
       >
-        <button
-          onClick={toggleVoice}
-          disabled={loading}
-          title={voiceMode ? 'Desativar modo voz' : 'Ativar modo voz'}
-          className="shrink-0 transition-transform disabled:opacity-50"
-          style={{
-            background: 'none',
-            border: 'none',
-            padding: 0,
-            cursor: 'pointer',
-            transform: voiceMode ? 'scale(1.1)' : 'scale(1)',
-          }}
-        >
-          <NucleusOrb size={voiceMode ? 44 : 34} state={orbState} />
-        </button>
+        <div className="shrink-0">
+          <SaoozIcon size={34} />
+        </div>
 
         <div className="min-w-0 flex-1">
-          <p className="text-sm font-bold leading-none text-app">
-            SAOOZ <span style={{ color: 'var(--accent-blue)' }}>AI</span>
+          <p className="text-sm font-bold leading-none" style={{ color: '#ffffff' }}>
+            SAOOZ <span style={{ color: 'rgba(255,255,255,0.75)' }}>AI</span>
           </p>
           <p
             className="mt-0.5 text-[10px] transition-all duration-300"
             style={{
               color:
                 orbState === 'listening'
-                  ? 'var(--accent-blue)'
+                  ? '#93c5fd'
                   : orbState === 'speaking'
-                    ? '#22c55e'
+                    ? '#86efac'
                     : orbState === 'thinking'
-                      ? '#f59e0b'
-                      : 'var(--text-soft)',
+                      ? '#fcd34d'
+                      : 'rgba(255,255,255,0.60)',
             }}
           >
             {voiceMode ? STATE_HINT[orbState] : 'Assistente seguro · sugere antes de executar'}
@@ -348,9 +336,9 @@ export function SaoozAI({ totals, categoryData }: SaoozAIProps) {
         <span
           className="flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold"
           style={{
-            background: '#22c55e15',
-            color: '#22c55e',
-            border: '1px solid #22c55e20',
+            background: 'rgba(34,197,94,0.18)',
+            color: '#86efac',
+            border: '1px solid rgba(34,197,94,0.25)',
           }}
         >
           <ShieldCheck className="h-3 w-3" />
@@ -366,7 +354,7 @@ export function SaoozAI({ totals, categoryData }: SaoozAIProps) {
           >
             {message.role === 'ai' && (
               <div className="mt-0.5 shrink-0">
-                <NucleusIcon size={20} />
+                <SaoozIcon size={20} />
               </div>
             )}
 

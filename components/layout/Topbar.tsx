@@ -351,7 +351,7 @@ export function Topbar({
     <header
       className="sticky top-0 z-20 flex h-14 items-center justify-between gap-4 border-b px-4 backdrop-blur-md md:px-6"
       style={{
-        background: 'linear-gradient(135deg, #1D4ED8, #2563EB)',
+        background: 'linear-gradient(135deg, #1E3A8A, #1D4ED8)',
         borderColor: 'transparent',
       }}
     >
