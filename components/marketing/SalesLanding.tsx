@@ -781,7 +781,7 @@ export function SalesLanding() {
                       Uma IA que sabe o que entrou e o que saiu
                     </h2>
                     <p className="text-base leading-relaxed" style={{ color: '#475569' }}>
-                      Diferente de um ChatGPT genérico, o assistente do SAOOZ conhece seu histórico real. Pergunta qualquer coisa — "quanto sobrou em março?", "onde estou gastando mais?" — e a resposta vem dos seus dados, não de exemplo.
+                      Diferente de um ChatGPT genérico, o assistente do SAOOZ conhece seu histórico real. Pergunta qualquer coisa &mdash; &ldquo;quanto sobrou em março?&rdquo;, &ldquo;onde estou gastando mais?&rdquo; &mdash; e a resposta vem dos seus dados, não de exemplo.
                     </p>
                     <ul className="space-y-3">
                       {[
@@ -931,7 +931,7 @@ export function SalesLanding() {
                     Registrar um gasto<br />leva 10 segundos
                   </h2>
                   <p className="text-base leading-relaxed" style={{ color: '#475569' }}>
-                    Manda uma mensagem no WhatsApp: "Paguei R$ 80 de farmácia". O SAOOZ lança, categoriza e atualiza o painel. Sem abrir app, sem parar o que estava fazendo.
+                    Manda uma mensagem no WhatsApp: &ldquo;Paguei R$ 80 de farmácia&rdquo;. O SAOOZ lança, categoriza e atualiza o painel. Sem abrir app, sem parar o que estava fazendo.
                   </p>
                   <ul className="space-y-3">
                     {[
