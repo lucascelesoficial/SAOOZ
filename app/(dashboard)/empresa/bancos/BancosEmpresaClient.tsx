@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import {
   Landmark,
   Loader2,
@@ -115,27 +115,41 @@ export default function BancosEmpresaClient({ activeBusinessId, businesses }: Pr
   const [connectingBank, setConnectingBank] = useState(false)
   const [syncingItem, setSyncingItem] = useState<string | null>(null)
   const [deletingItem, setDeletingItem] = useState<string | null>(null)
+  const [pluggyReady, setPluggyReady] = useState(false)
+  const pluggyLoadAttempted = useRef(false)
 
-  function loadPluggyScript(): Promise<void> {
-    return new Promise((resolve, reject) => {
-      if (window.PluggyConnect) return resolve()
-      const existing = document.getElementById('pluggy-connect-script')
-      if (existing) {
-        const interval = setInterval(() => {
-          if (window.PluggyConnect) { clearInterval(interval); resolve() }
-        }, 100)
-        setTimeout(() => { clearInterval(interval); reject(new Error('Timeout ao carregar widget.')) }, 10000)
-        return
+  // Preload Pluggy Connect script on mount
+  useEffect(() => {
+    if (pluggyLoadAttempted.current) return
+    pluggyLoadAttempted.current = true
+
+    if (typeof window !== 'undefined' && window.PluggyConnect) {
+      setPluggyReady(true)
+      return
+    }
+
+    const existing = document.getElementById('pluggy-connect-script')
+    if (existing) {
+      existing.addEventListener('load', () => setPluggyReady(true), { once: true })
+      if ((existing as HTMLElement & { dataset: DOMStringMap }).dataset.loaded === 'true') {
+        setPluggyReady(true)
       }
-      const script = document.createElement('script')
-      script.id = 'pluggy-connect-script'
-      script.src = 'https://cdn.pluggy.ai/pluggy-connect/v2/pluggy-connect.js'
-      script.async = true
-      script.onload = () => resolve()
-      script.onerror = () => reject(new Error('Falha ao carregar o widget bancário.'))
-      document.head.appendChild(script)
-    })
-  }
+      return
+    }
+
+    const script = document.createElement('script')
+    script.id = 'pluggy-connect-script'
+    script.src = 'https://cdn.pluggy.ai/pluggy-connect/v2/pluggy-connect.js'
+    script.async = true
+    script.onload = () => {
+      script.dataset.loaded = 'true'
+      setPluggyReady(true)
+    }
+    script.onerror = () => {
+      console.error('[Pluggy] Falha ao carregar script do widget bancário.')
+    }
+    document.head.appendChild(script)
+  }, [])
 
   const loadItems = useCallback(async () => {
     if (!selectedBusinessId) {
@@ -165,11 +179,17 @@ export default function BancosEmpresaClient({ activeBusinessId, businesses }: Pr
       toast.error('Selecione uma empresa primeiro.')
       return
     }
+
+    if (!window.PluggyConnect) {
+      toast.error(pluggyReady
+        ? 'Erro ao inicializar widget bancário. Recarregue a página.'
+        : 'Widget ainda carregando, aguarde um segundo e tente novamente.')
+      return
+    }
+
     setConnectingBank(true)
 
     try {
-      await loadPluggyScript()
-
       const res = await fetch('/api/banking/connect-token')
       if (!res.ok) throw new Error('Falha ao obter token.')
       const { connectToken } = await res.json()
@@ -272,17 +292,19 @@ export default function BancosEmpresaClient({ activeBusinessId, businesses }: Pr
         </div>
         <Button
           onClick={handleConnectBank}
-          disabled={connectingBank || !selectedBusinessId}
+          disabled={connectingBank || !selectedBusinessId || !pluggyReady}
           size="sm"
           className="rounded-[8px] text-white gap-1.5"
           style={{ background: 'linear-gradient(135deg, var(--accent-blue), var(--accent-cyan))' }}
         >
-          {connectingBank ? (
+          {(connectingBank || !pluggyReady) ? (
             <Loader2 className="h-4 w-4 animate-spin" />
           ) : (
             <Plus className="h-4 w-4" />
           )}
-          <span className="hidden sm:inline">Conectar banco</span>
+          <span className="hidden sm:inline">
+            {!pluggyReady ? 'Carregando…' : 'Conectar banco'}
+          </span>
         </Button>
       </div>
 
@@ -358,16 +380,16 @@ export default function BancosEmpresaClient({ activeBusinessId, businesses }: Pr
               </p>
               <Button
                 onClick={handleConnectBank}
-                disabled={connectingBank}
+                disabled={connectingBank || !pluggyReady}
                 className="mt-4 rounded-[8px] text-white"
                 style={{ background: 'linear-gradient(135deg, var(--accent-blue), var(--accent-cyan))' }}
               >
-                {connectingBank ? (
+                {(connectingBank || !pluggyReady) ? (
                   <Loader2 className="h-4 w-4 animate-spin mr-2" />
                 ) : (
                   <Plus className="h-4 w-4 mr-2" />
                 )}
-                Conectar banco
+                {!pluggyReady ? 'Carregando…' : 'Conectar banco'}
               </Button>
             </div>
           )}
