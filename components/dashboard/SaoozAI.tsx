@@ -268,7 +268,8 @@ export function SaoozAI({ totals, categoryData }: SaoozAIProps) {
     )
   }
 
-  function _toggleVoice() {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  function toggleVoice() {
     primeTTS()
 
     if (voiceMode) {

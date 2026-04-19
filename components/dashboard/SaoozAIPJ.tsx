@@ -270,7 +270,8 @@ export function SaoozAIPJ({ userId }: SaoozAIPJProps) {
     )
   }
 
-  function _toggleVoice() {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  function toggleVoice() {
     primeTTS()
 
     if (voiceMode) {
