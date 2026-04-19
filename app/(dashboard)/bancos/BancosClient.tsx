@@ -105,8 +105,16 @@ export default function BancosClient() {
 
   // Load Pluggy Connect widget script
   useEffect(() => {
-    if (document.getElementById('pluggy-connect-script')) {
+    // Already loaded
+    if (typeof window !== 'undefined' && window.PluggyConnect) {
       setScriptLoaded(true)
+      return
+    }
+
+    const existing = document.getElementById('pluggy-connect-script')
+    if (existing) {
+      // Tag exists but may still be loading — wait for it
+      existing.addEventListener('load', () => setScriptLoaded(true))
       return
     }
 

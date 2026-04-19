@@ -119,8 +119,13 @@ export default function BancosEmpresaClient({ activeBusinessId, businesses }: Pr
 
   // Load Pluggy Connect widget script
   useEffect(() => {
-    if (document.getElementById('pluggy-connect-script')) {
+    if (typeof window !== 'undefined' && window.PluggyConnect) {
       setScriptLoaded(true)
+      return
+    }
+    const existing = document.getElementById('pluggy-connect-script')
+    if (existing) {
+      existing.addEventListener('load', () => setScriptLoaded(true))
       return
     }
     const script = document.createElement('script')
