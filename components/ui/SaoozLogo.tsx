@@ -14,7 +14,7 @@ const WORD_H  = { sm: 26, md: 38, lg: 52, xl: 72 } as const
 export function SaoozIcon({ size = 40 }: { size?: number }) {
   return (
     <Image
-      src="/icon-192.png"
+      src="/saooz-logo.svg"
       alt="SAOOZ"
       width={size}
       height={size}
