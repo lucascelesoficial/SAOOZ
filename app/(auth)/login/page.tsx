@@ -2,14 +2,12 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
 import { Loader2, Eye, EyeOff } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { trackEvent, identifyUser, EVENTS } from '@/lib/posthog/client'
 import { TurnstileWidget } from '@/components/security/TurnstileWidget'
 
 export default function LoginPage() {
-  const router = useRouter()
   const [loading, setLoading]   = useState(false)
   const [email, setEmail]       = useState('')
   const [password, setPassword] = useState('')
