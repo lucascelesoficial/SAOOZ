@@ -1,8 +1,8 @@
 import Link from 'next/link'
 import {
   ArrowRight, BadgeCheck, Brain, Building2,
-  CheckCircle2, ChevronRight, Layers,
-  Mail, Shield, Star, User, Zap,
+  CheckCircle2, ChevronRight, Landmark, Layers,
+  Mail, MessageCircle, Shield, Star, User, Zap,
 } from 'lucide-react'
 import { SaoozWordmark } from '@/components/ui/SaoozLogo'
 import { PricingSection } from '@/components/marketing/PricingSection'
@@ -527,19 +527,19 @@ export function SalesLanding() {
               {/* Pill tag */}
               <div className="inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-sm font-semibold"
                 style={{ background: '#EFF6FF', color: '#1E3A8A', border: '1px solid #BFDBFE' }}>
-                PF · PJ · IA em um único sistema
+                Controle financeiro pessoal e empresarial
               </div>
 
               {/* H1 */}
               <h1 style={{ fontSize: 'clamp(2rem, 5.5vw, 3.75rem)', fontWeight: 900, lineHeight: 1.1, color: '#0F172A' }}>
-                Entenda para onde vai o seu dinheiro —{' '}
-                <br className="hidden md:block" />
-                pessoal e empresarial
+                Você sabe quanto entrou.
+                <br />
+                <span style={{ color: '#1D4ED8' }}>Mas sabe onde foi?</span>
               </h1>
 
               {/* Subtitle */}
               <p className="mx-auto max-w-2xl text-base leading-relaxed md:text-lg" style={{ color: '#64748B' }}>
-                Um painel para controlar renda, gastos, impostos e IA. Para pessoa física, empresa ou os dois ao mesmo tempo.
+                O SAOOZ conecta sua conta bancária via Open Finance, categoriza tudo automaticamente e mostra — antes do fim do mês — o que precisa da sua atenção. Para pessoa física, empresa ou os dois.
               </p>
 
               {/* CTAs */}
@@ -561,9 +561,13 @@ export function SalesLanding() {
               </div>
 
               {/* Social proof */}
-              <div className="flex items-center justify-center gap-2 text-sm" style={{ color: '#94A3B8' }}>
-                <span style={{ color: '#f59e0b', fontSize: 16 }}>★★★★★</span>
-                <span style={{ color: '#64748B', fontWeight: 500 }}>Mais de 1.200 usuários ativos</span>
+              <div className="flex flex-wrap items-center justify-center gap-4 text-sm" style={{ color: '#94A3B8' }}>
+                <span className="flex items-center gap-1.5">
+                  <span style={{ color: '#f59e0b', fontSize: 16 }}>★★★★★</span>
+                  <span style={{ color: '#64748B', fontWeight: 500 }}>Avaliado 5 estrelas pelos usuários</span>
+                </span>
+                <span style={{ color: '#E2E8F0' }}>·</span>
+                <span style={{ color: '#64748B' }}>Open Finance · regulamentado pelo Banco Central</span>
               </div>
             </div>
 
@@ -576,15 +580,15 @@ export function SalesLanding() {
           ══════════════════════════════════════════════════════════ */}
           <section style={{ borderTop: '1px solid #E2E8F0', borderBottom: '1px solid #E2E8F0', background: '#FFFFFF' }}>
             <div className="mx-auto w-full max-w-6xl px-4 py-10 md:px-6">
-              <p className="text-center text-sm font-medium mb-8" style={{ color: '#64748B' }}>
-                Feito para funcionar do jeito que você já pensa em dinheiro
+              <p className="text-center text-sm font-medium mb-8" style={{ color: '#94A3B8' }}>
+                Construído com os padrões que você espera de um banco
               </p>
               <div className="grid grid-cols-2 gap-6 md:grid-cols-4">
                 {[
-                  { Icon: Shield,      label: 'Dados criptografados' },
-                  { Icon: BadgeCheck,  label: 'Sem acesso a senhas' },
-                  { Icon: Shield,      label: 'Somente leitura dos dados' },
-                  { Icon: Zap,         label: 'IA com contexto real' },
+                  { Icon: Shield,      label: 'Criptografia AES-256' },
+                  { Icon: BadgeCheck,  label: 'Open Finance oficial' },
+                  { Icon: Zap,         label: 'IA com seus dados reais' },
+                  { Icon: CheckCircle2, label: 'Cancele quando quiser' },
                 ].map(({ Icon, label }) => (
                   <div key={label} className="flex flex-col items-center gap-2 text-center">
                     <div className="inline-flex h-10 w-10 items-center justify-center rounded-[10px]"
@@ -610,9 +614,9 @@ export function SalesLanding() {
               </div>
               <div className="grid gap-8 md:grid-cols-3">
                 {[
-                  { num: '1', title: 'Crie sua conta',      desc: 'Menos de 2 minutos. Nome, e-mail e senha.' },
-                  { num: '2', title: 'Escolha seu modo',    desc: 'PF, PJ ou os dois. O painel monta sozinho.' },
-                  { num: '3', title: 'Tenha controle real', desc: 'Registre, analise e decida com dados — sem planilha.' },
+                  { num: '1', title: 'Crie sua conta',                  desc: 'Dois minutos. Nome, e-mail, senha. Sem cartão de crédito agora.' },
+                  { num: '2', title: 'Conecte seu banco',               desc: 'Via Open Finance, regulamentado pelo Banco Central. As transações entram sozinhas.' },
+                  { num: '3', title: 'Feche o mês sabendo tudo',        desc: 'A IA organiza, categoriza e avisa antes que o problema apareça.' },
                 ].map((step) => (
                   <div key={step.num} className="relative text-center space-y-4 p-8 rounded-[18px]"
                     style={{ border: '1px solid #E2E8F0', background: '#FFFFFF' }}>
@@ -643,17 +647,17 @@ export function SalesLanding() {
                     Visão geral
                   </span>
                   <h2 className="text-3xl font-black md:text-4xl" style={{ color: '#0F172A', lineHeight: 1.15 }}>
-                    Pessoal e empresa separados, mas em um só painel
+                    Pessoal e empresa no mesmo lugar — sem misturar
                   </h2>
                   <p className="text-base leading-relaxed" style={{ color: '#475569' }}>
-                    Chega de misturar conta pessoal com empresarial. No SAOOZ você tem um painel para cada lado — e ainda vê os dois juntos quando quiser.
+                    Um painel para o seu financeiro pessoal. Outro para a empresa. Um clique separa os dois. Você vê cada lado com clareza — e ainda consegue comparar quando quiser.
                   </p>
                   <ul className="space-y-3">
                     {[
-                      'Dashboard de PF separado do PJ',
-                      'Troca de modo com um clique',
-                      'Saldo, renda e gastos em tempo real',
-                      'Histórico por mês sem perder nada',
+                      'Painel PF e painel PJ independentes',
+                      'Troca de modo com um clique no topo',
+                      'Saldo, entradas e saídas sempre atualizados',
+                      'Histórico mês a mês sem perder nenhum dado',
                     ].map((b) => (
                       <li key={b} className="flex items-center gap-3 text-sm" style={{ color: '#334155' }}>
                         <BadgeCheck className="h-5 w-5 shrink-0" style={{ color: '#1E3A8A' }} />
@@ -690,17 +694,17 @@ export function SalesLanding() {
                       Controle pessoal
                     </span>
                     <h2 className="text-3xl font-black md:text-4xl" style={{ color: '#0F172A', lineHeight: 1.15 }}>
-                      Saiba exatamente para onde foi cada real
+                      Nada some sem você saber
                     </h2>
                     <p className="text-base leading-relaxed" style={{ color: '#475569' }}>
-                      A IA categoriza seus gastos e mostra os padrões antes que virem problema. Você vê em segundos onde o dinheiro some.
+                      Cada transação que entra pelo banco já chega categorizada. A IA acompanha o padrão dos seus gastos e avisa quando algo sobe fora do normal — antes de virar problema no fim do mês.
                     </p>
                     <ul className="space-y-3">
                       {[
-                        '16 categorias de gasto inteligentes',
-                        'Alertas quando um gasto sobe além do padrão',
-                        'Meta de reserva de emergência com progresso',
-                        'Assistente que registra por texto ou voz',
+                        'Categorização automática das transações',
+                        'Alerta quando um gasto sobe além do padrão',
+                        'Reserva de emergência com meta e progresso',
+                        'Registro por texto, voz ou WhatsApp',
                       ].map((b) => (
                         <li key={b} className="flex items-center gap-3 text-sm" style={{ color: '#334155' }}>
                           <BadgeCheck className="h-5 w-5 shrink-0" style={{ color: '#1E3A8A' }} />
@@ -728,16 +732,16 @@ export function SalesLanding() {
                       Módulo Empresarial
                     </span>
                     <h2 className="text-3xl font-black md:text-4xl" style={{ color: '#0F172A', lineHeight: 1.15 }}>
-                      DRE, imposto e fluxo de caixa no mesmo lugar
+                      O que só contador sabia, agora você vê sozinho
                     </h2>
                     <p className="text-base leading-relaxed" style={{ color: '#475569' }}>
-                      Faturamento, despesas fixas, pró-labore e estimativa de imposto — tudo calculado automaticamente. Suporte a MEI, Simples, Lucro Presumido e Lucro Real.
+                      DRE, fluxo de caixa e imposto calculados automaticamente conforme o seu regime — MEI, Simples, Lucro Presumido ou Real. Você fecha o mês com o número certo, sem esperar ninguém.
                     </p>
                     <ul className="space-y-3">
                       {[
-                        'Cálculo automático de imposto por regime',
-                        'DRE mensal sem contador',
-                        'Fluxo de caixa com vencimentos futuros',
+                        'Imposto calculado pelo regime tributário certo',
+                        'DRE mensal gerado automaticamente',
+                        'Fluxo de caixa com o que vence esta semana',
                         'Até 5 empresas no mesmo plano PRO',
                       ].map((b) => (
                         <li key={b} className="flex items-center gap-3 text-sm" style={{ color: '#334155' }}>
@@ -774,17 +778,17 @@ export function SalesLanding() {
                       Assistente IA
                     </span>
                     <h2 className="text-3xl font-black md:text-4xl" style={{ color: '#0F172A', lineHeight: 1.15 }}>
-                      Pergunte do seu jeito. A resposta vem com seus dados reais.
+                      Uma IA que sabe o que entrou e o que saiu
                     </h2>
                     <p className="text-base leading-relaxed" style={{ color: '#475569' }}>
-                      O assistente acessa seu histórico real — renda, gastos, categorias PF e PJ — e responde com análises do seu momento, não respostas genéricas.
+                      Diferente de um ChatGPT genérico, o assistente do SAOOZ conhece seu histórico real. Pergunta qualquer coisa — "quanto sobrou em março?", "onde estou gastando mais?" — e a resposta vem dos seus dados, não de exemplo.
                     </p>
                     <ul className="space-y-3">
                       {[
-                        'Contexto real: sabe o que entrou e saiu',
-                        'Registra despesa por comando de texto ou voz',
-                        'Análise comparativa de meses',
-                        'Funciona para PF e PJ simultaneamente',
+                        'Acessa seu histórico real de entradas e saídas',
+                        'Registra gastos por texto, voz ou WhatsApp',
+                        'Compara meses e detecta mudanças de padrão',
+                        'Funciona para PF e PJ ao mesmo tempo',
                       ].map((b) => (
                         <li key={b} className="flex items-center gap-3 text-sm" style={{ color: '#334155' }}>
                           <BadgeCheck className="h-5 w-5 shrink-0" style={{ color: '#1E3A8A' }} />
@@ -801,6 +805,154 @@ export function SalesLanding() {
               </div>
             </div>
 
+          </section>
+
+          {/* ══════════════════════════════════════════════════════════
+              OPEN FINANCE
+          ══════════════════════════════════════════════════════════ */}
+          <section style={{ background: '#F8FAFC', borderTop: '1px solid #E2E8F0' }}>
+            <div className="mx-auto w-full max-w-6xl px-4 py-20 md:px-6">
+              <div className="grid gap-12 md:grid-cols-2 md:items-center">
+                {/* Texto */}
+                <div className="space-y-6">
+                  <span className="inline-block rounded-full px-3 py-1 text-xs font-bold uppercase tracking-wider"
+                    style={{ background: '#EFF6FF', color: '#1E3A8A', border: '1px solid #BFDBFE' }}>
+                    Open Finance
+                  </span>
+                  <h2 className="text-3xl font-black md:text-4xl" style={{ color: '#0F172A', lineHeight: 1.15 }}>
+                    Seu banco entra sozinho.<br />Você não digita nada.
+                  </h2>
+                  <p className="text-base leading-relaxed" style={{ color: '#475569' }}>
+                    Via Open Finance — tecnologia regulamentada pelo Banco Central — suas transações chegam automaticamente no SAOOZ. Sem exportar planilha, sem copiar extrato, sem lançamento manual.
+                  </p>
+                  <ul className="space-y-3">
+                    {[
+                      'Conexão segura, sem compartilhar senha',
+                      'Transações importadas e já categorizadas',
+                      'Regulamentado pelo Banco Central do Brasil',
+                      'Compatível com os principais bancos e fintechs',
+                    ].map((b) => (
+                      <li key={b} className="flex items-center gap-3 text-sm" style={{ color: '#334155' }}>
+                        <BadgeCheck className="h-5 w-5 shrink-0" style={{ color: '#1E3A8A' }} />
+                        {b}
+                      </li>
+                    ))}
+                  </ul>
+                  <Link href="/cadastro" className="inline-flex h-11 items-center gap-2 rounded-[11px] px-6 text-sm font-bold text-white"
+                    style={{ background: 'linear-gradient(135deg, #1E3A8A, #1D4ED8)' }}>
+                    Conectar meu banco <ArrowRight className="h-4 w-4" />
+                  </Link>
+                </div>
+                {/* Visual */}
+                <div className="flex justify-center md:justify-end">
+                  <div style={{ borderRadius: 20, padding: 28, background: '#FFFFFF', boxShadow: '0 20px 60px rgba(30,58,138,0.10)', border: '1px solid #E2E8F0', width: '100%', maxWidth: 400 }}>
+                    <div style={{ marginBottom: 20 }}>
+                      <p style={{ fontSize: 11, fontWeight: 700, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 12 }}>
+                        Bancos compatíveis
+                      </p>
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10 }}>
+                        {[
+                          { name: 'Nubank',    color: '#820AD1' },
+                          { name: 'Itaú',      color: '#EC7000' },
+                          { name: 'Bradesco',  color: '#CC092F' },
+                          { name: 'Santander', color: '#EC0000' },
+                          { name: 'Inter',     color: '#FF7A00' },
+                          { name: 'C6 Bank',   color: '#2D2D2D' },
+                        ].map((bank) => (
+                          <div key={bank.name} style={{ borderRadius: 10, padding: '10px 8px', border: '1px solid #E2E8F0', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
+                            <div style={{ width: 8, height: 8, borderRadius: '50%', background: bank.color, flexShrink: 0 }} />
+                            <span style={{ fontSize: 11, fontWeight: 600, color: '#334155' }}>{bank.name}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                    <div style={{ borderRadius: 12, padding: '14px 16px', background: '#F0FDF4', border: '1px solid #BBF7D0', display: 'flex', alignItems: 'center', gap: 12 }}>
+                      <div style={{ width: 36, height: 36, borderRadius: '50%', background: '#22c55e', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                        <Landmark style={{ width: 18, height: 18, color: '#FFFFFF' }} />
+                      </div>
+                      <div>
+                        <p style={{ fontSize: 12, fontWeight: 700, color: '#15803D' }}>Conta conectada com sucesso</p>
+                        <p style={{ fontSize: 11, color: '#4ADE80', marginTop: 2 }}>47 transações importadas · hoje às 09:12</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          {/* ══════════════════════════════════════════════════════════
+              WHATSAPP
+          ══════════════════════════════════════════════════════════ */}
+          <section style={{ background: '#FFFFFF', borderTop: '1px solid #E2E8F0' }}>
+            <div className="mx-auto w-full max-w-6xl px-4 py-20 md:px-6">
+              <div className="grid gap-12 md:grid-cols-2 md:items-center">
+                {/* Visual (esquerda) */}
+                <div className="flex justify-center md:justify-start order-2 md:order-1">
+                  <div style={{ borderRadius: 20, overflow: 'hidden', background: '#FFFFFF', boxShadow: '0 20px 60px rgba(30,58,138,0.10)', border: '1px solid #E2E8F0', width: '100%', maxWidth: 360 }}>
+                    {/* Header do WhatsApp */}
+                    <div style={{ background: '#25D366', padding: '14px 16px', display: 'flex', alignItems: 'center', gap: 10 }}>
+                      <div style={{ width: 36, height: 36, borderRadius: '50%', background: '#FFFFFF', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <span style={{ fontSize: 14, fontWeight: 900, color: '#25D366' }}>S</span>
+                      </div>
+                      <div>
+                        <p style={{ fontSize: 13, fontWeight: 700, color: '#FFFFFF' }}>SAOOZ</p>
+                        <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.75)' }}>online</p>
+                      </div>
+                    </div>
+                    {/* Mensagens */}
+                    <div style={{ padding: '16px 14px', background: '#ECE5DD', display: 'flex', flexDirection: 'column', gap: 8, minHeight: 200 }}>
+                      <div style={{ alignSelf: 'flex-end', background: '#DCF8C6', borderRadius: '12px 0 12px 12px', padding: '8px 12px', maxWidth: '80%' }}>
+                        <p style={{ fontSize: 13, color: '#1A1A1A' }}>Paguei R$ 80 de farmácia agora</p>
+                        <p style={{ fontSize: 10, color: '#8B8B8B', marginTop: 2, textAlign: 'right' }}>14:32 ✓✓</p>
+                      </div>
+                      <div style={{ alignSelf: 'flex-start', background: '#FFFFFF', borderRadius: '0 12px 12px 12px', padding: '8px 12px', maxWidth: '85%' }}>
+                        <p style={{ fontSize: 13, color: '#1A1A1A' }}>✅ Lançado! R$ 80 em <strong>Saúde</strong> — {new Date().toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' })}</p>
+                        <p style={{ fontSize: 10, color: '#8B8B8B', marginTop: 2 }}>14:32</p>
+                      </div>
+                      <div style={{ alignSelf: 'flex-end', background: '#DCF8C6', borderRadius: '12px 0 12px 12px', padding: '8px 12px', maxWidth: '80%' }}>
+                        <p style={{ fontSize: 13, color: '#1A1A1A' }}>Qual meu saldo hoje?</p>
+                        <p style={{ fontSize: 10, color: '#8B8B8B', marginTop: 2, textAlign: 'right' }}>14:33 ✓✓</p>
+                      </div>
+                      <div style={{ alignSelf: 'flex-start', background: '#FFFFFF', borderRadius: '0 12px 12px 12px', padding: '8px 12px', maxWidth: '85%' }}>
+                        <p style={{ fontSize: 13, color: '#1A1A1A' }}>Saldo disponível: <strong style={{ color: '#22c55e' }}>R$ 3.240</strong>. Você gastou R$ 1.890 este mês — 18% a mais que abril.</p>
+                        <p style={{ fontSize: 10, color: '#8B8B8B', marginTop: 2 }}>14:33</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                {/* Texto (direita) */}
+                <div className="space-y-6 order-1 md:order-2">
+                  <span className="inline-block rounded-full px-3 py-1 text-xs font-bold uppercase tracking-wider"
+                    style={{ background: '#F0FDF4', color: '#15803D', border: '1px solid #BBF7D0' }}>
+                    WhatsApp
+                  </span>
+                  <h2 className="text-3xl font-black md:text-4xl" style={{ color: '#0F172A', lineHeight: 1.15 }}>
+                    Registrar um gasto<br />leva 10 segundos
+                  </h2>
+                  <p className="text-base leading-relaxed" style={{ color: '#475569' }}>
+                    Manda uma mensagem no WhatsApp: "Paguei R$ 80 de farmácia". O SAOOZ lança, categoriza e atualiza o painel. Sem abrir app, sem parar o que estava fazendo.
+                  </p>
+                  <ul className="space-y-3">
+                    {[
+                      'Registro por mensagem de texto ou áudio',
+                      'Categorização automática pelo contexto',
+                      'Pergunte o saldo, o gasto do mês, o que vence',
+                      'Funciona para PF e PJ',
+                    ].map((b) => (
+                      <li key={b} className="flex items-center gap-3 text-sm" style={{ color: '#334155' }}>
+                        <MessageCircle className="h-5 w-5 shrink-0" style={{ color: '#25D366' }} />
+                        {b}
+                      </li>
+                    ))}
+                  </ul>
+                  <Link href="/cadastro" className="inline-flex h-11 items-center gap-2 rounded-[11px] px-6 text-sm font-bold text-white"
+                    style={{ background: 'linear-gradient(135deg, #1E3A8A, #1D4ED8)' }}>
+                    Começar agora <ArrowRight className="h-4 w-4" />
+                  </Link>
+                </div>
+              </div>
+            </div>
           </section>
 
           {/* ══════════════════════════════════════════════════════════
@@ -914,9 +1066,9 @@ export function SalesLanding() {
               </div>
               <div className="grid gap-8 md:grid-cols-3">
                 {[
-                  { metric: '5 min',          label: 'para fechar o mês',        desc: 'Em vez de dias de planilha e retrabalho.' },
-                  { metric: 'Tempo real',      label: 'visão do seu caixa',       desc: 'Sem esperar o fim do mês para saber o saldo.' },
-                  { metric: 'Antes do impacto', label: 'detecção de desvio pela IA', desc: 'A IA identifica o problema antes que vire crise.' },
+                  { metric: '10 seg',   label: 'para registrar um gasto pelo WhatsApp', desc: 'Sem abrir app. Só mandar a mensagem.' },
+                  { metric: 'Zero',     label: 'planilhas paralelas',                    desc: 'Tudo no mesmo lugar, atualizado em tempo real.' },
+                  { metric: 'Antes',    label: 'de virar problema',                      desc: 'A IA detecta o desvio antes do fim do mês.' },
                 ].map((r) => (
                   <div key={r.label} className="text-center space-y-2">
                     <p className="text-4xl font-black md:text-5xl" style={{ color: '#FFFFFF' }}>{r.metric}</p>
@@ -984,10 +1136,10 @@ export function SalesLanding() {
           <section style={{ background: 'linear-gradient(135deg, #1E3A8A, #1D4ED8, #2563EB)' }}>
             <div className="mx-auto w-full max-w-6xl px-4 py-24 md:px-6 text-center space-y-6">
               <h2 className="text-3xl font-black md:text-4xl" style={{ color: '#FFFFFF' }}>
-                Comece a entender seu dinheiro hoje
+                Feche o mês sabendo exatamente onde você está
               </h2>
               <p className="mx-auto max-w-xl text-base" style={{ color: 'rgba(255,255,255,0.7)' }}>
-                Configuração em menos de 5 minutos. Sem planilha, sem contador.
+                Dois minutos para criar a conta. Seu banco conecta sozinho. A IA faz o resto.
               </p>
               <Link
                 href="/cadastro"
