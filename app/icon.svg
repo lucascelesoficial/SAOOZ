@@ -1,97 +1,29 @@
 <svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <defs>
-    <!-- Background gradient: linear-gradient(135deg, #0d1021, #080d28) -->
-    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#0d1021"/>
-      <stop offset="100%" stop-color="#080d28"/>
-    </linearGradient>
+  <!-- White rounded tile background -->
+  <rect width="512" height="512" rx="115" fill="white"/>
+  <!-- Subtle border -->
+  <rect width="512" height="512" rx="115" fill="none" stroke="#E2E8F0" stroke-width="6"/>
 
-    <!-- Glow filters matching NucleusIcon -->
-    <filter id="g1" x="-120%" y="-120%" width="340%" height="340%">
-      <feGaussianBlur stdDeviation="10" result="b1"/>
-      <feGaussianBlur stdDeviation="20" result="b2" in="SourceGraphic"/>
-      <feMerge>
-        <feMergeNode in="b2"/>
-        <feMergeNode in="b1"/>
-        <feMergeNode in="SourceGraphic"/>
-      </feMerge>
-    </filter>
-    <filter id="g2" x="-80%" y="-80%" width="260%" height="260%">
-      <feGaussianBlur stdDeviation="6" result="b"/>
-      <feMerge>
-        <feMergeNode in="b"/>
-        <feMergeNode in="b"/>
-        <feMergeNode in="SourceGraphic"/>
-      </feMerge>
-    </filter>
-    <filter id="g3" x="-200%" y="-200%" width="500%" height="500%">
-      <feGaussianBlur stdDeviation="15" result="b"/>
-      <feMerge>
-        <feMergeNode in="b"/>
-        <feMergeNode in="b"/>
-        <feMergeNode in="b"/>
-        <feMergeNode in="SourceGraphic"/>
-      </feMerge>
-    </filter>
-
-    <radialGradient id="cg" cx="50%" cy="50%" r="50%">
-      <stop offset="0%"   stop-color="#a5f3fc" stop-opacity="1"/>
-      <stop offset="60%"  stop-color="#67e8f9" stop-opacity="0.6"/>
-      <stop offset="100%" stop-color="#3b82f6" stop-opacity="0"/>
-    </radialGradient>
-
-    <!-- Clip to rounded rect -->
-    <clipPath id="clip">
-      <rect width="512" height="512" rx="112" ry="112"/>
-    </clipPath>
-  </defs>
-
-  <!-- Dark background with gradient -->
-  <rect width="512" height="512" rx="112" ry="112" fill="url(#bg)"/>
-
-  <!-- Border: #1e2847, 1px → scaled to ~5px at 512px -->
-  <rect width="512" height="512" rx="112" ry="112"
-    fill="none" stroke="#1e2847" stroke-width="5"/>
-
-  <!-- NucleusIcon centered, scaled to 82% of 512 = ~420px, viewBox 80×80 scaled -->
-  <!-- Scale factor: 420/80 = 5.25, center offset: (512-420)/2 = 46 -->
-  <g transform="translate(46, 46) scale(5.25)">
-
-    <!-- Ring 1 — outermost, dashed, cyan-blue -->
-    <circle cx="40" cy="40" r="36"
-      stroke="#3b82f6" stroke-width="1" fill="none"
-      filter="url(#g1)"
-      stroke-dasharray="6 10"/>
-
-    <!-- Ring 2 — solid blue -->
-    <circle cx="40" cy="40" r="30"
-      stroke="#60a5fa" stroke-width="1.5" fill="none"
-      filter="url(#g2)"/>
-
-    <!-- Ring 3 — blue-indigo -->
-    <circle cx="40" cy="40" r="23"
-      stroke="#818cf8" stroke-width="2" fill="none"
-      filter="url(#g2)"/>
-
-    <!-- Ring 4 — violet-purple -->
-    <circle cx="40" cy="40" r="16"
-      stroke="#a78bfa" stroke-width="2.5" fill="none"
-      filter="url(#g2)"/>
-
-    <!-- Ring 5 — innermost magenta -->
-    <circle cx="40" cy="40" r="9.5"
-      stroke="#c084fc" stroke-width="2" fill="none"
-      filter="url(#g2)"/>
-
-    <!-- Ambient halo -->
-    <circle cx="40" cy="40" r="9"
-      fill="url(#cg)" opacity="0.4"
-      filter="url(#g3)"/>
-
-    <!-- Core bright dot -->
-    <circle cx="40" cy="40" r="3.5"
-      fill="#a5f3fc"
-      filter="url(#g3)"/>
-
+  <!-- Shadow layer (depth effect — bottom-left dark) -->
+  <g opacity="0.18" transform="translate(8,10)">
+    <!-- S shape shadow in dark navy -->
+    <path d="M168 148 L344 148 C362 148 374 158 374 174 L374 210 C374 226 362 236 344 236 L194 236 C188 236 184 240 184 246 L184 268 C184 274 188 278 194 278 L344 278 C362 278 374 288 374 304 L374 340 C374 356 362 366 344 366 L168 366 C150 366 138 356 138 340 L138 304 C138 288 150 278 168 278 L318 278 C324 278 328 274 328 268 L328 246 C328 240 324 236 318 236 L168 236 C150 236 138 226 138 210 L138 174 C138 158 150 148 168 148 Z" fill="#1E3A8A"/>
   </g>
+
+  <!-- Light sky blue highlight (top-right faces — 3D effect) -->
+  <path d="M174 148 L344 148 C362 148 374 158 374 174 L374 180 L154 180 L154 174 C154 158 162 148 174 148 Z" fill="#BFDBFE" opacity="0.9"/>
+  <path d="M374 174 L374 210 L354 226 L354 192 Z" fill="#93C5FD" opacity="0.8"/>
+  <path d="M138 304 L138 340 C138 356 150 366 168 366 L174 366 L154 346 L154 310 Z" fill="#BFDBFE" opacity="0.6"/>
+  <path d="M328 246 L328 268 L348 258 L348 236 Z" fill="#93C5FD" opacity="0.7"/>
+
+  <!-- Main S body — brand blue -->
+  <path d="M168 158 L344 158 C356 158 364 165 364 174 L364 210 C364 219 356 226 344 226 L194 226 C182 226 174 233 174 242 L174 272 C174 281 182 288 194 288 L344 288 C356 288 364 295 364 304 L364 340 C364 349 356 356 344 356 L168 356 C156 356 148 349 148 340 L148 304 C148 295 156 288 168 288 L318 288 C330 288 338 281 338 272 L338 242 C338 233 330 226 318 226 L168 226 C156 226 148 219 148 210 L148 174 C148 165 156 158 168 158 Z" fill="url(#brandGrad)"/>
+
+  <defs>
+    <linearGradient id="brandGrad" x1="148" y1="158" x2="374" y2="356" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#3B82F6"/>
+      <stop offset="50%" stop-color="#2563EB"/>
+      <stop offset="100%" stop-color="#1D4ED8"/>
+    </linearGradient>
+  </defs>
 </svg>
