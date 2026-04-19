@@ -453,7 +453,7 @@ export function Topbar({
           </Link>
         )}
 
-        <ThemeToggle />
+        <ThemeToggle onDark />
 
         <div ref={menuRef} className="relative">
           <button

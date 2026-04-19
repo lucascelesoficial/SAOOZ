@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import { Moon, Sun } from 'lucide-react'
 import { useTheme } from 'next-themes'
 
-export function ThemeToggle() {
+export function ThemeToggle({ onDark = false }: { onDark?: boolean }) {
   const { resolvedTheme, setTheme } = useTheme()
   const [mounted, setMounted] = useState(false)
 
@@ -15,8 +15,8 @@ export function ThemeToggle() {
   if (!mounted) {
     return (
       <button
-        className="h-8 w-8 rounded-[8px] border flex items-center justify-center text-[var(--text-soft)]"
-        style={{ borderColor: 'var(--panel-border)' }}
+        className="h-8 w-8 rounded-[8px] flex items-center justify-center"
+        style={onDark ? { color: 'rgba(255,255,255,0.75)' } : { border: '1px solid var(--panel-border)', color: 'var(--text-soft)' }}
         aria-label="Alternar tema"
         disabled
       >
@@ -30,8 +30,11 @@ export function ThemeToggle() {
   return (
     <button
       onClick={() => setTheme(isDark ? 'light' : 'dark')}
-      className="h-8 w-8 rounded-[8px] border flex items-center justify-center transition-colors"
-      style={{ borderColor: 'var(--panel-border)', color: 'var(--text-base)' }}
+      className="h-8 w-8 rounded-[8px] flex items-center justify-center transition-opacity hover:opacity-70"
+      style={onDark
+        ? { background: 'transparent', color: '#ffffff' }
+        : { border: '1px solid var(--panel-border)', color: 'var(--text-base)' }
+      }
       aria-label={isDark ? 'Ativar modo claro' : 'Ativar modo escuro'}
       title={isDark ? 'Modo claro' : 'Modo escuro'}
     >
