@@ -64,6 +64,7 @@ const PJ_NAV = [
   { href: '/empresa',                   label: 'Empresa',        icon: Building2        },
   { href: '/empresa/financas',          label: 'Finanças',       icon: TrendingUp       },
   { href: '/empresa/despesas',          label: 'Despesas',       icon: TrendingDown     },
+  { href: '/empresa/bancos',            label: 'Bancos',         icon: Landmark         },
   { href: '/empresa/clientes',          label: 'Clientes',       icon: Users            },
   { href: '/empresa/fornecedores',      label: 'Fornecedores',   icon: Truck            },
   { href: '/empresa/reserva-emergencia',label: 'Reserva',        icon: ShieldCheck      },

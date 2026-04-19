@@ -16,6 +16,7 @@ interface DbBankItem {
   id: string; user_id: string; pluggy_item_id: string; connector_name: string
   connector_id: number | null; status: string; last_updated_at: string | null
   error_message: string | null; created_at: string; updated_at: string
+  mode: 'pf' | 'pj'; business_id: string | null
   bank_accounts: DbBankAccount[]
 }
 
@@ -23,22 +24,34 @@ export const dynamic = 'force-dynamic'
 
 // ── GET /api/banking/items ────────────────────────────────────────────────────
 // Returns user's connected bank items with their accounts and live balances.
+// Query params: ?mode=pf|pj  (default: pf)
+//               &businessId=<uuid>  (required when mode=pj)
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   const auth = await requireUser()
   if (!auth.ok) return withSecurityHeaders(auth.response)
+
+  const url = new URL(request.url)
+  const mode = (url.searchParams.get('mode') ?? 'pf') as 'pf' | 'pj'
+  const businessId = url.searchParams.get('businessId')
 
   try {
     const supabase = await createClient()
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const db = supabase as any
 
-    // Load all items + accounts from DB
-    const { data: rawItems, error } = await db
+    let query = db
       .from('bank_items')
       .select('*, bank_accounts(*)')
       .eq('user_id', auth.user.id)
-      .order('created_at', { ascending: false }) as { data: DbBankItem[] | null; error: unknown }
+      .eq('mode', mode)
+      .order('created_at', { ascending: false })
+
+    if (mode === 'pj' && businessId) {
+      query = query.eq('business_id', businessId)
+    }
+
+    const { data: rawItems, error } = await query as { data: DbBankItem[] | null; error: unknown }
 
     if (error) throw error
     const dbItems = (rawItems ?? []) as DbBankItem[]
@@ -100,6 +113,7 @@ export async function GET() {
 
 // ── POST /api/banking/items ───────────────────────────────────────────────────
 // Called after Pluggy Connect onSuccess to store the new item in DB.
+// Body: { pluggyItemId: string; mode?: 'pf'|'pj'; businessId?: string }
 
 export async function POST(request: NextRequest) {
   const originCheck = requireSameOrigin(request)
@@ -113,6 +127,15 @@ export async function POST(request: NextRequest) {
 
     if (!body?.pluggyItemId || typeof body.pluggyItemId !== 'string') {
       return withSecurityHeaders(NextResponse.json({ error: 'pluggyItemId obrigatório.' }, { status: 400 }))
+    }
+
+    const mode: 'pf' | 'pj' = body.mode === 'pj' ? 'pj' : 'pf'
+    const businessId: string | null = (mode === 'pj' && typeof body.businessId === 'string')
+      ? body.businessId
+      : null
+
+    if (mode === 'pj' && !businessId) {
+      return withSecurityHeaders(NextResponse.json({ error: 'businessId obrigatório para modo PJ.' }, { status: 400 }))
     }
 
     const apiKey = await getApiKey()
@@ -134,6 +157,8 @@ export async function POST(request: NextRequest) {
           connector_id: pluggyItem.connector.id,
           status: normalizeItemStatus(pluggyItem.status),
           last_updated_at: pluggyItem.lastUpdatedAt,
+          mode,
+          business_id: businessId,
           updated_at: new Date().toISOString(),
         },
         { onConflict: 'pluggy_item_id' }

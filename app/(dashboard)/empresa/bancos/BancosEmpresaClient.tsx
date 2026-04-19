@@ -13,12 +13,18 @@ import {
   AlertCircle,
   CheckCircle2,
   Clock,
+  Building2,
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { formatCurrency } from '@/lib/utils/formatters'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
+
+interface Business {
+  id: string
+  name: string
+}
 
 interface BankAccount {
   id: string
@@ -40,7 +46,14 @@ interface BankItem {
   last_updated_at: string | null
   error_message: string | null
   created_at: string
+  mode: 'pf' | 'pj'
+  business_id: string | null
   bank_accounts: BankAccount[]
+}
+
+interface Props {
+  activeBusinessId: string | null
+  businesses: Business[]
 }
 
 // ── Pluggy widget typings (loaded via CDN) ────────────────────────────────────
@@ -95,7 +108,8 @@ function formatDate(iso: string | null): string {
 
 // ── Main component ────────────────────────────────────────────────────────────
 
-export default function BancosClient() {
+export default function BancosEmpresaClient({ activeBusinessId, businesses }: Props) {
+  const [selectedBusinessId, setSelectedBusinessId] = useState<string | null>(activeBusinessId ?? businesses[0]?.id ?? null)
   const [items, setItems] = useState<BankItem[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [connectingBank, setConnectingBank] = useState(false)
@@ -109,7 +123,6 @@ export default function BancosClient() {
       setScriptLoaded(true)
       return
     }
-
     const script = document.createElement('script')
     script.id = 'pluggy-connect-script'
     script.src = 'https://cdn.pluggy.ai/pluggy-connect/v2/pluggy-connect.js'
@@ -120,9 +133,14 @@ export default function BancosClient() {
   }, [])
 
   const loadItems = useCallback(async () => {
+    if (!selectedBusinessId) {
+      setItems([])
+      setIsLoading(false)
+      return
+    }
     setIsLoading(true)
     try {
-      const res = await fetch('/api/banking/items')
+      const res = await fetch(`/api/banking/items?mode=pj&businessId=${selectedBusinessId}`)
       if (!res.ok) throw new Error('Falha ao carregar bancos.')
       const data = await res.json()
       setItems(data.items ?? [])
@@ -131,13 +149,17 @@ export default function BancosClient() {
     } finally {
       setIsLoading(false)
     }
-  }, [])
+  }, [selectedBusinessId])
 
   useEffect(() => {
     loadItems()
   }, [loadItems])
 
   async function handleConnectBank() {
+    if (!selectedBusinessId) {
+      toast.error('Selecione uma empresa primeiro.')
+      return
+    }
     if (!scriptLoaded || !window.PluggyConnect) {
       toast.error('Widget ainda carregando. Tente novamente em instantes.')
       return
@@ -154,19 +176,20 @@ export default function BancosClient() {
         connectToken,
         onSuccess: async ({ item }) => {
           toast.loading('Registrando banco…', { id: 'bank-register' })
-
           try {
             const postRes = await fetch('/api/banking/items', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ pluggyItemId: item.id }),
+              body: JSON.stringify({
+                pluggyItemId: item.id,
+                mode: 'pj',
+                businessId: selectedBusinessId,
+              }),
             })
-
             if (!postRes.ok) {
               const errData = await postRes.json().catch(() => ({}))
               throw new Error(errData.error ?? 'Falha ao registrar banco.')
             }
-
             toast.success('Banco conectado!', { id: 'bank-register' })
             await loadItems()
           } catch (err) {
@@ -191,7 +214,6 @@ export default function BancosClient() {
   async function handleSync(itemId: string) {
     setSyncingItem(itemId)
     toast.loading('Sincronizando transações…', { id: `sync-${itemId}` })
-
     try {
       const res = await fetch('/api/banking/sync', {
         method: 'POST',
@@ -199,9 +221,7 @@ export default function BancosClient() {
         body: JSON.stringify({ itemId, months: 3 }),
       })
       const data = await res.json()
-
       if (!res.ok) throw new Error(data.error ?? 'Falha ao sincronizar.')
-
       toast.success(
         `Sincronizado! ${data.imported} transações importadas, ${data.skipped} ignoradas.`,
         { id: `sync-${itemId}` }
@@ -215,17 +235,14 @@ export default function BancosClient() {
   }
 
   async function handleDelete(itemId: string, connectorName: string) {
-    if (!confirm(`Desconectar ${connectorName}? As despesas já importadas serão mantidas.`)) return
-
+    if (!confirm(`Desconectar ${connectorName}? As receitas e despesas já importadas serão mantidas.`)) return
     setDeletingItem(itemId)
-
     try {
       const res = await fetch(`/api/banking/items?id=${itemId}`, { method: 'DELETE' })
       if (!res.ok) {
         const data = await res.json().catch(() => ({}))
         throw new Error(data.error ?? 'Falha ao desconectar.')
       }
-
       toast.success(`${connectorName} desconectado.`)
       setItems((prev) => prev.filter((i) => i.id !== itemId))
     } catch (err) {
@@ -235,8 +252,7 @@ export default function BancosClient() {
     }
   }
 
-  // ── Totals ──────────────────────────────────────────────────────────────────
-
+  const selectedBusiness = businesses.find((b) => b.id === selectedBusinessId)
   const totalBalance = items
     .flatMap((i) => i.bank_accounts)
     .filter((a) => a.type === 'BANK')
@@ -247,14 +263,14 @@ export default function BancosClient() {
   return (
     <div className="mx-auto max-w-2xl pb-24 md:pb-0">
       {/* Header */}
-      <div className="mb-6 flex items-center justify-between">
+      <div className="mb-6 flex items-center justify-between gap-3 flex-wrap">
         <div>
-          <h1 className="text-xl font-bold text-app">Bancos</h1>
+          <h1 className="text-xl font-bold text-app">Bancos da Empresa</h1>
           <p className="mt-1 text-sm text-app-base">Conexão automática via Open Finance</p>
         </div>
         <Button
           onClick={handleConnectBank}
-          disabled={connectingBank || !scriptLoaded}
+          disabled={connectingBank || !scriptLoaded || !selectedBusinessId}
           size="sm"
           className="rounded-[8px] text-white gap-1.5"
           style={{ background: 'linear-gradient(135deg, var(--accent-blue), var(--accent-cyan))' }}
@@ -268,14 +284,61 @@ export default function BancosClient() {
         </Button>
       </div>
 
+      {/* Business selector (if multiple businesses) */}
+      {businesses.length > 1 && (
+        <div className="mb-5">
+          <label className="text-xs font-semibold uppercase tracking-wider text-app-soft block mb-1.5">
+            Empresa
+          </label>
+          <div className="flex flex-wrap gap-2">
+            {businesses.map((b) => (
+              <button
+                key={b.id}
+                onClick={() => setSelectedBusinessId(b.id)}
+                className="flex items-center gap-1.5 rounded-[8px] px-3 py-1.5 text-sm font-medium transition-all"
+                style={{
+                  background: selectedBusinessId === b.id
+                    ? 'color-mix(in oklab, var(--accent-blue) 15%, transparent)'
+                    : 'var(--panel-bg)',
+                  border: selectedBusinessId === b.id
+                    ? '1px solid color-mix(in oklab, var(--accent-blue) 40%, transparent)'
+                    : '1px solid var(--panel-border)',
+                  color: selectedBusinessId === b.id ? 'var(--accent-blue)' : 'var(--text-base)',
+                }}
+              >
+                <Building2 className="h-3.5 w-3.5" />
+                {b.name}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* No business */}
+      {businesses.length === 0 && (
+        <div
+          className="rounded-[12px] p-8 text-center"
+          style={{
+            background: 'color-mix(in oklab, var(--accent-blue) 6%, transparent)',
+            border: '1px dashed color-mix(in oklab, var(--accent-blue) 30%, transparent)',
+          }}
+        >
+          <Building2 className="mx-auto mb-3 h-10 w-10" style={{ color: 'var(--accent-blue)' }} />
+          <p className="font-semibold text-app">Nenhuma empresa cadastrada</p>
+          <p className="mt-1 text-sm text-app-soft">
+            Cadastre uma empresa primeiro para conectar bancos empresariais.
+          </p>
+        </div>
+      )}
+
       {/* Loading */}
-      {isLoading && (
+      {isLoading && selectedBusinessId && (
         <div className="flex items-center justify-center py-20">
           <Loader2 className="h-6 w-6 animate-spin" style={{ color: 'var(--accent-blue)' }} />
         </div>
       )}
 
-      {!isLoading && (
+      {!isLoading && selectedBusinessId && (
         <div className="space-y-6">
           {/* Empty state */}
           {items.length === 0 && (
@@ -286,13 +349,10 @@ export default function BancosClient() {
                 border: '1px dashed color-mix(in oklab, var(--accent-blue) 30%, transparent)',
               }}
             >
-              <Landmark
-                className="mx-auto mb-3 h-10 w-10"
-                style={{ color: 'var(--accent-blue)' }}
-              />
+              <Landmark className="mx-auto mb-3 h-10 w-10" style={{ color: 'var(--accent-blue)' }} />
               <p className="font-semibold text-app">Nenhum banco conectado</p>
               <p className="mt-1 text-sm text-app-soft">
-                Conecte sua conta bancária para importar despesas automaticamente.
+                Conecte a conta bancária de {selectedBusiness?.name ?? 'sua empresa'} para importar receitas e despesas automaticamente.
               </p>
               <Button
                 onClick={handleConnectBank}
@@ -326,7 +386,7 @@ export default function BancosClient() {
                 {formatCurrency(totalBalance)}
               </p>
               <p className="mt-1 text-xs text-app-soft">
-                {items.length} {items.length === 1 ? 'banco conectado' : 'bancos conectados'}
+                {items.length} {items.length === 1 ? 'banco conectado' : 'bancos conectados'} · {selectedBusiness?.name}
               </p>
             </div>
           )}
@@ -353,13 +413,8 @@ export default function BancosClient() {
                     <div className="min-w-0">
                       <p className="font-semibold text-app truncate">{item.connector_name}</p>
                       <div className="flex items-center gap-1 mt-0.5">
-                        <StatusIcon
-                          className="h-3 w-3 shrink-0"
-                          style={{ color: badge.color }}
-                        />
-                        <span className="text-xs" style={{ color: badge.color }}>
-                          {badge.label}
-                        </span>
+                        <StatusIcon className="h-3 w-3 shrink-0" style={{ color: badge.color }} />
+                        <span className="text-xs" style={{ color: badge.color }}>{badge.label}</span>
                       </div>
                     </div>
                   </div>
@@ -379,7 +434,6 @@ export default function BancosClient() {
                       )}
                       <span className="hidden sm:inline">Sincronizar</span>
                     </Button>
-
                     <button
                       onClick={() => handleDelete(item.id, item.connector_name)}
                       disabled={deletingItem === item.id}
@@ -395,7 +449,7 @@ export default function BancosClient() {
                   </div>
                 </div>
 
-                {/* Last sync info */}
+                {/* Last updated */}
                 {item.last_updated_at && (
                   <div
                     className="px-4 py-1.5 text-xs text-app-soft border-b"
@@ -409,10 +463,7 @@ export default function BancosClient() {
                 {item.status === 'error' && item.error_message && (
                   <div
                     className="px-4 py-2 text-xs"
-                    style={{
-                      background: 'color-mix(in oklab, #f87171 8%, transparent)',
-                      color: '#f87171',
-                    }}
+                    style={{ background: 'color-mix(in oklab, #f87171 8%, transparent)', color: '#f87171' }}
                   >
                     {item.error_message}
                   </div>
@@ -420,28 +471,18 @@ export default function BancosClient() {
 
                 {/* Accounts */}
                 {item.bank_accounts.length === 0 ? (
-                  <div className="px-4 py-4 text-sm text-app-soft text-center">
-                    Nenhuma conta encontrada
-                  </div>
+                  <div className="px-4 py-4 text-sm text-app-soft text-center">Nenhuma conta encontrada</div>
                 ) : (
                   <div className="divide-y" style={{ borderColor: 'var(--panel-border)' }}>
                     {item.bank_accounts.map((account) => {
                       const AccIcon = accountTypeIcon(account.type)
                       const isCredit = account.type === 'CREDIT'
-
                       return (
-                        <div
-                          key={account.id}
-                          className="flex items-center justify-between px-4 py-3"
-                        >
+                        <div key={account.id} className="flex items-center justify-between px-4 py-3">
                           <div className="flex items-center gap-2.5 min-w-0">
-                            <AccIcon
-                              className="h-4 w-4 shrink-0 text-app-soft"
-                            />
+                            <AccIcon className="h-4 w-4 shrink-0 text-app-soft" />
                             <div className="min-w-0">
-                              <p className="text-sm font-medium text-app truncate">
-                                {account.name}
-                              </p>
+                              <p className="text-sm font-medium text-app truncate">{account.name}</p>
                               {account.number && (
                                 <p className="text-xs text-app-soft">
                                   {account.subtype ?? account.type} · {account.number}
@@ -452,7 +493,6 @@ export default function BancosClient() {
                               )}
                             </div>
                           </div>
-
                           <div className="text-right shrink-0 ml-4">
                             <p
                               className="text-sm font-semibold tabular-nums"
@@ -484,10 +524,11 @@ export default function BancosClient() {
                 border: '1px solid color-mix(in oklab, var(--accent-blue) 20%, transparent)',
               }}
             >
-              <p className="font-semibold text-app mb-1">Como funciona a sincronização?</p>
+              <p className="font-semibold text-app mb-1">Como funciona a sincronização empresarial?</p>
               <p>
-                Ao clicar em &quot;Sincronizar&quot;, os últimos 3 meses de transações são importados automaticamente.
-                Débitos de conta corrente e compras de cartão de crédito viram <strong>despesas</strong>.
+                Débitos da conta corrente → <strong>Despesas</strong> da empresa.{' '}
+                Créditos (entradas) → <strong>Receitas</strong> da empresa.{' '}
+                Faturas de cartão → <strong>Despesas</strong> da empresa.{' '}
                 Transações já importadas não são duplicadas.
               </p>
             </div>
