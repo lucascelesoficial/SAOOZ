@@ -49,10 +49,10 @@ declare global {
   interface Window {
     PluggyConnect: new (options: {
       connectToken: string
-      onSuccess: (data: { item: { id: string } }) => void
-      onError: (error: { message: string }) => void
-      onClose?: () => void
-    }) => { open: () => void; close: () => void }
+      onSuccess?: (data: { item: { id: string } }) => void
+      onError?: (error: { message: string }) => void
+      onExit?: () => void
+    }) => { init: () => Promise<void> }
   }
 }
 
@@ -199,13 +199,13 @@ export default function BancosClient() {
           toast.error(`Erro na conexão: ${err.message}`)
           setConnectingBank(false)
         },
-        onClose: () => {
+        onExit: () => {
           clearTimeout(safetyTimer)
           setConnectingBank(false)
         },
       })
 
-      widget.open()
+      await widget.init()
     } catch (err) {
       clearTimeout(safetyTimer)
       toast.error(err instanceof Error ? err.message : 'Erro ao conectar banco.')

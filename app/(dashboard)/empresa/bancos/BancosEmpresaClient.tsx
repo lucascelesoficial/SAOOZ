@@ -195,13 +195,13 @@ export default function BancosEmpresaClient({ activeBusinessId, businesses }: Pr
           toast.error(`Erro na conexão: ${err.message}`)
           setConnectingBank(false)
         },
-        onClose: () => {
+        onExit: () => {
           clearTimeout(safetyTimer)
           setConnectingBank(false)
         },
       })
 
-      widget.open()
+      await widget.init()
     } catch (err) {
       clearTimeout(safetyTimer)
       toast.error(err instanceof Error ? err.message : 'Erro ao conectar banco.')
