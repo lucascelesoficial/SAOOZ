@@ -1,8 +1,8 @@
 import Link from 'next/link'
 import {
-  ArrowRight, BadgeCheck, Brain, Briefcase, Building2,
-  CheckCircle2, ChevronRight, Clock3, CreditCard, Layers,
-  Mail, Shield, Star, TrendingUp, User, Zap,
+  ArrowRight, BadgeCheck, Brain, Building2,
+  CheckCircle2, ChevronRight, Layers,
+  Mail, Shield, Star, User, Zap,
 } from 'lucide-react'
 import { SaoozWordmark } from '@/components/ui/SaoozLogo'
 import { PricingSection } from '@/components/marketing/PricingSection'
