@@ -9,6 +9,7 @@ export {
 } from './registry'
 export type {
   BillingActivationDomainPayload,
+  BillingDeactivationDomainPayload,
   BillingDomainEvent,
   BillingDurationMonths,
   CheckoutInput,

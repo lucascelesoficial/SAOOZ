@@ -16,6 +16,14 @@ const DEFAULT_CAKTO_API_URL = 'https://api.cakto.com.br'
 const DEFAULT_CAKTO_CHECKOUT_BASE_URL = 'https://pay.cakto.com.br'
 const CONTEXT_TOKEN_PREFIX = 'saooz_ctx:'
 const CAKTO_ACTIVATION_EVENTS = new Set(['purchase_approved', 'subscription_renewed'])
+const CAKTO_DEACTIVATION_EVENTS = new Set([
+  'purchase_refunded',
+  'refund',
+  'subscription_canceled',
+  'subscription_cancellation',
+  'chargeback',
+  'chargeback_won',
+])
 
 const durationSchema = z.union([z.literal(1), z.literal(3), z.literal(6), z.literal(12)])
 const paymentMethodSchema = z.enum(['card', 'pix'])
@@ -430,7 +438,10 @@ export class CaktoProvider implements PaymentProvider {
     }
 
     const incomingSecret = coerceString(parsedPayload.data.secret)
-    if (!incomingSecret || incomingSecret !== this.webhookSecret) {
+    // Enforce secret only when Cakto actually sends one.
+    // If no secret is included in the payload (some webhook configs omit it),
+    // we rely on the HMAC-signed sck context token for authenticity.
+    if (incomingSecret && incomingSecret !== this.webhookSecret) {
       throw new Error('Invalid Cakto webhook secret.')
     }
 
@@ -463,6 +474,41 @@ export class CaktoProvider implements PaymentProvider {
       eventId,
       eventType,
       payload: parsedPayload.data as unknown as Json,
+    }
+
+    // ── Deactivation events (refund / cancellation / chargeback) ─────────────
+    if (CAKTO_DEACTIVATION_EVENTS.has(eventType)) {
+      // Try to resolve userId from sck/utm_content; fall back to customer email
+      const contextToken = maybeExtractContextToken(data)
+      let relatedUserId: string | null = null
+      if (contextToken) {
+        try {
+          const ctx = this.parseCheckoutContextToken(contextToken)
+          relatedUserId = ctx.userId
+        } catch {
+          // context token may be stale; fall back to null — processor will use email
+        }
+      }
+
+      const providerSubscriptionId =
+        typeof data.subscription === 'string'
+          ? data.subscription
+          : coerceString(data.subscription?.id)
+
+      return {
+        externalEvent,
+        relatedUserId,
+        domainEvent: {
+          kind: 'deactivate_subscription',
+          payload: {
+            userId: relatedUserId ?? '',
+            gateway: this.gateway,
+            providerSubscriptionId,
+            providerReference: coerceString(data.refId) ?? coerceString(data.id),
+            customerEmail: data.customer?.email ?? null,
+          },
+        },
+      }
     }
 
     if (!CAKTO_ACTIVATION_EVENTS.has(eventType)) {

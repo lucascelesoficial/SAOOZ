@@ -3,6 +3,7 @@ import { z } from 'zod'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type {
   BillingActivationDomainPayload,
+  BillingDeactivationDomainPayload,
   ParsedProviderWebhookEvent,
 } from '@/lib/billing/providers'
 import type { BillingGateway, Database, Json } from '@/types/database.types'
@@ -55,6 +56,11 @@ export type BillingWebhookAction =
       type: 'activate_subscription'
       eventType: string
       payload: BillingActivationPayload
+    }
+  | {
+      type: 'deactivate_subscription'
+      eventType: string
+      payload: BillingDeactivationDomainPayload
     }
   | { type: 'noop'; eventType: string }
 
@@ -130,14 +136,23 @@ export function normalizeProviderWebhookEvent(
       eventType,
       rawPayload,
       relatedUserId: parsedEvent.relatedUserId,
-      externalEvent: {
-        provider,
-        eventId,
-        eventType,
-      },
+      externalEvent: { provider, eventId, eventType },
+      action: { type: 'noop', eventType },
+    }
+  }
+
+  if (parsedEvent.domainEvent.kind === 'deactivate_subscription') {
+    return {
+      provider,
+      eventId,
+      eventType,
+      rawPayload,
+      relatedUserId: parsedEvent.relatedUserId,
+      externalEvent: { provider, eventId, eventType },
       action: {
-        type: 'noop',
+        type: 'deactivate_subscription',
         eventType,
+        payload: parsedEvent.domainEvent.payload,
       },
     }
   }
@@ -303,6 +318,68 @@ export async function processBillingWebhookEvent(
       reason: 'event_not_supported',
       relatedSubscriptionId: null as string | null,
     }
+  }
+
+  // ── Deactivation (refund / chargeback / cancellation) ──────────────────────
+  if (event.action.type === 'deactivate_subscription') {
+    const { userId, providerSubscriptionId, customerEmail } = event.action.payload
+    const nowIso = new Date().toISOString()
+
+    // Find subscription by userId, or fall back to customer email lookup
+    let subQuery = admin.from('subscriptions').select('id,user_id,status')
+
+    if (userId) {
+      const { data: sub } = await subQuery.eq('user_id', userId).maybeSingle()
+      if (sub && sub.status !== 'canceled' && sub.status !== 'expired') {
+        await admin.from('subscriptions').update({
+          status: 'canceled',
+          canceled_at: nowIso,
+          ended_at: nowIso,
+          updated_at: nowIso,
+        }).eq('id', sub.id)
+        return { processed: true, reason: 'subscription_deactivated', relatedSubscriptionId: sub.id }
+      }
+    }
+
+    // Fallback: look up by provider subscription ID
+    if (providerSubscriptionId) {
+      const { data: sub } = await admin.from('subscriptions')
+        .select('id,status')
+        .eq('gateway_subscription_id', providerSubscriptionId)
+        .maybeSingle()
+      if (sub && sub.status !== 'canceled' && sub.status !== 'expired') {
+        await admin.from('subscriptions').update({
+          status: 'canceled',
+          canceled_at: nowIso,
+          ended_at: nowIso,
+          updated_at: nowIso,
+        }).eq('id', sub.id)
+        return { processed: true, reason: 'subscription_deactivated_by_sub_id', relatedSubscriptionId: sub.id }
+      }
+    }
+
+    // Fallback: look up by customer email
+    if (customerEmail) {
+      const { data: authUser } = await admin.auth.admin.listUsers()
+      const matchedUser = authUser?.users?.find(u => u.email === customerEmail)
+      if (matchedUser) {
+        const { data: sub } = await admin.from('subscriptions')
+          .select('id,status')
+          .eq('user_id', matchedUser.id)
+          .maybeSingle()
+        if (sub && sub.status !== 'canceled' && sub.status !== 'expired') {
+          await admin.from('subscriptions').update({
+            status: 'canceled',
+            canceled_at: nowIso,
+            ended_at: nowIso,
+            updated_at: nowIso,
+          }).eq('id', sub.id)
+          return { processed: true, reason: 'subscription_deactivated_by_email', relatedSubscriptionId: sub.id }
+        }
+      }
+    }
+
+    return { processed: false, reason: 'subscription_not_found_for_deactivation', relatedSubscriptionId: null }
   }
 
   const payload = event.action.payload

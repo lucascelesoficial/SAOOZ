@@ -68,8 +68,17 @@ export interface BillingActivationDomainPayload {
   trialEndsAt?: string | null
 }
 
+export interface BillingDeactivationDomainPayload {
+  userId: string
+  gateway: BillingGateway | null
+  providerSubscriptionId: string | null
+  providerReference: string | null
+  customerEmail: string | null
+}
+
 export type BillingDomainEvent =
   | { kind: 'activate_subscription'; payload: BillingActivationDomainPayload }
+  | { kind: 'deactivate_subscription'; payload: BillingDeactivationDomainPayload }
   | { kind: 'noop'; reason: string }
 
 export interface ParsedProviderWebhookEvent {
