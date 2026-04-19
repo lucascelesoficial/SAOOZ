@@ -31,7 +31,7 @@ export default async function DashboardPage() {
     resolvedBusinessCount >= access.maxBusinessAccounts
   const canCreateBusiness = access.canCreateBusiness && !businessLimitReached
 
-  if (!access.personalModule) {
+  if (process.env.NODE_ENV !== 'development' && !access.personalModule) {
     redirect(getUpgradeHref('personal'))
   }
 

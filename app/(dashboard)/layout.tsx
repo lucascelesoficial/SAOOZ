@@ -70,11 +70,13 @@ export default async function DashboardLayout({
   const businessLimitReached = policy.businessLimitReached
   const canCreateBusiness = policy.canCreateBusiness
 
-  let profile = profileData
+  const isDev = process.env.NODE_ENV === 'development'
 
-  // ── Layer 2 guard (middleware is layer 1) ──────────────────────────────────
-  // Belt-and-suspenders: even if middleware is bypassed, the layout re-validates.
-  if (!profile?.mode) {
+  // Em dev, garante profile mínimo para não quebrar componentes downstream
+  let profile = profileData ?? (isDev ? { id: user.id, mode: 'pf', name: 'Dev User', email: user.email } : null)
+
+  // ── Layer 2 guard (middleware é layer 1) ──────────────────────────────────
+  if (!isDev && !profile?.mode) {
     redirect('/onboarding')
   }
 
