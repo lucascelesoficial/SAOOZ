@@ -1,10 +1,9 @@
 import { NextResponse } from 'next/server'
 
-export const dynamic = 'force-dynamic'
-export const revalidate = 3600 // cache 1h
+export const revalidate = 3600 // cache 1h no servidor
 
 const PLUGGY_WIDGET_URL =
-  'https://cdn.pluggy.ai/pluggy-connect/v2/pluggy-connect.js'
+  'https://cdn.pluggy.ai/pluggy-connect/v2.8.2/pluggy-connect.js'
 
 /**
  * GET /api/banking/widget-js
