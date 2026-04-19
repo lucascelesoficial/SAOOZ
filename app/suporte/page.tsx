@@ -30,7 +30,7 @@ const QUICK_GUIDES = [
 
 export default function SuportePage() {
   return (
-    <div className="relative min-h-screen overflow-x-hidden bg-[var(--app-bg)] text-app">
+    <div className="force-light relative min-h-screen overflow-x-hidden bg-white text-slate-900">
       <div
         aria-hidden
         className="pointer-events-none absolute inset-0"

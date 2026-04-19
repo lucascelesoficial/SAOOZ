@@ -1,13 +1,10 @@
 import Link from 'next/link'
-import { SaoozLogo } from '@/components/ui/SaoozLogo'
+import { SaoozWordmark } from '@/components/ui/SaoozLogo'
 
 export default function NotFound() {
   return (
-    <div className="app-shell flex min-h-screen flex-col items-center justify-center gap-6 px-4">
-      <div className="flex items-center gap-3">
-        <SaoozLogo size="md" />
-        <span className="text-xl font-extrabold tracking-tight text-app">SAOOZ</span>
-      </div>
+    <div className="force-light flex min-h-screen flex-col items-center justify-center gap-6 px-4 bg-white">
+      <SaoozWordmark size="md" />
 
       <div className="text-center">
         <p

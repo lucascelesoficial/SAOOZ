@@ -3,7 +3,7 @@
 import Image from 'next/image'
 import { useId } from 'react'
 
-interface Props { size?: 'sm' | 'md' | 'lg' | 'xl' }
+interface Props { size?: 'sm' | 'md' | 'lg' | 'xl'; onDark?: boolean }
 
 const ICON_PX = { sm: 28, md: 40, lg: 56, xl: 80 } as const
 const WORD_H  = { sm: 26, md: 38, lg: 52, xl: 72 } as const
@@ -170,28 +170,49 @@ export function SaoozLogo({ size = 'md' }: Props) {
 }
 
 /* ─────────────────────────────────────────────────────────────
-   SaoozWordmark — ícone + "SAOOZ" em texto
-   A cor do texto segue `currentColor` — defina via className no pai.
+   SaoozWordmark — ícone (hero) + "SAOOZ" em texto discreto
+   onDark=true → texto branco, sombra no ícone para fundos escuros
 ───────────────────────────────────────────────────────────── */
-export function SaoozWordmark({ size = 'md' }: Props) {
+export function SaoozWordmark({ size = 'md', onDark = false }: Props) {
   const h      = WORD_H[size]
-  const fSize  = Math.round(h * 0.9)
-  const iconPx = Math.round(h * 1.15)
+  const iconPx = Math.round(h * 1.3)   // ícone é o hero — maior
+  const fSize  = Math.round(h * 0.52)  // texto é suporte — discreto
+  const gap    = Math.round(h * 0.22)
 
   return (
     <span
       className="inline-flex items-center select-none"
-      style={{ gap: Math.round(h * 0.26) }}
+      style={{ gap }}
       aria-label="SAOOZ"
     >
-      <SaoozIcon size={iconPx} />
+      {/* Ícone com estilo adaptado ao fundo */}
+      <span style={{
+        display: 'inline-flex',
+        borderRadius: Math.round(iconPx * 0.22),
+        boxShadow: onDark
+          ? '0 4px 20px rgba(0,0,0,0.25), 0 0 0 1px rgba(255,255,255,0.15)'
+          : '0 1px 3px rgba(0,0,0,0.10), 0 0 0 1px rgba(0,0,0,0.05)',
+        flexShrink: 0,
+        overflow: 'hidden',
+      }}>
+        <Image
+          src="/saooz-logo.svg"
+          alt="SAOOZ"
+          width={iconPx}
+          height={iconPx}
+          priority
+          style={{ width: iconPx, height: iconPx, objectFit: 'contain', display: 'block' }}
+        />
+      </span>
+
+      {/* Texto */}
       <span style={{
         fontSize:      fSize,
         fontWeight:    800,
         fontFamily:    "'Inter', system-ui, sans-serif",
-        letterSpacing: '0.04em',
+        letterSpacing: '0.06em',
         lineHeight:    1,
-        color:         'currentColor',
+        color:         onDark ? '#FFFFFF' : '#0F172A',
       }}>
         SAOOZ
       </span>

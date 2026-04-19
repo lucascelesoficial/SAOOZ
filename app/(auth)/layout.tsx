@@ -1,5 +1,5 @@
 import type { Metadata } from 'next'
-import { SaoozWordmark } from '@/components/ui/SaoozLogo'
+import Image from 'next/image'
 import { Shield, TrendingUp, BarChart2, Zap } from 'lucide-react'
 
 export const metadata: Metadata = {
@@ -19,16 +19,17 @@ const FEATURES = [
 
 export default function AuthLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="min-h-screen flex bg-white">
+    /* force-light garante branco mesmo se usuário estiver em dark mode */
+    <div className="force-light min-h-screen flex bg-white">
 
-      {/* ── Left panel — branding ─────────────────────────── */}
+      {/* ── Painel esquerdo — branding ────────────────────────── */}
       <div
         className="hidden lg:flex lg:w-[52%] xl:w-[56%] relative flex-col justify-center items-center p-12 overflow-hidden"
         style={{
           background: 'linear-gradient(145deg, #1E3A8A 0%, #1D4ED8 45%, #2563EB 100%)',
         }}
       >
-        {/* Subtle overlay shapes */}
+        {/* Formas de fundo sutis */}
         <div className="pointer-events-none absolute inset-0 overflow-hidden">
           <div
             className="absolute -top-32 -right-32 w-[500px] h-[500px] rounded-full"
@@ -38,7 +39,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
             className="absolute -bottom-24 -left-24 w-[400px] h-[400px] rounded-full"
             style={{ background: 'radial-gradient(circle, #ffffff06 0%, transparent 65%)' }}
           />
-          {/* Subtle dot grid */}
+          {/* Grid de pontos */}
           <svg className="absolute inset-0 w-full h-full opacity-[0.06]" xmlns="http://www.w3.org/2000/svg">
             <defs>
               <pattern id="dots" width="28" height="28" patternUnits="userSpaceOnUse">
@@ -49,12 +50,34 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
           </svg>
         </div>
 
-        {/* ── HERO: wordmark ── */}
-        <div className="relative flex flex-col items-center text-center gap-5 mb-14">
-          <SaoozWordmark size="xl" />
-          <p className="text-base text-blue-100 font-medium max-w-xs leading-relaxed">
-            CENTRO DA SUA VIDA FINANCEIRA
-          </p>
+        {/* ── Hero: logo isolada ── */}
+        <div className="relative flex flex-col items-center text-center gap-6 mb-12">
+          {/* Ícone em destaque — tile branco com sombra forte pra destacar do azul */}
+          <div style={{
+            borderRadius: 24,
+            boxShadow: '0 8px 40px rgba(0,0,0,0.30), 0 0 0 1px rgba(255,255,255,0.20)',
+            overflow: 'hidden',
+            display: 'inline-flex',
+          }}>
+            <Image
+              src="/saooz-logo.svg"
+              alt="SAOOZ"
+              width={80}
+              height={80}
+              priority
+              style={{ width: 80, height: 80, objectFit: 'contain', display: 'block' }}
+            />
+          </div>
+
+          {/* Nome da marca em branco — separado e com peso */}
+          <div>
+            <p className="text-3xl font-extrabold text-white tracking-tight" style={{ letterSpacing: '0.06em' }}>
+              SAOOZ
+            </p>
+            <p className="mt-1.5 text-sm text-blue-200 font-medium tracking-widest uppercase">
+              Centro da sua vida financeira
+            </p>
+          </div>
         </div>
 
         {/* ── Features ── */}
@@ -75,20 +98,37 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
           ))}
         </ul>
 
-        {/* Bottom tag */}
+        {/* Rodapé */}
         <p className="absolute bottom-8 text-xs text-blue-200/50 font-mono tracking-widest">
           SAOOZ · NÚCLEO FINANCEIRO PESSOAL
         </p>
       </div>
 
-      {/* ── Right panel — form ────────────────────────────── */}
-      <div
-        className="flex-1 flex flex-col items-center justify-center px-6 py-12 min-h-screen bg-white"
-      >
-        {/* Mobile: wordmark centered */}
-        <div className="lg:hidden flex flex-col items-center mb-10 gap-2">
-          <SaoozWordmark size="md" />
-          <p className="text-xs text-slate-400 tracking-wide">CENTRO DA SUA VIDA FINANCEIRA</p>
+      {/* ── Painel direito — formulário ───────────────────────── */}
+      <div className="flex-1 flex flex-col items-center justify-center px-6 py-12 min-h-screen bg-white">
+        {/* Mobile: logo + nome */}
+        <div className="lg:hidden flex flex-col items-center mb-10 gap-3">
+          <div style={{
+            borderRadius: 16,
+            boxShadow: '0 2px 8px rgba(0,0,0,0.10), 0 0 0 1px rgba(0,0,0,0.06)',
+            overflow: 'hidden',
+            display: 'inline-flex',
+          }}>
+            <Image
+              src="/saooz-logo.svg"
+              alt="SAOOZ"
+              width={52}
+              height={52}
+              priority
+              style={{ width: 52, height: 52, objectFit: 'contain', display: 'block' }}
+            />
+          </div>
+          <div className="text-center">
+            <p className="text-xl font-extrabold text-slate-900 tracking-tight" style={{ letterSpacing: '0.05em' }}>
+              SAOOZ
+            </p>
+            <p className="text-xs text-slate-400 tracking-wide mt-0.5">Centro da sua vida financeira</p>
+          </div>
         </div>
 
         <div className="w-full max-w-[400px]">

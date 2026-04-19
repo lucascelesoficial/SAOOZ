@@ -138,6 +138,47 @@
   --chart-grid: #2A2A2A;
 }
 
+/* ── Force-light: bloqueia dark mode em auth/marketing ──────
+   Aplique a classe `force-light` no elemento raiz de qualquer
+   layout que SEMPRE deve renderizar em branco, independente do
+   tema escolhido pelo usuário no dashboard.
+────────────────────────────────────────────────────────────── */
+.force-light,
+.force-light * {
+  color-scheme: light !important;
+}
+.force-light {
+  --background:             0 0% 100% !important;
+  --foreground:             222 47% 11% !important;
+  --card:                   0 0% 100% !important;
+  --card-foreground:        222 47% 11% !important;
+  --popover:                0 0% 100% !important;
+  --popover-foreground:     222 47% 11% !important;
+  --primary:                221 83% 53% !important;
+  --primary-foreground:     0 0% 100% !important;
+  --muted:                  220 14% 96% !important;
+  --muted-foreground:       215 16% 47% !important;
+  --accent:                 221 83% 53% !important;
+  --accent-foreground:      0 0% 100% !important;
+  --destructive:            0 84% 60% !important;
+  --border:                 214 32% 91% !important;
+  --input:                  214 32% 91% !important;
+  --ring:                   221 83% 53% !important;
+
+  --app-bg:              #FFFFFF !important;
+  --surface-bg:          #FFFFFF !important;
+  --panel-bg:            #FFFFFF !important;
+  --panel-bg-soft:       #F8FAFC !important;
+  --panel-border:        #E2E8F0 !important;
+  --panel-border-strong: #CBD5E1 !important;
+  --text-strong:         #0F172A !important;
+  --text-base:           #334155 !important;
+  --text-soft:           #64748B !important;
+  --accent-blue:         #2563EB !important;
+  --accent-cyan:         #60A5FA !important;
+  --chart-grid:          #E2E8F0 !important;
+}
+
 /* ── Base ─────────────────────────────────────────────────── */
 @layer base {
   * {

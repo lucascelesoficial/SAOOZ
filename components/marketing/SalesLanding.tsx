@@ -392,7 +392,7 @@ export function SalesLanding() {
         @keyframes saooz-grid-fade { 0%,100%{opacity:0.04} 50%{opacity:0.08} }
       `}</style>
 
-      <div className="relative min-h-screen overflow-x-hidden" style={{ background: 'var(--app-bg)', color: 'var(--text-base)' }}>
+      <div className="force-light relative min-h-screen overflow-x-hidden" style={{ background: '#FFFFFF', color: '#334155' }}>
 
         {/* ══════════════════════════════════════════════════════════
             GLOBAL BG — mesh gradient + grid overlay
