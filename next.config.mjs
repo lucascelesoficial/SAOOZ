@@ -125,6 +125,10 @@ const nextConfig = {
 
   // ── Security headers on all routes ────────────────────────────────────
   async headers() {
+    // Em desenvolvimento, NÃO aplicar HSTS nem CSP estrita — quebram localhost HTTP
+    if (process.env.NODE_ENV === 'development') {
+      return []
+    }
     return [
       {
         // Apply to all routes except static assets (handled by CDN)
