@@ -2,13 +2,13 @@ import type { MetadataRoute } from 'next'
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: 'SAOOZ - Dashboard Financeiro',
+    name: 'SAOOZ',
     short_name: 'SAOOZ',
     description: 'Entenda para onde vai seu dinheiro em menos de 5 segundos.',
     start_url: '/central',
     display: 'standalone',
-    background_color: '#080d28',
-    theme_color: '#080d28',
+    background_color: '#1E3A8A',
+    theme_color: '#1E3A8A',
     orientation: 'portrait',
     categories: ['finance', 'productivity'],
     icons: [
