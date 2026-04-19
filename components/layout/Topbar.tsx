@@ -410,7 +410,7 @@ export function Topbar({
           <Link
             href={modeSwitchHref}
             className="inline-flex h-9 items-center gap-2 rounded-[8px] border px-3 text-sm font-medium transition-colors hover:opacity-80"
-            style={{ background: 'rgba(255,255,255,0.12)', borderColor: 'rgba(255,255,255,0.25)', color: '#fff' }}
+            style={{ background: '#ffffff', borderColor: '#ffffff', color: '#2563EB' }}
           >
             <ArrowRightLeft className="h-4 w-4" />
             <span className="hidden sm:inline">{modeSwitchLabel}</span>
@@ -426,9 +426,9 @@ export function Topbar({
               disabled={isSwitchingBusiness}
               className="h-9 min-w-[160px] rounded-[8px] border px-3 text-sm outline-none transition-colors disabled:opacity-60"
               style={{
-                background: 'rgba(255,255,255,0.12)',
-                borderColor: 'rgba(255,255,255,0.25)',
-                color: '#fff',
+                background: '#ffffff',
+                borderColor: '#ffffff',
+                color: '#2563EB',
               }}
               aria-label="Empresa ativa"
             >
@@ -446,7 +446,7 @@ export function Topbar({
           <Link
             href={businessActionHref}
             className="inline-flex h-9 items-center gap-2 rounded-[8px] border px-3 text-sm font-medium transition-colors hover:opacity-80"
-            style={{ background: 'rgba(255,255,255,0.12)', borderColor: 'rgba(255,255,255,0.25)', color: '#fff' }}
+            style={{ background: '#ffffff', borderColor: '#ffffff', color: '#2563EB' }}
           >
             <Plus className="h-4 w-4" />
             <span className="hidden lg:inline">{businessActionLabel}</span>
