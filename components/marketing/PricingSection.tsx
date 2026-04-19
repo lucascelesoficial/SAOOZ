@@ -20,7 +20,7 @@ const PLANS = [
     monthlyPrice: 47,
     subtitle: 'Controle financeiro pessoal completo',
     highlight: false,
-    color: '#3b82f6',
+    color: '#2563EB',
     features: [
       'Dashboard financeiro pessoal',
       'Despesas e rendas (16 categorias)',
@@ -40,7 +40,7 @@ const PLANS = [
     monthlyPrice: 67,
     subtitle: 'Operação empresarial com clareza real',
     highlight: false,
-    color: '#0ea5e9',
+    color: '#60A5FA',
     features: [
       'Dashboard financeiro empresarial',
       'Receita, despesas e impostos automáticos',
@@ -63,7 +63,7 @@ const PLANS = [
     monthlyPrice: 97,
     subtitle: 'Visão total — PF + PJ no mesmo sistema',
     highlight: true,
-    color: '#a855f7',
+    color: '#1D4ED8',
     features: [
       'Módulo PF completo',
       'Módulo PJ completo',

@@ -26,7 +26,7 @@ const STEPS = [
 
 const FEATURES = [
   {
-    id: 'pf', tag: 'Módulo PF', tagColor: '#3b82f6', icon: User,
+    id: 'pf', tag: 'Módulo PF', tagColor: '#2563EB', icon: User,
     title: 'Controle financeiro pessoal com método real',
     description: 'Painel centralizado com visão de caixa, categorias de gastos, metas de reserva e inteligência IA para identificar onde o dinheiro some antes do fim do mês.',
     bullets: [
@@ -38,7 +38,7 @@ const FEATURES = [
     ],
   },
   {
-    id: 'pj', tag: 'Módulo PJ', tagColor: '#0ea5e9', icon: Building2,
+    id: 'pj', tag: 'Módulo PJ', tagColor: '#60A5FA', icon: Building2,
     title: 'Operação financeira empresarial enxuta',
     description: 'Faturamento, despesas, impostos e pró-labore em um único painel. Suporte a múltiplas empresas com separação real entre pessoal e empresarial.',
     bullets: [
@@ -50,7 +50,7 @@ const FEATURES = [
     ],
   },
   {
-    id: 'ia', tag: 'Assistente IA', tagColor: '#a855f7', icon: Brain,
+    id: 'ia', tag: 'Assistente IA', tagColor: '#1D4ED8', icon: Brain,
     title: 'IA que conhece o seu financeiro de verdade',
     description: 'O assistente acessa seus dados reais — renda, gastos, categorias e contexto PF/PJ — e entrega análises orientadas à decisão, não respostas genéricas.',
     bullets: [
@@ -64,8 +64,8 @@ const FEATURES = [
 ]
 
 const FOR_WHOM = [
-  { icon: User,     color: '#3b82f6', title: 'Profissional com renda variável',    description: 'Freelancers, consultores e autônomos que precisam de previsibilidade e método sem depender de contador para entender o básico.' },
-  { icon: Building2,color: '#0ea5e9', title: 'Empresário com operação PJ',         description: 'MEIs e pequenas empresas que precisam separar pessoa e empresa sem planilha paralela ou ferramenta adicional.' },
+  { icon: User,     color: '#2563EB', title: 'Profissional com renda variável',    description: 'Freelancers, consultores e autônomos que precisam de previsibilidade e método sem depender de contador para entender o básico.' },
+  { icon: Building2,color: '#60A5FA', title: 'Empresário com operação PJ',         description: 'MEIs e pequenas empresas que precisam separar pessoa e empresa sem planilha paralela ou ferramenta adicional.' },
   { icon: Layers,   color: '#22c55e', title: 'Operação PF + PJ unificada',         description: 'Quem tem renda pessoal e empresarial e precisa de visão total do dinheiro em um único sistema, sem retrabalho.' },
 ]
 
@@ -76,9 +76,9 @@ const TESTIMONIALS = [
 ]
 
 const RESULTS = [
-  { icon: Clock3,     metric: 'Horas',        label: 'para fechar o mês',        description: 'Em vez de dias de planilha e retrabalho.',               color: '#3b82f6' },
+  { icon: Clock3,     metric: 'Horas',        label: 'para fechar o mês',        description: 'Em vez de dias de planilha e retrabalho.',               color: '#2563EB' },
   { icon: TrendingUp, metric: 'Tempo real',   label: 'de visibilidade de caixa', description: 'Sem esperar o fim do mês para saber o saldo.',           color: '#22c55e' },
-  { icon: Brain,      metric: 'Antes do impacto', label: 'detecção de desvio',   description: 'A IA identifica o problema antes que vire crise.',       color: '#a855f7' },
+  { icon: Brain,      metric: 'Antes do impacto', label: 'detecção de desvio',   description: 'A IA identifica o problema antes que vire crise.',       color: '#1D4ED8' },
 ]
 
 const FAQ_ITEMS = [
@@ -124,27 +124,27 @@ function OrbitalSystem() {
 
         <defs>
           <radialGradient id="center" cx="50%" cy="50%" r="50%">
-            <stop offset="0%" stopColor="#3b82f6" stopOpacity="0.4" />
-            <stop offset="100%" stopColor="#3b82f6" stopOpacity="0" />
+            <stop offset="0%" stopColor="#2563EB" stopOpacity="0.4" />
+            <stop offset="100%" stopColor="#2563EB" stopOpacity="0" />
           </radialGradient>
           <radialGradient id="centerDot" cx="50%" cy="50%" r="50%">
             <stop offset="0%" stopColor="#a5f3fc" />
-            <stop offset="100%" stopColor="#3b82f6" />
+            <stop offset="100%" stopColor="#2563EB" />
           </radialGradient>
           <linearGradient id="ring1" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#3b82f6" />
-            <stop offset="50%" stopColor="#a855f7" />
-            <stop offset="100%" stopColor="#3b82f6" />
+            <stop offset="0%" stopColor="#2563EB" />
+            <stop offset="50%" stopColor="#1D4ED8" />
+            <stop offset="100%" stopColor="#2563EB" />
           </linearGradient>
           <linearGradient id="ring2" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#0ea5e9" />
+            <stop offset="0%" stopColor="#60A5FA" />
             <stop offset="50%" stopColor="#22c55e" />
-            <stop offset="100%" stopColor="#0ea5e9" />
+            <stop offset="100%" stopColor="#60A5FA" />
           </linearGradient>
           <linearGradient id="ring3" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#a855f7" />
-            <stop offset="50%" stopColor="#3b82f6" />
-            <stop offset="100%" stopColor="#a855f7" />
+            <stop offset="0%" stopColor="#1D4ED8" />
+            <stop offset="50%" stopColor="#2563EB" />
+            <stop offset="100%" stopColor="#1D4ED8" />
           </linearGradient>
         </defs>
       </svg>
@@ -161,11 +161,11 @@ function OrbitalSystem() {
       >
         {/* Dot 1 — inner ring */}
         <div style={{ position: 'absolute', inset: 0, animation: 'saooz-orbit1 10s linear infinite' }}>
-          <div style={{ position: 'absolute', top: '50%', left: '50%', width: 8, height: 8, borderRadius: '50%', background: '#3b82f6', boxShadow: '0 0 10px 3px #3b82f660', transform: 'translate(-50%, calc(-50% - min(168px, 18.7vw)))' }} />
+          <div style={{ position: 'absolute', top: '50%', left: '50%', width: 8, height: 8, borderRadius: '50%', background: '#2563EB', boxShadow: '0 0 10px 3px #2563EB60', transform: 'translate(-50%, calc(-50% - min(168px, 18.7vw)))' }} />
         </div>
         {/* Dot 2 — middle ring */}
         <div style={{ position: 'absolute', inset: 0, animation: 'saooz-orbit2 16s linear infinite' }}>
-          <div style={{ position: 'absolute', top: '50%', left: '50%', width: 10, height: 10, borderRadius: '50%', background: '#a855f7', boxShadow: '0 0 14px 4px #a855f760', transform: 'translate(-50%, calc(-50% - min(270px, 30vw)))' }} />
+          <div style={{ position: 'absolute', top: '50%', left: '50%', width: 10, height: 10, borderRadius: '50%', background: '#1D4ED8', boxShadow: '0 0 14px 4px #1D4ED860', transform: 'translate(-50%, calc(-50% - min(270px, 30vw)))' }} />
         </div>
         {/* Dot 3 — middle ring counter */}
         <div style={{ position: 'absolute', inset: 0, animation: 'saooz-orbit2r 22s linear infinite' }}>
@@ -173,7 +173,7 @@ function OrbitalSystem() {
         </div>
         {/* Dot 4 — outer ring */}
         <div style={{ position: 'absolute', inset: 0, animation: 'saooz-orbit3 28s linear infinite' }}>
-          <div style={{ position: 'absolute', top: '50%', left: '50%', width: 12, height: 12, borderRadius: '50%', background: '#0ea5e9', boxShadow: '0 0 16px 5px #0ea5e940', transform: 'translate(-50%, calc(-50% - min(383px, 42.5vw)))' }} />
+          <div style={{ position: 'absolute', top: '50%', left: '50%', width: 12, height: 12, borderRadius: '50%', background: '#60A5FA', boxShadow: '0 0 16px 5px #60A5FA40', transform: 'translate(-50%, calc(-50% - min(383px, 42.5vw)))' }} />
         </div>
         {/* Dot 5 — outer ring offset */}
         <div style={{ position: 'absolute', inset: 0, animation: 'saooz-orbit3r 20s linear infinite' }}>
@@ -189,10 +189,10 @@ function OrbitalSystem() {
 function DashboardMockup() {
   const bars = [35, 55, 42, 70, 48, 65, 82, 58, 72, 88, 45, 90]
   const cats = [
-    { name: 'Moradia',       pct: 32, val: 'R$ 1.400', color: '#3b82f6' },
-    { name: 'Alimentação',   pct: 22, val: 'R$ 963',   color: '#0ea5e9' },
+    { name: 'Moradia',       pct: 32, val: 'R$ 1.400', color: '#2563EB' },
+    { name: 'Alimentação',   pct: 22, val: 'R$ 963',   color: '#60A5FA' },
     { name: 'Transporte',    pct: 15, val: 'R$ 656',   color: '#22c55e' },
-    { name: 'Assinaturas',   pct: 9,  val: 'R$ 394',   color: '#a855f7' },
+    { name: 'Assinaturas',   pct: 9,  val: 'R$ 394',   color: '#1D4ED8' },
     { name: 'Outros',        pct: 22, val: 'R$ 963',   color: '#f59e0b' },
   ]
   return (
@@ -263,7 +263,7 @@ function DashboardMockup() {
                 display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10,
               }}
             >
-              {['#3b82f6','#0ea5e9','#22c55e','#a855f7','#f59e0b'].map((c, i) => (
+              {['#2563EB','#60A5FA','#22c55e','#1D4ED8','#f59e0b'].map((c, i) => (
                 <div key={i} style={{ width: 28, height: 28, borderRadius: 8, background: i === 0 ? `color-mix(in oklab, ${c} 25%, transparent)` : 'var(--panel-bg-soft)', border: `1px solid ${i === 0 ? `color-mix(in oklab, ${c} 40%, transparent)` : 'var(--panel-border)'}`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   <div style={{ width: 10, height: 10, borderRadius: i === 0 ? '50%' : 2, background: i === 0 ? c : 'var(--text-muted)', opacity: i === 0 ? 1 : 0.5 }} />
                 </div>
@@ -281,7 +281,7 @@ function DashboardMockup() {
                 </div>
                 <div style={{ display: 'flex', gap: 6 }}>
                   {['PF','PJ'].map((t, i) => (
-                    <span key={t} style={{ fontSize: 10, fontWeight: 700, padding: '3px 8px', borderRadius: 6, background: i === 0 ? 'color-mix(in oklab, #3b82f6 20%, transparent)' : 'var(--panel-bg-soft)', color: i === 0 ? '#3b82f6' : 'var(--text-soft)', border: `1px solid ${i === 0 ? 'color-mix(in oklab, #3b82f6 30%, transparent)' : 'var(--panel-border)'}` }}>{t}</span>
+                    <span key={t} style={{ fontSize: 10, fontWeight: 700, padding: '3px 8px', borderRadius: 6, background: i === 0 ? 'color-mix(in oklab, #2563EB 20%, transparent)' : 'var(--panel-bg-soft)', color: i === 0 ? '#2563EB' : 'var(--text-soft)', border: `1px solid ${i === 0 ? 'color-mix(in oklab, #2563EB 30%, transparent)' : 'var(--panel-border)'}` }}>{t}</span>
                   ))}
                 </div>
               </div>
@@ -290,9 +290,9 @@ function DashboardMockup() {
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8, marginBottom: 14 }}>
                 {[
                   { label: 'Saldo disponível', value: 'R$ 8.420', color: '#22c55e', delta: '+12%' },
-                  { label: 'Entradas do mês',  value: 'R$ 12.800', color: '#3b82f6', delta: 'estável' },
+                  { label: 'Entradas do mês',  value: 'R$ 12.800', color: '#2563EB', delta: 'estável' },
                   { label: 'Saídas do mês',    value: 'R$ 4.380',  color: '#f87171', delta: '-8%' },
-                  { label: 'Consumo mensal',   value: '34%',       color: '#a855f7', delta: 'ideal' },
+                  { label: 'Consumo mensal',   value: '34%',       color: '#1D4ED8', delta: 'ideal' },
                 ].map((m) => (
                   <div key={m.label} style={{ background: 'var(--panel-bg)', border: '1px solid var(--panel-border)', borderRadius: 10, padding: '10px 12px' }}>
                     <div style={{ fontSize: 9, color: 'var(--text-soft)', marginBottom: 4, textTransform: 'uppercase', letterSpacing: '0.05em' }}>{m.label}</div>
@@ -310,7 +310,7 @@ function DashboardMockup() {
                   <div style={{ fontSize: 9, color: 'var(--text-soft)', marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Fluxo de caixa — 2026</div>
                   <div style={{ display: 'flex', alignItems: 'flex-end', gap: 3, height: 56 }}>
                     {bars.map((h, i) => (
-                      <div key={i} style={{ flex: 1, borderRadius: '3px 3px 0 0', height: `${h}%`, background: i >= 10 ? `color-mix(in oklab, #3b82f6 35%, transparent)` : `color-mix(in oklab, #3b82f6 ${50 + h / 5}%, transparent)`, border: i === 11 ? '1px solid color-mix(in oklab, #3b82f6 60%, transparent)' : 'none' }} />
+                      <div key={i} style={{ flex: 1, borderRadius: '3px 3px 0 0', height: `${h}%`, background: i >= 10 ? `color-mix(in oklab, #2563EB 35%, transparent)` : `color-mix(in oklab, #2563EB ${50 + h / 5}%, transparent)`, border: i === 11 ? '1px solid color-mix(in oklab, #2563EB 60%, transparent)' : 'none' }} />
                     ))}
                   </div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 4 }}>
@@ -343,13 +343,13 @@ function DashboardMockup() {
               <div style={{ background: 'var(--panel-bg)', border: '1px solid var(--panel-border)', borderRadius: 10, padding: '10px 12px' }}>
                 <div style={{ fontSize: 9, color: 'var(--text-soft)', marginBottom: 7, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Assistente IA · Saooz</div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
-                  <div style={{ alignSelf: 'flex-start', maxWidth: '75%', background: 'color-mix(in oklab, #a855f7 12%, transparent)', border: '1px solid color-mix(in oklab, #a855f7 20%, transparent)', borderRadius: '0 8px 8px 8px', padding: '6px 10px', fontSize: 10, color: 'var(--text-base)', lineHeight: 1.5 }}>
+                  <div style={{ alignSelf: 'flex-start', maxWidth: '75%', background: 'color-mix(in oklab, #1D4ED8 12%, transparent)', border: '1px solid color-mix(in oklab, #1D4ED8 20%, transparent)', borderRadius: '0 8px 8px 8px', padding: '6px 10px', fontSize: 10, color: 'var(--text-base)', lineHeight: 1.5 }}>
                     Seus gastos com alimentação subiram 18% em abril. Deseja revisar a meta da categoria?
                   </div>
                   <div style={{ alignSelf: 'flex-end', maxWidth: '60%', background: 'var(--panel-bg-soft)', borderRadius: '8px 0 8px 8px', padding: '6px 10px', fontSize: 10, color: 'var(--text-base)' }}>
                     Sim — sugira um valor realista.
                   </div>
-                  <div style={{ alignSelf: 'flex-start', maxWidth: '80%', background: 'color-mix(in oklab, #a855f7 12%, transparent)', border: '1px solid color-mix(in oklab, #a855f7 20%, transparent)', borderRadius: '0 8px 8px 8px', padding: '6px 10px', fontSize: 10, color: 'var(--text-base)', lineHeight: 1.5 }}>
+                  <div style={{ alignSelf: 'flex-start', maxWidth: '80%', background: 'color-mix(in oklab, #1D4ED8 12%, transparent)', border: '1px solid color-mix(in oklab, #1D4ED8 20%, transparent)', borderRadius: '0 8px 8px 8px', padding: '6px 10px', fontSize: 10, color: 'var(--text-base)', lineHeight: 1.5 }}>
                     Com base no histórico, R$ 1.100/mês mantém o padrão sem pressão no caixa.
                   </div>
                 </div>
@@ -401,22 +401,22 @@ export function SalesLanding() {
           {/* Primary glow blobs — animated */}
           <div style={{
             position: 'absolute', inset: 0,
-            background: 'radial-gradient(ellipse 800px 600px at 20% -10%, color-mix(in oklab, #3b82f6 22%, transparent), transparent 60%), radial-gradient(ellipse 700px 500px at 80% 5%, color-mix(in oklab, #a855f7 14%, transparent), transparent 60%), radial-gradient(ellipse 600px 400px at 50% 80%, color-mix(in oklab, #0ea5e9 10%, transparent), transparent 60%)',
+            background: 'radial-gradient(ellipse 800px 600px at 20% -10%, color-mix(in oklab, #2563EB 22%, transparent), transparent 60%), radial-gradient(ellipse 700px 500px at 80% 5%, color-mix(in oklab, #1D4ED8 14%, transparent), transparent 60%), radial-gradient(ellipse 600px 400px at 50% 80%, color-mix(in oklab, #60A5FA 10%, transparent), transparent 60%)',
           }} />
           {/* Floating accent blobs */}
-          <div style={{ position: 'absolute', top: '10%', right: '5%', width: 400, height: 400, borderRadius: '50%', background: 'radial-gradient(circle, color-mix(in oklab, #a855f7 15%, transparent), transparent)', filter: 'blur(60px)', animation: 'saooz-float 12s ease-in-out infinite' }} />
+          <div style={{ position: 'absolute', top: '10%', right: '5%', width: 400, height: 400, borderRadius: '50%', background: 'radial-gradient(circle, color-mix(in oklab, #1D4ED8 15%, transparent), transparent)', filter: 'blur(60px)', animation: 'saooz-float 12s ease-in-out infinite' }} />
           <div style={{ position: 'absolute', top: '40%', left: '2%', width: 300, height: 300, borderRadius: '50%', background: 'radial-gradient(circle, color-mix(in oklab, #22c55e 10%, transparent), transparent)', filter: 'blur(50px)', animation: 'saooz-float 18s ease-in-out infinite 4s' }} />
           {/* Tech grid overlay */}
           <div style={{
             position: 'absolute', inset: 0,
-            backgroundImage: 'linear-gradient(color-mix(in oklab, #3b82f6 6%, transparent) 1px, transparent 1px), linear-gradient(90deg, color-mix(in oklab, #3b82f6 6%, transparent) 1px, transparent 1px)',
+            backgroundImage: 'linear-gradient(color-mix(in oklab, #2563EB 6%, transparent) 1px, transparent 1px), linear-gradient(90deg, color-mix(in oklab, #2563EB 6%, transparent) 1px, transparent 1px)',
             backgroundSize: '60px 60px',
             animation: 'saooz-grid-fade 8s ease-in-out infinite',
           }} />
           {/* Horizontal scan line */}
           <div style={{
             position: 'absolute', top: 0, left: 0, right: 0, height: 1,
-            background: 'linear-gradient(90deg, transparent, color-mix(in oklab, #3b82f6 60%, transparent), transparent)',
+            background: 'linear-gradient(90deg, transparent, color-mix(in oklab, #2563EB 60%, transparent), transparent)',
             animation: 'saooz-float 6s ease-in-out infinite',
           }} />
         </div>
@@ -485,7 +485,7 @@ export function SalesLanding() {
                 Seu financeiro pessoal e<br />
                 empresarial,{' '}
                 <span style={{
-                  background: 'linear-gradient(135deg, var(--accent-blue), #a855f7, var(--accent-cyan))',
+                  background: 'linear-gradient(135deg, var(--accent-blue), #1D4ED8, var(--accent-cyan))',
                   WebkitBackgroundClip: 'text',
                   WebkitTextFillColor: 'transparent',
                   backgroundClip: 'text',
@@ -507,7 +507,7 @@ export function SalesLanding() {
                   href="/cadastro"
                   className="inline-flex h-12 items-center gap-2 rounded-[12px] px-6 text-base font-bold text-white"
                   style={{
-                    background: 'linear-gradient(135deg, var(--accent-blue), #a855f7)',
+                    background: 'linear-gradient(135deg, var(--accent-blue), #1D4ED8)',
                     boxShadow: '0 8px 40px color-mix(in oklab, var(--accent-blue) 45%, transparent)',
                   }}
                 >
@@ -539,9 +539,9 @@ export function SalesLanding() {
               <div className="grid grid-cols-2 gap-6 md:grid-cols-4">
                 {[
                   { value: '7 dias',  label: 'de garantia de reembolso', accent: 'var(--accent-blue)' },
-                  { value: 'PF + PJ', label: 'em um único sistema',      accent: '#0ea5e9' },
+                  { value: 'PF + PJ', label: 'em um único sistema',      accent: '#60A5FA' },
                   { value: '3 planos',label: 'sem fidelidade',           accent: '#22c55e' },
-                  { value: 'IA real', label: 'com contexto financeiro',  accent: '#a855f7' },
+                  { value: 'IA real', label: 'com contexto financeiro',  accent: '#1D4ED8' },
                 ].map((stat) => (
                   <div key={stat.label} className="text-center">
                     <p className="text-2xl font-black md:text-3xl" style={{ color: stat.accent }}>{stat.value}</p>
@@ -776,7 +776,7 @@ export function SalesLanding() {
                     <p className="text-sm leading-relaxed" style={{ color: 'var(--text-base)' }}>&ldquo;{t.quote}&rdquo;</p>
                     <div className="flex items-center gap-3 pt-1">
                       <div className="h-9 w-9 rounded-full flex items-center justify-center text-sm font-bold text-white"
-                        style={{ background: 'linear-gradient(135deg, var(--accent-blue), #a855f7)' }}>
+                        style={{ background: 'linear-gradient(135deg, var(--accent-blue), #1D4ED8)' }}>
                         {t.name.charAt(0)}
                       </div>
                       <div>
@@ -834,14 +834,14 @@ export function SalesLanding() {
               <div
                 className="relative overflow-hidden rounded-[24px] px-8 py-14 text-center md:px-14"
                 style={{
-                  background: 'linear-gradient(135deg, color-mix(in oklab, var(--accent-blue) 15%, transparent), color-mix(in oklab, #a855f7 10%, transparent), color-mix(in oklab, var(--accent-cyan) 10%, transparent))',
+                  background: 'linear-gradient(135deg, color-mix(in oklab, var(--accent-blue) 15%, transparent), color-mix(in oklab, #1D4ED8 10%, transparent), color-mix(in oklab, var(--accent-cyan) 10%, transparent))',
                   border: '1px solid color-mix(in oklab, var(--accent-blue) 35%, transparent)',
                 }}
               >
                 {/* Animated grid inside CTA */}
-                <div aria-hidden style={{ position: 'absolute', inset: 0, backgroundImage: 'linear-gradient(color-mix(in oklab, #3b82f6 8%, transparent) 1px, transparent 1px), linear-gradient(90deg, color-mix(in oklab, #3b82f6 8%, transparent) 1px, transparent 1px)', backgroundSize: '40px 40px', opacity: 0.5 }} />
+                <div aria-hidden style={{ position: 'absolute', inset: 0, backgroundImage: 'linear-gradient(color-mix(in oklab, #2563EB 8%, transparent) 1px, transparent 1px), linear-gradient(90deg, color-mix(in oklab, #2563EB 8%, transparent) 1px, transparent 1px)', backgroundSize: '40px 40px', opacity: 0.5 }} />
                 {/* Glow orb */}
-                <div aria-hidden style={{ position: 'absolute', top: '-30%', right: '-10%', width: 400, height: 400, borderRadius: '50%', background: 'radial-gradient(circle, color-mix(in oklab, #a855f7 25%, transparent), transparent)', filter: 'blur(60px)', animation: 'saooz-float 10s ease-in-out infinite' }} />
+                <div aria-hidden style={{ position: 'absolute', top: '-30%', right: '-10%', width: 400, height: 400, borderRadius: '50%', background: 'radial-gradient(circle, color-mix(in oklab, #1D4ED8 25%, transparent), transparent)', filter: 'blur(60px)', animation: 'saooz-float 10s ease-in-out infinite' }} />
                 <div className="relative space-y-5">
                   <p className="text-xs font-bold uppercase tracking-widest" style={{ color: 'var(--text-soft)' }}>Comece agora</p>
                   <h2 className="text-3xl font-black md:text-4xl" style={{ color: 'var(--text-strong)' }}>
@@ -855,7 +855,7 @@ export function SalesLanding() {
                     <Link
                       href="/cadastro"
                       className="inline-flex h-12 items-center gap-2 rounded-[12px] px-7 text-base font-bold text-white"
-                      style={{ background: 'linear-gradient(135deg, var(--accent-blue), #a855f7)', boxShadow: '0 8px 32px color-mix(in oklab, var(--accent-blue) 45%, transparent)' }}
+                      style={{ background: 'linear-gradient(135deg, var(--accent-blue), #1D4ED8)', boxShadow: '0 8px 32px color-mix(in oklab, var(--accent-blue) 45%, transparent)' }}
                     >
                       Assinar com garantia de 7 dias <ArrowRight className="h-5 w-5" />
                     </Link>
