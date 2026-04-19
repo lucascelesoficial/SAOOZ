@@ -488,10 +488,8 @@ export function SalesLanding() {
                 <Link
                   key={href}
                   href={href}
-                  className="text-sm font-medium transition-colors"
+                  className="text-sm font-medium transition-colors hover:text-[#1E3A8A]"
                   style={{ color: '#475569' }}
-                  onMouseEnter={e => (e.currentTarget.style.color = '#1E3A8A')}
-                  onMouseLeave={e => (e.currentTarget.style.color = '#475569')}
                 >
                   {label}
                 </Link>
