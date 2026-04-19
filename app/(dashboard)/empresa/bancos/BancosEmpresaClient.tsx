@@ -115,27 +115,27 @@ export default function BancosEmpresaClient({ activeBusinessId, businesses }: Pr
   const [connectingBank, setConnectingBank] = useState(false)
   const [syncingItem, setSyncingItem] = useState<string | null>(null)
   const [deletingItem, setDeletingItem] = useState<string | null>(null)
-  const [scriptLoaded, setScriptLoaded] = useState(false)
 
-  // Load Pluggy Connect widget script
-  useEffect(() => {
-    if (typeof window !== 'undefined' && window.PluggyConnect) {
-      setScriptLoaded(true)
-      return
-    }
-    const existing = document.getElementById('pluggy-connect-script')
-    if (existing) {
-      existing.addEventListener('load', () => setScriptLoaded(true))
-      return
-    }
-    const script = document.createElement('script')
-    script.id = 'pluggy-connect-script'
-    script.src = 'https://cdn.pluggy.ai/pluggy-connect/v2/pluggy-connect.js'
-    script.async = true
-    script.onload = () => setScriptLoaded(true)
-    script.onerror = () => toast.error('Falha ao carregar o widget de conexão.')
-    document.head.appendChild(script)
-  }, [])
+  function loadPluggyScript(): Promise<void> {
+    return new Promise((resolve, reject) => {
+      if (window.PluggyConnect) return resolve()
+      const existing = document.getElementById('pluggy-connect-script')
+      if (existing) {
+        const interval = setInterval(() => {
+          if (window.PluggyConnect) { clearInterval(interval); resolve() }
+        }, 100)
+        setTimeout(() => { clearInterval(interval); reject(new Error('Timeout ao carregar widget.')) }, 10000)
+        return
+      }
+      const script = document.createElement('script')
+      script.id = 'pluggy-connect-script'
+      script.src = 'https://cdn.pluggy.ai/pluggy-connect/v2/pluggy-connect.js'
+      script.async = true
+      script.onload = () => resolve()
+      script.onerror = () => reject(new Error('Falha ao carregar o widget bancário.'))
+      document.head.appendChild(script)
+    })
+  }
 
   const loadItems = useCallback(async () => {
     if (!selectedBusinessId) {
@@ -165,14 +165,11 @@ export default function BancosEmpresaClient({ activeBusinessId, businesses }: Pr
       toast.error('Selecione uma empresa primeiro.')
       return
     }
-    if (!scriptLoaded || !window.PluggyConnect) {
-      toast.error('Widget ainda carregando. Tente novamente em instantes.')
-      return
-    }
-
     setConnectingBank(true)
 
     try {
+      await loadPluggyScript()
+
       const res = await fetch('/api/banking/connect-token')
       if (!res.ok) throw new Error('Falha ao obter token.')
       const { connectToken } = await res.json()
@@ -275,7 +272,7 @@ export default function BancosEmpresaClient({ activeBusinessId, businesses }: Pr
         </div>
         <Button
           onClick={handleConnectBank}
-          disabled={connectingBank || !scriptLoaded || !selectedBusinessId}
+          disabled={connectingBank || !selectedBusinessId}
           size="sm"
           className="rounded-[8px] text-white gap-1.5"
           style={{ background: 'linear-gradient(135deg, var(--accent-blue), var(--accent-cyan))' }}
@@ -361,7 +358,7 @@ export default function BancosEmpresaClient({ activeBusinessId, businesses }: Pr
               </p>
               <Button
                 onClick={handleConnectBank}
-                disabled={connectingBank || !scriptLoaded}
+                disabled={connectingBank}
                 className="mt-4 rounded-[8px] text-white"
                 style={{ background: 'linear-gradient(135deg, var(--accent-blue), var(--accent-cyan))' }}
               >
