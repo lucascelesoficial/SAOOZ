@@ -409,8 +409,8 @@ export function Topbar({
         {shouldShowModeSwitch && (
           <Link
             href={modeSwitchHref}
-            className="inline-flex h-9 items-center gap-2 rounded-[8px] border px-3 text-sm font-medium transition-colors hover:opacity-80"
-            style={{ background: '#ffffff', borderColor: '#ffffff', color: '#2563EB' }}
+            className="inline-flex h-9 items-center gap-2 rounded-[8px] px-3 text-sm font-medium transition-opacity hover:opacity-70"
+            style={{ background: 'transparent', color: '#ffffff' }}
           >
             <ArrowRightLeft className="h-4 w-4" />
             <span className="hidden sm:inline">{modeSwitchLabel}</span>
@@ -424,11 +424,11 @@ export function Topbar({
               value={activeBusinessId}
               onChange={(event) => void handleBusinessChange(event.target.value)}
               disabled={isSwitchingBusiness}
-              className="h-9 min-w-[160px] rounded-[8px] border px-3 text-sm outline-none transition-colors disabled:opacity-60"
+              className="h-9 min-w-[160px] rounded-[8px] px-3 text-sm outline-none transition-opacity disabled:opacity-60 hover:opacity-70"
               style={{
-                background: '#ffffff',
-                borderColor: '#ffffff',
-                color: '#2563EB',
+                background: 'transparent',
+                border: 'none',
+                color: '#ffffff',
               }}
               aria-label="Empresa ativa"
             >
@@ -445,8 +445,8 @@ export function Topbar({
         {showBusinessAction && (
           <Link
             href={businessActionHref}
-            className="inline-flex h-9 items-center gap-2 rounded-[8px] border px-3 text-sm font-medium transition-colors hover:opacity-80"
-            style={{ background: '#ffffff', borderColor: '#ffffff', color: '#2563EB' }}
+            className="inline-flex h-9 items-center gap-2 rounded-[8px] px-3 text-sm font-medium transition-opacity hover:opacity-70"
+            style={{ background: 'transparent', color: '#ffffff' }}
           >
             <Plus className="h-4 w-4" />
             <span className="hidden lg:inline">{businessActionLabel}</span>
