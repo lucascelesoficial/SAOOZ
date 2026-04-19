@@ -24,7 +24,7 @@ const CSP = [
   "default-src 'self'",
   // unsafe-eval removed — not required by Next.js 14 App Router in production
   // unsafe-inline retained for Next.js hydration inline scripts
-  "script-src 'self' 'unsafe-inline' https://js.stripe.com https://maps.stripe.com https://challenges.cloudflare.com",
+  "script-src 'self' 'unsafe-inline' https://js.stripe.com https://maps.stripe.com https://challenges.cloudflare.com https://cdn.pluggy.ai",
   "style-src 'self' 'unsafe-inline'",
   "font-src 'self' data:",
   `img-src 'self' data: blob: https://*.supabase.co https://*.stripe.com`,
@@ -38,8 +38,10 @@ const CSP = [
     'https://api.groq.com',
     'https://api.elevenlabs.io',
     'https://challenges.cloudflare.com',
+    'https://api.pluggy.ai',
+    'https://cdn.pluggy.ai',
   ].join(' '),
-  "frame-src 'self' https://js.stripe.com https://hooks.stripe.com https://checkout.stripe.com https://challenges.cloudflare.com",
+  "frame-src 'self' https://js.stripe.com https://hooks.stripe.com https://checkout.stripe.com https://challenges.cloudflare.com https://cdn.pluggy.ai https://*.pluggy.ai",
   "object-src 'none'",
   "base-uri 'self'",
   `form-action 'self' https://checkout.stripe.com`,
