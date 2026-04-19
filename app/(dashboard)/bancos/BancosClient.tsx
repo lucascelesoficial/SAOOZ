@@ -160,16 +160,23 @@ export default function BancosClient() {
   }, [loadItems])
 
   async function handleConnectBank() {
+    // Se já está conectando, o clique serve como cancelar
+    if (connectingBank) {
+      setConnectingBank(false)
+      return
+    }
+
     if (!window.PluggyConnect) {
-      if (!pluggyReady) {
-        toast.error('Widget ainda carregando, aguarde um segundo e tente novamente.')
-      } else {
-        toast.error('Erro ao inicializar widget bancário. Recarregue a página.')
-      }
+      toast.error(pluggyReady
+        ? 'Erro ao inicializar widget. Recarregue a página.'
+        : 'Widget ainda carregando, aguarde e tente novamente.')
       return
     }
 
     setConnectingBank(true)
+
+    // Timeout de segurança: reseta após 5 min se onClose nunca disparar
+    const safetyTimer = setTimeout(() => setConnectingBank(false), 5 * 60 * 1000)
 
     try {
       const res = await fetch('/api/banking/connect-token')
@@ -179,6 +186,7 @@ export default function BancosClient() {
       const widget = new window.PluggyConnect({
         connectToken,
         onSuccess: async ({ item }) => {
+          clearTimeout(safetyTimer)
           toast.loading('Registrando banco…', { id: 'bank-register' })
 
           try {
@@ -200,15 +208,19 @@ export default function BancosClient() {
           }
         },
         onError: (err) => {
+          clearTimeout(safetyTimer)
           toast.error(`Erro na conexão: ${err.message}`)
+          setConnectingBank(false)
         },
         onClose: () => {
+          clearTimeout(safetyTimer)
           setConnectingBank(false)
         },
       })
 
       widget.open()
     } catch (err) {
+      clearTimeout(safetyTimer)
       toast.error(err instanceof Error ? err.message : 'Erro ao conectar banco.')
       setConnectingBank(false)
     }
@@ -280,18 +292,24 @@ export default function BancosClient() {
         </div>
         <Button
           onClick={handleConnectBank}
-          disabled={connectingBank || !pluggyReady}
+          disabled={!pluggyReady}
           size="sm"
           className="rounded-[8px] text-white gap-1.5"
-          style={{ background: 'linear-gradient(135deg, var(--accent-blue), var(--accent-cyan))' }}
+          style={{
+            background: connectingBank
+              ? 'linear-gradient(135deg, #6b7280, #4b5563)'
+              : 'linear-gradient(135deg, var(--accent-blue), var(--accent-cyan))'
+          }}
         >
-          {(connectingBank || !pluggyReady) ? (
+          {(!pluggyReady) ? (
             <Loader2 className="h-4 w-4 animate-spin" />
+          ) : connectingBank ? (
+            <span className="h-4 w-4 flex items-center justify-center text-xs font-bold">✕</span>
           ) : (
             <Plus className="h-4 w-4" />
           )}
           <span className="hidden sm:inline">
-            {!pluggyReady ? 'Carregando…' : 'Conectar banco'}
+            {!pluggyReady ? 'Carregando…' : connectingBank ? 'Cancelar' : 'Conectar banco'}
           </span>
         </Button>
       </div>
@@ -324,11 +342,11 @@ export default function BancosClient() {
               </p>
               <Button
                 onClick={handleConnectBank}
-                disabled={connectingBank || !pluggyReady}
+                disabled={!pluggyReady}
                 className="mt-4 rounded-[8px] text-white"
                 style={{ background: 'linear-gradient(135deg, var(--accent-blue), var(--accent-cyan))' }}
               >
-                {(connectingBank || !pluggyReady) ? (
+                {!pluggyReady ? (
                   <Loader2 className="h-4 w-4 animate-spin mr-2" />
                 ) : (
                   <Plus className="h-4 w-4 mr-2" />
