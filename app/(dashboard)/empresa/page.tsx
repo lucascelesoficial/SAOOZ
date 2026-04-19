@@ -14,9 +14,10 @@ import type { BusinessExpCategory, Database } from '@/types/database.types'
 import type { TaxEstimate } from '@/lib/utils/taxes'
 import type { BusinessTotals } from '@/lib/context/BusinessDataContext'
 import {
-  Building2, ArrowUpRight, ArrowDownLeft, Clock,
+  Building2, ArrowUpRight, ArrowDownLeft,
   Users2, Handshake, ChevronRight, Sparkles,
   BrainCircuit, BadgeCheck, TriangleAlert, Lightbulb, Rocket,
+  Calendar, TrendingDown, Target, Truck, Receipt,
 } from 'lucide-react'
 
 type BusinessRevenue = Database['public']['Tables']['business_revenues']['Row']
@@ -82,8 +83,8 @@ function generateIntelligence(
     if (arAp.overdueExpenses > 0) parts.push(`${arAp.overdueExpenses} pagamento${arAp.overdueExpenses > 1 ? 's' : ''} vencido${arAp.overdueExpenses > 1 ? 's' : ''}`)
     list.push({
       id: 'overdue', type: 'risk', priority: 1,
-      title: 'Itens vencidos exigem ação',
-      body: parts.join(' e ') + `. Total comprometido: ${formatCurrency(arAp.totalAPagar)}.`,
+      title: 'Você tem cobranças atrasadas',
+      body: parts.join(' e ') + `. Total envolvido: ${formatCurrency(arAp.totalAPagar)}.`,
       metric: `${arAp.overdueRevenues + arAp.overdueExpenses} itens`,
       action: { label: 'Ver fluxo de caixa', href: '/empresa/fluxo-de-caixa' },
     })
@@ -91,7 +92,7 @@ function generateIntelligence(
     list.push({
       id: 'due-soon', type: 'warning', priority: 1,
       title: `${formatCurrency(arAp.dueSoonAmount)} vencem nos próximos 7 dias`,
-      body: `${arAp.dueSoon} compromisso${arAp.dueSoon > 1 ? 's' : ''} financeiro${arAp.dueSoon > 1 ? 's' : ''} precisam de atenção esta semana.`,
+      body: `Você tem ${arAp.dueSoon} conta${arAp.dueSoon > 1 ? 's' : ''} vencendo esta semana. Fique de olho.`,
       metric: `${arAp.dueSoon} itens`,
       action: { label: 'Ver fluxo de caixa', href: '/empresa/fluxo-de-caixa' },
     })
@@ -103,23 +104,23 @@ function generateIntelligence(
     if (coverage >= 1) {
       list.push({
         id: 'mrr-full', type: 'achievement', priority: 2,
-        title: 'MRR cobre 100% dos custos fixos',
-        body: `Receitas recorrentes (${formatCurrency(mrr)}) superam os fixos (${formatCurrency(fixedCosts)}). Previsibilidade sólida.`,
+        title: 'Sua receita mensal cobre todos os custos fixos',
+        body: `Você recebe ${formatCurrency(mrr)} todo mês de forma garantida e gasta ${formatCurrency(fixedCosts)} em custos fixos. Situação confortável.`,
         metric: `${Math.round(coverage * 100)}% cobertura`,
       })
     } else if (coverage >= 0.5) {
       list.push({
         id: 'mrr-partial', type: 'opportunity', priority: 2,
-        title: `MRR cobre ${Math.round(coverage * 100)}% dos fixos`,
-        body: `Mais ${formatCurrency(fixedCosts - mrr)}/mês em recorrência eliminaria a dependência de projetos pontuais.`,
+        title: `Sua receita mensal cobre ${Math.round(coverage * 100)}% dos custos fixos`,
+        body: `Se você garantir mais ${formatCurrency(fixedCosts - mrr)}/mês em receitas fixas, não vai depender de trabalhos avulsos.`,
         metric: `gap de ${formatCurrencyShort(fixedCosts - mrr)}`,
         action: { label: 'Ver finanças', href: '/empresa/financas' },
       })
     } else if (mrr > 0) {
       list.push({
         id: 'mrr-low', type: 'warning', priority: 1,
-        title: `Apenas ${Math.round(coverage * 100)}% dos fixos cobertos por MRR`,
-        body: `Alta dependência de receita pontual. Queda no fluxo pode comprometer ${formatCurrency(fixedCosts)}/mês em custos obrigatórios.`,
+        title: `Só ${Math.round(coverage * 100)}% dos seus custos fixos estão cobertos`,
+        body: `Você depende muito de vendas avulsas. Uma queda nas entradas pode comprometer ${formatCurrency(fixedCosts)}/mês em contas fixas.`,
         metric: `MRR ${formatCurrencyShort(mrr)}`,
         action: { label: 'Adicionar recorrências', href: '/empresa/financas' },
       })
@@ -132,16 +133,16 @@ function generateIntelligence(
     if (pct > 1) {
       list.push({
         id: 'budget-over', type: 'risk', priority: 1,
-        title: 'Orçamento estourado este mês',
-        body: `Despesas (${formatCurrency(comp.budgetActual)}) superaram o limite de ${formatCurrency(comp.budgetTotal)} em ${formatCurrencyShort(comp.budgetActual - comp.budgetTotal)}.`,
+        title: 'Você gastou mais do que planejou',
+        body: `Você gastou ${formatCurrency(comp.budgetActual)}, passando ${formatCurrencyShort(comp.budgetActual - comp.budgetTotal)} acima do limite de ${formatCurrency(comp.budgetTotal)} que definiu.`,
         metric: `+${Math.round((pct - 1) * 100)}% acima`,
         action: { label: 'Ver orçamento', href: '/empresa/orcamento' },
       })
     } else if (pct > 0.85) {
       list.push({
         id: 'budget-alert', type: 'warning', priority: 2,
-        title: `Orçamento ${Math.round(pct * 100)}% utilizado`,
-        body: `Restam ${formatCurrency(comp.budgetTotal - comp.budgetActual)} dentro da meta. Avalie antes do fechamento.`,
+        title: `Você já usou ${Math.round(pct * 100)}% do orçamento`,
+        body: `Ainda tem ${formatCurrency(comp.budgetTotal - comp.budgetActual)} disponível. Avalie os gastos antes de fechar o mês.`,
         metric: `restam ${formatCurrencyShort(comp.budgetTotal - comp.budgetActual)}`,
         action: { label: 'Ver orçamento', href: '/empresa/orcamento' },
       })
@@ -152,7 +153,7 @@ function generateIntelligence(
   if (totals.profitMargin >= 0.3 && totals.totalRevenue > 0) {
     list.push({
       id: 'margin-excellent', type: 'achievement', priority: 3,
-      title: `Margem de ${(totals.profitMargin * 100).toFixed(1)}% — acima da média`,
+      title: `Margem de lucro de ${(totals.profitMargin * 100).toFixed(1)}% — acima da média`,
       body: `De cada R$ 100 faturados, ${(totals.profitMargin * 100).toFixed(0)} ficam como lucro.`,
       metric: `${(totals.profitMargin * 100).toFixed(1)}%`,
       action: { label: 'Ver DRE', href: '/empresa/dre' },
@@ -160,8 +161,8 @@ function generateIntelligence(
   } else if (totals.profitMargin < 0.05 && totals.totalRevenue > 0) {
     list.push({
       id: 'margin-low', type: 'risk', priority: 1,
-      title: `Margem crítica: ${(totals.profitMargin * 100).toFixed(1)}%`,
-      body: `Praticamente nenhum lucro gerado. Revise os maiores custos ou renegocie preços.`,
+      title: `Sua margem de lucro está muito baixa: ${(totals.profitMargin * 100).toFixed(1)}%`,
+      body: `Quase nada sobra de lucro. Veja se pode cortar custos ou cobrar mais pelos seus serviços.`,
       metric: `${(totals.profitMargin * 100).toFixed(1)}%`,
       action: { label: 'Ver despesas', href: '/empresa/despesas' },
     })
@@ -171,8 +172,8 @@ function generateIntelligence(
   if (comp && comp.clienteCount === 0 && totals.totalRevenue > 0) {
     list.push({
       id: 'no-clients', type: 'opportunity', priority: 2,
-      title: 'Cadastre clientes para análise de concentração',
-      body: `Você fatura ${formatCurrency(totals.totalRevenue)} mas não tem clientes registrados. Sem isso, não há como identificar dependência de receita.`,
+      title: 'Cadastre seus clientes',
+      body: `Você já tem receita, mas não tem clientes cadastrados. Faça isso para saber de onde vem o dinheiro.`,
       metric: 'sem clientes',
       action: { label: 'Cadastrar clientes', href: '/empresa/clientes' },
     })
@@ -182,8 +183,8 @@ function generateIntelligence(
   if (mrr > 0 && recurringExpTotal > 0 && mrr > recurringExpTotal) {
     list.push({
       id: 'recurring-positive', type: 'achievement', priority: 3,
-      title: 'Base recorrente positiva',
-      body: `MRR supera despesas recorrentes em ${formatCurrency(mrr - recurringExpTotal)}/mês.`,
+      title: 'Entradas fixas maiores que saídas fixas',
+      body: `Sua receita mensal fixa supera seus gastos fixos em ${formatCurrency(mrr - recurringExpTotal)} por mês.`,
       metric: `+${formatCurrencyShort(mrr - recurringExpTotal)}/mês`,
     })
   }
@@ -192,8 +193,8 @@ function generateIntelligence(
   if (totals.taxRate > 0 && totals.taxRate <= 0.06 && totals.totalRevenue > 0) {
     list.push({
       id: 'tax-efficient', type: 'achievement', priority: 3,
-      title: `Carga tributária de ${(totals.taxRate * 100).toFixed(1)}% — regime otimizado`,
-      body: `${taxEstimate?.regime ?? 'Seu regime'} proporciona uma das menores cargas tributárias disponíveis.`,
+      title: `Você paga ${(totals.taxRate * 100).toFixed(1)}% de imposto — uma das menores taxas possíveis`,
+      body: `O ${taxEstimate?.regime ?? 'seu regime tributário'} te dá uma das menores taxas de imposto disponíveis.`,
       metric: `${(totals.taxRate * 100).toFixed(1)}%`,
     })
   }
@@ -264,6 +265,24 @@ function ProactiveInsightCard({ insight }: { insight: ProactiveInsight }) {
       )}
     </div>
   )
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// CATEGORY LABELS
+// ─────────────────────────────────────────────────────────────────────────────
+
+const CAT_LABEL: Record<string, string> = {
+  fixo_aluguel: 'Aluguel', fixo_salarios: 'Salários', fixo_prolabore: 'Pró-labore',
+  fixo_contador: 'Contabilidade', fixo_software: 'Softwares', fixo_internet: 'Internet',
+  fixo_outros: 'Fixos outros', variavel_comissao: 'Comissões', variavel_frete: 'Frete',
+  variavel_embalagem: 'Embalagem', variavel_trafego: 'Tráfego pago',
+  variavel_taxas: 'Taxas bancárias', variavel_outros: 'Variáveis outros',
+  operacional_marketing: 'Marketing', operacional_admin: 'Administrativo',
+  operacional_juridico: 'Jurídico', operacional_manutencao: 'Manutenção',
+  operacional_viagem: 'Viagens', operacional_outros: 'Operacional outros',
+  investimento_equipamento: 'Equipamentos', investimento_estoque: 'Estoque',
+  investimento_expansao: 'Expansão', investimento_contratacao: 'Contratações',
+  investimento_outros: 'Investimentos outros',
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -438,21 +457,21 @@ export default function EmpresaPage() {
       {/* ── METRIC CARDS — igual ao PF, com ondas ──────────────────────────── */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <MetricCard
-          title="Faturamento Bruto"
+          title="Total Recebido"
           value={totals.totalRevenue}
           color="green"
           trend="up"
           loading={isLoading}
         />
         <MetricCard
-          title="Despesas Totais"
+          title="Total Gasto"
           value={totals.totalExpenses}
           color="red"
           trend="down"
           loading={isLoading}
         />
         <MetricCard
-          title="Lucro Líquido"
+          title="Lucro do Mês"
           value={totals.netProfit}
           color={totals.netProfit >= 0 ? 'blue' : 'red'}
           trend={totals.netProfit >= 0 ? 'up' : 'down'}
@@ -502,7 +521,7 @@ export default function EmpresaPage() {
             <Rocket className="h-8 w-8 text-app-soft mb-3 opacity-40" />
             <p className="text-sm text-app font-semibold mb-1">Nenhum dado ainda</p>
             <p className="text-xs text-app-soft max-w-xs">
-              Registre faturamento, despesas e dados da equipe para que a IA gere análises personalizadas.
+              Adicione seus ganhos, gastos e dados da equipe para receber análises feitas para o seu negócio.
             </p>
           </div>
         )}
@@ -520,84 +539,288 @@ export default function EmpresaPage() {
         </div>
       </div>
 
-      {/* ── AR/AP + RADAR ──────────────────────────────────────────────────── */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+      {/* ── LINHA 1: Contas pendentes + Imposto estimado ────────────────────── */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
 
-        {/* A Receber */}
-        <Link href="/empresa/fluxo-de-caixa"
-          className="card-premium rounded-[12px] p-4 flex items-center justify-between transition-all hover:opacity-80">
-          <div>
-            <div className="flex items-center gap-1.5 mb-1.5">
-              <ArrowUpRight className="h-3.5 w-3.5 text-[#22c55e]" />
-              <span className="text-[10px] font-bold uppercase tracking-widest text-app-soft">A Receber</span>
-              {arAp && arAp.overdueRevenues > 0 && (
-                <span className="rounded-full bg-[#f87171] px-1.5 py-0.5 text-[9px] font-bold text-white">
-                  {arAp.overdueRevenues} atrasado{arAp.overdueRevenues > 1 ? 's' : ''}
+        {/* Card — Contas do mês (col-span-2) */}
+        <div className="lg:col-span-2 panel-card rounded-[12px] p-5"
+          style={{ background: 'var(--panel-bg)', border: '1px solid var(--panel-border)' }}>
+          <div className="flex items-start justify-between gap-3 mb-4">
+            <div className="flex items-center gap-2.5">
+              <div className="h-8 w-8 rounded-[8px] flex items-center justify-center"
+                style={{ background: '#0ea5e912', border: '1px solid #0ea5e922' }}>
+                <Calendar className="h-4 w-4" style={{ color: '#0ea5e9' }} />
+              </div>
+              <div>
+                <p className="text-sm font-bold text-app">Contas do mês</p>
+                <p className="text-[11px] text-app-soft mt-0.5">
+                  {arAp && (arAp.overdueRevenues > 0 || arAp.overdueExpenses > 0)
+                    ? 'Você tem cobranças atrasadas — aja logo'
+                    : arAp && arAp.dueSoon > 0
+                    ? 'Tudo em dia, mas atenção aos vencimentos desta semana'
+                    : 'Sem pendências no momento'}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Linhas A receber / A pagar */}
+          <div className="space-y-3">
+            <div className="flex items-center justify-between p-3 rounded-[8px]"
+              style={{ background: '#22c55e08', border: '1px solid #22c55e18' }}>
+              <div className="flex items-center gap-2">
+                <ArrowUpRight className="h-4 w-4 text-[#22c55e]" />
+                <span className="text-xs font-semibold text-app-soft">A receber</span>
+              </div>
+              <div className="flex items-center gap-2">
+                {arAp && arAp.overdueRevenues > 0 && (
+                  <span className="rounded-full bg-[#f87171] px-2 py-0.5 text-[9px] font-bold text-white">
+                    {arAp.overdueRevenues} atrasado{arAp.overdueRevenues > 1 ? 's' : ''}
+                  </span>
+                )}
+                <span className="text-sm font-extrabold tabular-nums text-[#22c55e]">
+                  {arAp ? formatCurrency(arAp.totalAReceber) : '—'}
                 </span>
-              )}
+              </div>
             </div>
-            <p className="text-xl font-extrabold tabular-nums text-[#22c55e]">
-              {arAp ? formatCurrency(arAp.totalAReceber) : '—'}
-            </p>
-          </div>
-          <Clock className="h-7 w-7 text-[#22c55e] opacity-15" />
-        </Link>
-
-        {/* A Pagar */}
-        <Link href="/empresa/fluxo-de-caixa"
-          className="card-premium rounded-[12px] p-4 flex items-center justify-between transition-all hover:opacity-80">
-          <div>
-            <div className="flex items-center gap-1.5 mb-1.5">
-              <ArrowDownLeft className="h-3.5 w-3.5 text-[#f87171]" />
-              <span className="text-[10px] font-bold uppercase tracking-widest text-app-soft">A Pagar</span>
-              {arAp && arAp.overdueExpenses > 0 && (
-                <span className="rounded-full bg-[#f87171] px-1.5 py-0.5 text-[9px] font-bold text-white">
-                  {arAp.overdueExpenses} vencido{arAp.overdueExpenses > 1 ? 's' : ''}
+            <div className="flex items-center justify-between p-3 rounded-[8px]"
+              style={{ background: '#f8717108', border: '1px solid #f8717118' }}>
+              <div className="flex items-center gap-2">
+                <ArrowDownLeft className="h-4 w-4 text-[#f87171]" />
+                <span className="text-xs font-semibold text-app-soft">A pagar</span>
+              </div>
+              <div className="flex items-center gap-2">
+                {arAp && arAp.overdueExpenses > 0 && (
+                  <span className="rounded-full bg-[#f87171] px-2 py-0.5 text-[9px] font-bold text-white">
+                    {arAp.overdueExpenses} vencido{arAp.overdueExpenses > 1 ? 's' : ''}
+                  </span>
+                )}
+                <span className="text-sm font-extrabold tabular-nums text-[#f87171]">
+                  {arAp ? formatCurrency(arAp.totalAPagar) : '—'}
                 </span>
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-4 pt-3 border-t" style={{ borderColor: 'var(--panel-border)' }}>
+            <Link href="/empresa/fluxo-de-caixa"
+              className="text-[11px] font-semibold transition-opacity hover:opacity-70"
+              style={{ color: 'var(--accent-blue)' }}>
+              Ver fluxo de caixa →
+            </Link>
+          </div>
+        </div>
+
+        {/* Card — Imposto estimado */}
+        <div className="panel-card rounded-[12px] p-5"
+          style={{ background: 'var(--panel-bg)', border: '1px solid var(--panel-border)' }}>
+          <div className="flex items-center gap-2.5 mb-4">
+            <div className="h-8 w-8 rounded-[8px] flex items-center justify-center"
+              style={{ background: '#f59e0b12', border: '1px solid #f59e0b22' }}>
+              <Receipt className="h-4 w-4" style={{ color: '#f59e0b' }} />
+            </div>
+            <div>
+              <p className="text-sm font-bold text-app">Imposto estimado</p>
+              <p className="text-[11px] text-app-soft mt-0.5">{taxEstimate?.regime ?? '—'}</p>
+            </div>
+          </div>
+
+          <p className="text-2xl font-extrabold tabular-nums text-app mb-0.5">
+            {formatCurrency(totals.taxAmount)}
+          </p>
+          <p className="text-[11px] text-app-soft mb-4">
+            {(totals.taxRate * 100).toFixed(1)}% do faturamento
+          </p>
+
+          {/* Barra de progresso */}
+          <div className="h-2 rounded-full overflow-hidden mb-4"
+            style={{ background: 'var(--panel-border)' }}>
+            <div className="h-full rounded-full transition-all"
+              style={{
+                width: `${Math.min(100, totals.totalRevenue > 0 ? (totals.taxAmount / totals.totalRevenue) * 100 : 0).toFixed(1)}%`,
+                background: '#f59e0b',
+              }} />
+          </div>
+
+          <div className="pt-3 border-t" style={{ borderColor: 'var(--panel-border)' }}>
+            <Link href="/empresa/impostos"
+              className="text-[11px] font-semibold transition-opacity hover:opacity-70"
+              style={{ color: 'var(--accent-blue)' }}>
+              Ver impostos →
+            </Link>
+          </div>
+        </div>
+      </div>
+
+      {/* ── LINHA 2: Maiores gastos + Equipe + Orçamento ────────────────────── */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+
+        {/* Card — Maiores gastos do mês */}
+        {(() => {
+          const catMap: Record<string, number> = {}
+          expenses.forEach((e) => {
+            const cat = e.category as string
+            catMap[cat] = (catMap[cat] ?? 0) + e.amount
+          })
+          const top3 = Object.entries(catMap)
+            .sort((a, b) => b[1] - a[1])
+            .slice(0, 3)
+          const maxVal = top3[0]?.[1] ?? 1
+          return (
+            <div className="panel-card rounded-[12px] p-5"
+              style={{ background: 'var(--panel-bg)', border: '1px solid var(--panel-border)' }}>
+              <div className="flex items-center gap-2.5 mb-4">
+                <div className="h-8 w-8 rounded-[8px] flex items-center justify-center"
+                  style={{ background: '#f8717112', border: '1px solid #f8717122' }}>
+                  <TrendingDown className="h-4 w-4 text-[#f87171]" />
+                </div>
+                <p className="text-sm font-bold text-app">Maiores gastos do mês</p>
+              </div>
+
+              {top3.length > 0 ? (
+                <div className="space-y-3">
+                  {top3.map(([cat, val]) => (
+                    <div key={cat}>
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="text-xs text-app-soft">{CAT_LABEL[cat] ?? cat}</span>
+                        <span className="text-xs font-bold tabular-nums text-app">{formatCurrency(val)}</span>
+                      </div>
+                      <div className="h-1.5 rounded-full overflow-hidden"
+                        style={{ background: 'var(--panel-border)' }}>
+                        <div className="h-full rounded-full bg-[#f87171] transition-all"
+                          style={{ width: `${((val / maxVal) * 100).toFixed(1)}%` }} />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-xs text-app-soft py-4 text-center">Nenhum gasto registrado ainda</p>
               )}
-            </div>
-            <p className="text-xl font-extrabold tabular-nums text-[#f87171]">
-              {arAp ? formatCurrency(arAp.totalAPagar) : '—'}
-            </p>
-          </div>
-          <Clock className="h-7 w-7 text-[#f87171] opacity-15" />
-        </Link>
 
-        {/* Equipe */}
-        <Link href="/empresa/funcionarios"
-          className="card-premium rounded-[12px] p-4 flex items-center justify-between transition-all hover:opacity-80">
-          <div>
-            <div className="flex items-center gap-1.5 mb-1.5">
-              <Users2 className="h-3.5 w-3.5 text-[#0ea5e9]" />
-              <span className="text-[10px] font-bold uppercase tracking-widest text-app-soft">Equipe</span>
+              <div className="mt-4 pt-3 border-t" style={{ borderColor: 'var(--panel-border)' }}>
+                <Link href="/empresa/despesas"
+                  className="text-[11px] font-semibold transition-opacity hover:opacity-70"
+                  style={{ color: 'var(--accent-blue)' }}>
+                  Ver despesas →
+                </Link>
+              </div>
             </div>
-            <p className="text-xl font-extrabold tabular-nums text-[#0ea5e9]">
-              {comprehensive !== null ? `${comprehensive.employeeCount}` : '—'}
-            </p>
-            <p className="text-[11px] text-app-soft mt-0.5">
-              colaborador{comprehensive && comprehensive.employeeCount !== 1 ? 'es' : ''}
-            </p>
-          </div>
-          <Users2 className="h-7 w-7 text-[#0ea5e9] opacity-15" />
-        </Link>
+          )
+        })()}
 
-        {/* Clientes */}
-        <Link href="/empresa/clientes"
-          className="card-premium rounded-[12px] p-4 flex items-center justify-between transition-all hover:opacity-80">
-          <div>
-            <div className="flex items-center gap-1.5 mb-1.5">
-              <Handshake className="h-3.5 w-3.5 text-[#22c55e]" />
-              <span className="text-[10px] font-bold uppercase tracking-widest text-app-soft">Clientes</span>
+        {/* Card — Sua equipe */}
+        <div className="panel-card rounded-[12px] p-5"
+          style={{ background: 'var(--panel-bg)', border: '1px solid var(--panel-border)' }}>
+          <p className="text-sm font-bold text-app mb-4">Sua equipe</p>
+
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Users2 className="h-4 w-4 text-[#0ea5e9]" />
+                <span className="text-xs text-app-soft">Funcionários</span>
+              </div>
+              <span className="text-sm font-extrabold tabular-nums text-app">
+                {comprehensive?.employeeCount ?? 0}
+              </span>
             </div>
-            <p className="text-xl font-extrabold tabular-nums text-[#22c55e]">
-              {comprehensive !== null ? `${comprehensive.clienteCount}` : '—'}
-            </p>
-            <p className="text-[11px] text-app-soft mt-0.5">
-              ativo{comprehensive && comprehensive.clienteCount !== 1 ? 's' : ''}
-            </p>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Handshake className="h-4 w-4 text-[#22c55e]" />
+                <span className="text-xs text-app-soft">Clientes ativos</span>
+              </div>
+              <span className="text-sm font-extrabold tabular-nums text-app">
+                {comprehensive?.clienteCount ?? 0}
+              </span>
+            </div>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Truck className="h-4 w-4 text-[#f97316]" />
+                <span className="text-xs text-app-soft">Fornecedores</span>
+              </div>
+              <span className="text-sm font-extrabold tabular-nums text-app">
+                {comprehensive?.fornecedorCount ?? 0}
+              </span>
+            </div>
           </div>
-          <Handshake className="h-7 w-7 text-[#22c55e] opacity-15" />
-        </Link>
+
+          <div className="mt-4 pt-3 border-t flex items-center gap-4" style={{ borderColor: 'var(--panel-border)' }}>
+            <Link href="/empresa/funcionarios"
+              className="text-[11px] font-semibold transition-opacity hover:opacity-70"
+              style={{ color: 'var(--accent-blue)' }}>
+              Funcionários →
+            </Link>
+            <Link href="/empresa/clientes"
+              className="text-[11px] font-semibold transition-opacity hover:opacity-70"
+              style={{ color: 'var(--accent-blue)' }}>
+              Clientes →
+            </Link>
+            <Link href="/empresa/fornecedores"
+              className="text-[11px] font-semibold transition-opacity hover:opacity-70"
+              style={{ color: 'var(--accent-blue)' }}>
+              Fornecedores →
+            </Link>
+          </div>
+        </div>
+
+        {/* Card — Orçamento do mês */}
+        {(() => {
+          const budTotal = comprehensive?.budgetTotal ?? 0
+          const budActual = comprehensive?.budgetActual ?? 0
+          const pct = budTotal > 0 ? budActual / budTotal : 0
+          const pctCapped = Math.min(100, Math.round(pct * 100))
+          const barColor = pct >= 1 ? '#f87171' : pct >= 0.7 ? '#f59e0b' : '#22c55e'
+          const statusText = pct >= 1
+            ? 'Orçamento estourado'
+            : pct >= 0.7
+            ? 'Atenção — quase no limite'
+            : 'Você está bem dentro do orçamento'
+          return (
+            <div className="panel-card rounded-[12px] p-5"
+              style={{ background: 'var(--panel-bg)', border: '1px solid var(--panel-border)' }}>
+              <div className="flex items-center gap-2.5 mb-4">
+                <div className="h-8 w-8 rounded-[8px] flex items-center justify-center"
+                  style={{ background: '#a855f712', border: '1px solid #a855f722' }}>
+                  <Target className="h-4 w-4 text-[#a855f7]" />
+                </div>
+                <p className="text-sm font-bold text-app">Orçamento do mês</p>
+              </div>
+
+              {budTotal > 0 ? (
+                <>
+                  <p className="text-2xl font-extrabold tabular-nums text-app mb-0.5">
+                    {formatCurrency(budActual)}
+                  </p>
+                  <p className="text-[11px] text-app-soft mb-3">
+                    de {formatCurrency(budTotal)} — {pctCapped}% usado
+                  </p>
+                  <div className="h-2 rounded-full overflow-hidden mb-2"
+                    style={{ background: 'var(--panel-border)' }}>
+                    <div className="h-full rounded-full transition-all"
+                      style={{ width: `${pctCapped}%`, background: barColor }} />
+                  </div>
+                  <p className="text-[11px] text-app-soft">{statusText}</p>
+                </>
+              ) : (
+                <p className="text-xs text-app-soft py-2">
+                  Defina um orçamento para controlar seus gastos.{' '}
+                  <Link href="/empresa/orcamento"
+                    className="font-semibold transition-opacity hover:opacity-70"
+                    style={{ color: 'var(--accent-blue)' }}>
+                    Configurar →
+                  </Link>
+                </p>
+              )}
+
+              <div className="mt-4 pt-3 border-t" style={{ borderColor: 'var(--panel-border)' }}>
+                <Link href="/empresa/orcamento"
+                  className="text-[11px] font-semibold transition-opacity hover:opacity-70"
+                  style={{ color: 'var(--accent-blue)' }}>
+                  Ver orçamento →
+                </Link>
+              </div>
+            </div>
+          )
+        })()}
       </div>
 
     </div>
