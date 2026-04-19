@@ -189,7 +189,7 @@ interface TopbarProps {
   planType: 'pf' | 'pj' | 'pro'
 }
 
-const FULL_TEXT = 'NÚCLEO FINANCEIRO ATIVADO'
+const FULL_TEXT = 'SEU SISTEMA FINANCEIRO'
 
 function TypewriterText() {
   const [displayed, setDisplayed] = useState('')
@@ -210,18 +210,15 @@ function TypewriterText() {
   }, [])
 
   return (
-    <span className="hidden items-center gap-0.5 font-mono text-xs tracking-widest text-app-soft md:inline-flex">
-      <span
-        className="mr-1"
-        style={{ color: 'color-mix(in oklab, var(--accent-blue) 60%, transparent)' }}
-      >
+    <span className="hidden items-center gap-0.5 font-mono text-xs tracking-widest md:inline-flex" style={{ color: 'rgba(255,255,255,0.75)' }}>
+      <span className="mr-1" style={{ color: 'rgba(255,255,255,0.5)' }}>
         {'>'}
       </span>
       {displayed}
       <span
         className="ml-0.5 inline-block h-[12px] w-[2px]"
         style={{
-          background: 'var(--accent-blue)',
+          background: 'rgba(255,255,255,0.9)',
           animation: done ? 'cursor-blink 1s step-end infinite' : 'none',
         }}
       />
@@ -352,8 +349,11 @@ export function Topbar({
 
   return (
     <header
-      className="panel-surface sticky top-0 z-20 flex h-14 items-center justify-between gap-4 border-b px-4 backdrop-blur-md md:px-6"
-      style={{ borderColor: 'var(--panel-border)' }}
+      className="sticky top-0 z-20 flex h-14 items-center justify-between gap-4 border-b px-4 backdrop-blur-md md:px-6"
+      style={{
+        background: 'linear-gradient(135deg, #1D4ED8, #2563EB)',
+        borderColor: 'transparent',
+      }}
     >
       <div className="min-w-0 flex items-center gap-3">
         <TypewriterText />
@@ -363,7 +363,8 @@ export function Topbar({
       <div className="flex items-center gap-0.5 relative">
         <button
           onClick={prevMonth}
-          className="rounded-[6px] p-1.5 text-app-soft transition-colors hover:text-app"
+          className="rounded-[6px] p-1.5 transition-colors hover:opacity-80"
+          style={{ color: 'rgba(255,255,255,0.75)' }}
           aria-label="Mês anterior"
         >
           <ChevronLeft className="h-4 w-4" />
@@ -371,18 +372,15 @@ export function Topbar({
 
         <button
           onClick={() => setPickerOpen((v) => !v)}
-          className="relative flex flex-col items-center rounded-[6px] px-2 py-1 transition-colors hover:bg-[color-mix(in_oklab,var(--accent-blue)_8%,transparent)]"
+          className="relative flex flex-col items-center rounded-[6px] px-2 py-1 transition-colors hover:bg-white/10"
           aria-label="Selecionar mês"
           title="Clique para escolher o mês"
         >
-          <span className="min-w-[90px] md:min-w-[110px] text-center text-xs md:text-sm font-medium capitalize text-app">
+          <span className="min-w-[90px] md:min-w-[110px] text-center text-xs md:text-sm font-medium capitalize" style={{ color: '#fff' }}>
             {formatMonth(currentMonth)}
           </span>
           {isFutureMonth && (
-            <span
-              className="text-[9px] font-bold uppercase tracking-widest leading-none"
-              style={{ color: '#f59e0b' }}
-            >
+            <span className="text-[9px] font-bold uppercase tracking-widest leading-none" style={{ color: '#fde68a' }}>
               previsão
             </span>
           )}
@@ -391,7 +389,8 @@ export function Topbar({
         <button
           onClick={nextMonth}
           disabled={isMaxFutureMonth}
-          className="rounded-[6px] p-1.5 text-app-soft transition-colors hover:text-app disabled:cursor-not-allowed disabled:opacity-30"
+          className="rounded-[6px] p-1.5 transition-colors hover:opacity-80 disabled:cursor-not-allowed disabled:opacity-30"
+          style={{ color: 'rgba(255,255,255,0.75)' }}
           aria-label="Próximo mês"
         >
           <ChevronRight className="h-4 w-4" />
@@ -410,11 +409,8 @@ export function Topbar({
         {shouldShowModeSwitch && (
           <Link
             href={modeSwitchHref}
-            className="inline-flex h-9 items-center gap-2 rounded-[8px] border px-3 text-sm font-medium text-app transition-colors hover:opacity-90"
-            style={{
-              background: 'var(--panel-bg-soft)',
-              borderColor: 'var(--panel-border)',
-            }}
+            className="inline-flex h-9 items-center gap-2 rounded-[8px] border px-3 text-sm font-medium transition-colors hover:opacity-80"
+            style={{ background: 'rgba(255,255,255,0.12)', borderColor: 'rgba(255,255,255,0.25)', color: '#fff' }}
           >
             <ArrowRightLeft className="h-4 w-4" />
             <span className="hidden sm:inline">{modeSwitchLabel}</span>
@@ -423,16 +419,16 @@ export function Topbar({
 
         {isBusinessPath && canAccessBusinessModule && businesses.length > 1 && (
           <label className="hidden items-center gap-2 sm:flex">
-            <Building2 className="h-4 w-4 text-app-soft" />
+            <Building2 className="h-4 w-4" style={{ color: 'rgba(255,255,255,0.7)' }} />
             <select
               value={activeBusinessId}
               onChange={(event) => void handleBusinessChange(event.target.value)}
               disabled={isSwitchingBusiness}
               className="h-9 min-w-[160px] rounded-[8px] border px-3 text-sm outline-none transition-colors disabled:opacity-60"
               style={{
-                background: 'var(--panel-bg-soft)',
-                borderColor: 'var(--panel-border)',
-                color: 'var(--text-strong)',
+                background: 'rgba(255,255,255,0.12)',
+                borderColor: 'rgba(255,255,255,0.25)',
+                color: '#fff',
               }}
               aria-label="Empresa ativa"
             >
@@ -449,11 +445,8 @@ export function Topbar({
         {showBusinessAction && (
           <Link
             href={businessActionHref}
-            className="inline-flex h-9 items-center gap-2 rounded-[8px] border px-3 text-sm font-medium text-app transition-colors hover:opacity-90"
-            style={{
-              background: 'var(--panel-bg-soft)',
-              borderColor: 'var(--panel-border)',
-            }}
+            className="inline-flex h-9 items-center gap-2 rounded-[8px] border px-3 text-sm font-medium transition-colors hover:opacity-80"
+            style={{ background: 'rgba(255,255,255,0.12)', borderColor: 'rgba(255,255,255,0.25)', color: '#fff' }}
           >
             <Plus className="h-4 w-4" />
             <span className="hidden lg:inline">{businessActionLabel}</span>
@@ -467,8 +460,8 @@ export function Topbar({
             onClick={() => setMenuOpen((v) => !v)}
             className="flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-full text-xs font-bold text-white transition-opacity hover:opacity-80"
             style={{
-              background: 'linear-gradient(135deg, var(--accent-blue), var(--accent-cyan))',
-              boxShadow: '0 0 0 2px color-mix(in oklab, var(--accent-blue) 16%, transparent)',
+              background: 'rgba(255,255,255,0.22)',
+              boxShadow: '0 0 0 2px rgba(255,255,255,0.30)',
             }}
             aria-label="Menu do usuário"
           >

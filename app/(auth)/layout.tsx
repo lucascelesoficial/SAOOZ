@@ -24,57 +24,52 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
 
       {/* ── Painel esquerdo — branding ────────────────────────── */}
       <div
-        className="hidden lg:flex lg:w-[52%] xl:w-[56%] relative flex-col justify-center items-center p-12 overflow-hidden"
-        style={{
-          background: 'linear-gradient(145deg, #1E3A8A 0%, #1D4ED8 45%, #2563EB 100%)',
-        }}
+        className="hidden lg:flex lg:w-[52%] xl:w-[56%] relative flex-col justify-center items-center p-12 overflow-hidden bg-white"
+        style={{ borderRight: '1px solid #E2E8F0' }}
       >
-        {/* Formas de fundo sutis */}
+        {/* Grid de pontos azuis sutis */}
         <div className="pointer-events-none absolute inset-0 overflow-hidden">
           <div
-            className="absolute -top-32 -right-32 w-[500px] h-[500px] rounded-full"
-            style={{ background: 'radial-gradient(circle, #ffffff08 0%, transparent 65%)' }}
+            className="absolute -top-40 -right-40 w-[500px] h-[500px] rounded-full"
+            style={{ background: 'radial-gradient(circle, #2563EB08 0%, transparent 65%)' }}
           />
           <div
-            className="absolute -bottom-24 -left-24 w-[400px] h-[400px] rounded-full"
-            style={{ background: 'radial-gradient(circle, #ffffff06 0%, transparent 65%)' }}
+            className="absolute -bottom-32 -left-32 w-[400px] h-[400px] rounded-full"
+            style={{ background: 'radial-gradient(circle, #2563EB06 0%, transparent 65%)' }}
           />
-          {/* Grid de pontos */}
-          <svg className="absolute inset-0 w-full h-full opacity-[0.06]" xmlns="http://www.w3.org/2000/svg">
+          <svg className="absolute inset-0 w-full h-full" xmlns="http://www.w3.org/2000/svg">
             <defs>
-              <pattern id="dots" width="28" height="28" patternUnits="userSpaceOnUse">
-                <circle cx="2" cy="2" r="1.5" fill="white" />
+              <pattern id="dots-auth" width="28" height="28" patternUnits="userSpaceOnUse">
+                <circle cx="2" cy="2" r="1.2" fill="#2563EB" fillOpacity="0.08" />
               </pattern>
             </defs>
-            <rect width="100%" height="100%" fill="url(#dots)" />
+            <rect width="100%" height="100%" fill="url(#dots-auth)" />
           </svg>
         </div>
 
-        {/* ── Hero: logo isolada ── */}
-        <div className="relative flex flex-col items-center text-center gap-6 mb-12">
-          {/* Ícone em destaque — tile branco com sombra forte pra destacar do azul */}
+        {/* ── Hero: logo em destaque ── */}
+        <div className="relative flex flex-col items-center text-center gap-5 mb-12">
           <div style={{
             borderRadius: 24,
-            boxShadow: '0 8px 40px rgba(0,0,0,0.30), 0 0 0 1px rgba(255,255,255,0.20)',
+            boxShadow: '0 4px 24px rgba(37,99,235,0.18), 0 0 0 1px rgba(0,0,0,0.06)',
             overflow: 'hidden',
             display: 'inline-flex',
           }}>
             <Image
               src="/saooz-logo.svg"
               alt="SAOOZ"
-              width={80}
-              height={80}
+              width={88}
+              height={88}
               priority
-              style={{ width: 80, height: 80, objectFit: 'contain', display: 'block' }}
+              style={{ width: 88, height: 88, objectFit: 'contain', display: 'block' }}
             />
           </div>
 
-          {/* Nome da marca em branco — separado e com peso */}
           <div>
-            <p className="text-3xl font-extrabold text-white tracking-tight" style={{ letterSpacing: '0.06em' }}>
+            <p className="text-3xl font-extrabold text-slate-900 tracking-tight" style={{ letterSpacing: '0.06em' }}>
               SAOOZ
             </p>
-            <p className="mt-1.5 text-sm text-blue-200 font-medium tracking-widest uppercase">
+            <p className="mt-1.5 text-sm font-medium tracking-widest uppercase" style={{ color: '#2563EB' }}>
               Centro da sua vida financeira
             </p>
           </div>
@@ -87,20 +82,20 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
               <span
                 className="h-8 w-8 rounded-[8px] flex items-center justify-center shrink-0"
                 style={{
-                  background: 'rgba(255,255,255,0.12)',
-                  border: '1px solid rgba(255,255,255,0.20)',
+                  background: '#EFF6FF',
+                  border: '1px solid #BFDBFE',
                 }}
               >
-                <Icon className="h-4 w-4 text-white" aria-hidden />
+                <Icon className="h-4 w-4" style={{ color: '#2563EB' }} aria-hidden />
               </span>
-              <span className="text-sm text-blue-100">{text}</span>
+              <span className="text-sm text-slate-600">{text}</span>
             </li>
           ))}
         </ul>
 
         {/* Rodapé */}
-        <p className="absolute bottom-8 text-xs text-blue-200/50 font-mono tracking-widest">
-          SAOOZ · NÚCLEO FINANCEIRO PESSOAL
+        <p className="absolute bottom-8 text-xs font-mono tracking-widest" style={{ color: '#94A3B8' }}>
+          SAOOZ · SEU SISTEMA FINANCEIRO
         </p>
       </div>
 
