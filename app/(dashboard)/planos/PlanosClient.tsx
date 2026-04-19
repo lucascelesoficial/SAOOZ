@@ -10,6 +10,7 @@ import {
   CreditCard,
   Crown,
   Layers3,
+  Loader2,
   XCircle,
 } from 'lucide-react'
 import { toast } from 'sonner'
@@ -608,8 +609,15 @@ export function PlanosClient({ snapshot }: PlanosClientProps) {
                           : 'linear-gradient(135deg, #334155, #1e293b)',
                       }}
                     >
-                      <CreditCard className="mr-1.5 h-4 w-4" />
-                      {checkingOut === `${planCode}-pix` ? 'Aguarde...' : 'Assinar agora'}
+                      {checkingOut === `${planCode}-pix` ? <Loader2 className="h-4 w-4 animate-spin" /> : <>Assinar agora — PIX</>}
+                    </button>
+                    <button
+                      onClick={() => handleCheckout(planCode, 'card')}
+                      disabled={!!checkingOut}
+                      className="flex h-10 w-full items-center justify-center rounded-[10px] text-sm font-medium text-white transition-all disabled:opacity-60 mt-2"
+                      style={{ background: 'linear-gradient(135deg, #334155, #1e293b)' }}
+                    >
+                      {checkingOut === `${planCode}-card` ? <Loader2 className="h-4 w-4 animate-spin" /> : <><CreditCard className="mr-1.5 h-4 w-4" />Assinar agora — Cartão</>}
                     </button>
                     <p className="text-center text-xs text-app-soft mt-2">7 dias de garantia — ou seu dinheiro de volta</p>
                   </>

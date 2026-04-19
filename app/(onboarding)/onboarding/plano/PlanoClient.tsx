@@ -98,8 +98,8 @@ export function PlanoClient({
     window.location.href = '/login'
   }
 
-  async function handleCheckout(planCode: SubscriptionPlanType) {
-    setCheckingOut(`${planCode}-pix`)
+  async function handleCheckout(planCode: SubscriptionPlanType, paymentMethod: 'pix' | 'card' = 'pix') {
+    setCheckingOut(`${planCode}-${paymentMethod}`)
     try {
       const res = await fetch('/api/billing/cakto/checkout', {
         method: 'POST',
@@ -108,7 +108,7 @@ export function PlanoClient({
         body: JSON.stringify({
           planType: planCode,
           duration,
-          paymentMethod: 'pix',
+          paymentMethod,
         }),
       })
 
@@ -378,8 +378,9 @@ export function PlanoClient({
                   </div>
                 ) : (
                   <>
+                    {/* PIX button */}
                     <button
-                      onClick={() => handleCheckout(planCode)}
+                      onClick={() => handleCheckout(planCode, 'pix')}
                       disabled={!!checkingOut}
                       className="flex h-11 w-full items-center justify-center rounded-[10px] text-sm font-semibold text-white transition-all disabled:opacity-60"
                       style={{
@@ -390,10 +391,21 @@ export function PlanoClient({
                     >
                       {checkingOut === `${planCode}-pix` ? (
                         <Loader2 className="h-4 w-4 animate-spin" />
-                      ) : upgrade ? (
-                        <><ArrowUpCircle className="mr-1.5 h-4 w-4" />{cta.label}</>
                       ) : (
-                        <><CreditCard className="mr-1.5 h-4 w-4" />{cta.label}</>
+                        <>{upgrade ? <ArrowUpCircle className="mr-1.5 h-4 w-4" /> : null}{cta.label} — PIX</>
+                      )}
+                    </button>
+                    {/* Card button */}
+                    <button
+                      onClick={() => handleCheckout(planCode, 'card')}
+                      disabled={!!checkingOut}
+                      className="flex h-10 w-full items-center justify-center rounded-[10px] text-sm font-medium text-white transition-all disabled:opacity-60 mt-2"
+                      style={{ background: 'linear-gradient(135deg, #334155, #1e293b)' }}
+                    >
+                      {checkingOut === `${planCode}-card` ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <><CreditCard className="mr-1.5 h-4 w-4" />{cta.label} — Cartão</>
                       )}
                     </button>
                     {!hasActiveSub && (
