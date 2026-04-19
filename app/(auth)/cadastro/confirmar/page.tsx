@@ -9,7 +9,7 @@ function ConfirmarContent() {
   const params = useSearchParams()
   const email  = params.get('email') ?? ''
 
-  const [status, setStatus]   = useState<'idle' | 'sending' | 'sent' | 'error'>('idle')
+  const [status, setStatus]     = useState<'idle' | 'sending' | 'sent' | 'error'>('idle')
   const [cooldown, setCooldown] = useState(0)
 
   async function handleResend() {
@@ -52,23 +52,23 @@ function ConfirmarContent() {
       <div className="flex justify-center">
         <div
           className="h-16 w-16 rounded-full flex items-center justify-center"
-          style={{ background: '#3b82f615', border: '1px solid #3b82f630' }}
+          style={{ background: '#EFF6FF', border: '1px solid #BFDBFE' }}
         >
-          <Mail className="h-7 w-7 text-[#60a5fa]" />
+          <Mail className="h-7 w-7 text-[#2563EB]" />
         </div>
       </div>
 
       {/* Text */}
       <div>
-        <h1 className="text-2xl font-extrabold text-white">Confirme seu email</h1>
-        <p className="mt-2 text-sm text-[#4a6080]">
+        <h1 className="text-2xl font-extrabold text-slate-900">Confirme seu email</h1>
+        <p className="mt-2 text-sm text-slate-500">
           Enviamos um link de confirmação para{' '}
-          {email && <span className="font-medium text-[#8899bb]">{email}</span>}.{' '}
+          {email && <span className="font-semibold text-slate-700">{email}</span>}.{' '}
           Clique no link para ativar sua conta.
         </p>
-        <p className="mt-2 text-xs text-[#4a5060]">
+        <p className="mt-2 text-xs text-slate-400">
           Verifique também a pasta de{' '}
-          <strong className="text-[#6B6B6B]">spam</strong> ou lixo eletrônico.
+          <strong className="text-slate-600">spam</strong> ou lixo eletrônico.
         </p>
       </div>
 
@@ -76,17 +76,17 @@ function ConfirmarContent() {
       {email && (
         <div className="flex flex-col items-center gap-2">
           {status === 'sent' ? (
-            <div className="flex items-center gap-2 text-sm text-[#22c55e]">
+            <div className="flex items-center gap-2 text-sm text-emerald-600">
               <CheckCircle2 className="h-4 w-4" />
               Email reenviado com sucesso!
             </div>
           ) : status === 'error' ? (
-            <p className="text-sm text-[#f87171]">Erro ao reenviar. Tente novamente.</p>
+            <p className="text-sm text-red-600">Erro ao reenviar. Tente novamente.</p>
           ) : (
             <button
               onClick={handleResend}
               disabled={status === 'sending' || cooldown > 0}
-              className="inline-flex items-center gap-2 text-sm text-[#60a5fa] hover:text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="inline-flex items-center gap-2 text-sm text-[#2563EB] hover:text-[#1D4ED8] font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {status === 'sending'
                 ? <Loader2 className="h-3.5 w-3.5 animate-spin" />
@@ -104,7 +104,7 @@ function ConfirmarContent() {
       {/* Login link */}
       <Link
         href="/login"
-        className="inline-block text-sm text-[#4a6080] hover:text-[#8899bb] transition-colors"
+        className="inline-block text-sm text-slate-500 hover:text-slate-900 transition-colors"
       >
         Já confirmei → Entrar
       </Link>

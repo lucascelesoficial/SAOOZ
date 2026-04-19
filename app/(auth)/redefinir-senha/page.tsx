@@ -6,11 +6,17 @@ import { Loader2, Eye, EyeOff, Check, X } from 'lucide-react'
 import { toast } from 'sonner'
 import { createClient } from '@/lib/supabase/client'
 
+const inputBase  = { background: '#F8FAFC', border: '1px solid #E2E8F0', color: '#0F172A' }
+const inputError = { background: '#FFF5F5', border: '1px solid #FCA5A5', boxShadow: '0 0 0 3px #FEE2E220', color: '#0F172A' }
+const inputFocusOk = { border: '1px solid #2563EB', boxShadow: '0 0 0 3px #2563EB18' }
+
 function Req({ met, label }: { met: boolean; label: string }) {
   return (
     <span className="flex items-center gap-1 text-xs">
-      {met ? <Check className="h-3 w-3 text-[#22c55e]" /> : <X className="h-3 w-3 text-[#6B6B6B]" />}
-      <span className={met ? 'text-[#22c55e]' : 'text-[#4a6080]'}>{label}</span>
+      {met
+        ? <Check className="h-3 w-3 text-emerald-500" />
+        : <X     className="h-3 w-3 text-slate-300" />}
+      <span className={met ? 'text-emerald-600' : 'text-slate-400'}>{label}</span>
     </span>
   )
 }
@@ -59,15 +65,17 @@ export default function RedefinirSenhaPage() {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-2xl font-extrabold text-white">Nova senha</h1>
-        <p className="mt-1.5 text-sm text-[#4a6080]">
+        <h1 className="text-2xl font-extrabold text-slate-900">Nova senha</h1>
+        <p className="mt-1.5 text-sm text-slate-500">
           Escolha uma senha forte para proteger sua conta.
         </p>
       </div>
 
       {error && (
-        <div className="rounded-[10px] px-4 py-3 text-sm text-[#f87171]"
-          style={{ background: '#f8717110', border: '1px solid #f8717130' }}>
+        <div
+          className="rounded-[10px] px-4 py-3 text-sm text-red-600"
+          style={{ background: '#FEF2F2', border: '1px solid #FECACA' }}
+        >
           {error}
         </div>
       )}
@@ -75,7 +83,7 @@ export default function RedefinirSenhaPage() {
       <form onSubmit={handleSubmit} className="space-y-4">
         {/* Nova senha */}
         <div className="space-y-1.5">
-          <label htmlFor="password" className="text-xs font-semibold text-[#8899bb] uppercase tracking-wider">
+          <label htmlFor="password" className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
             Nova senha
           </label>
           <div className="relative">
@@ -86,16 +94,13 @@ export default function RedefinirSenhaPage() {
               placeholder="••••••••"
               value={password}
               onChange={(e) => { setPassword(e.target.value); setError('') }}
-              className="w-full h-11 px-4 pr-11 rounded-[10px] text-sm text-white placeholder:text-[#6B6B6B] outline-none transition-all"
-              style={{
-                background: '#0d1021',
-                border: error ? '1px solid #f87171' : '1px solid #1e2847',
-              }}
-              onFocus={(e) => { if (!error) { e.currentTarget.style.border = '1px solid #3b82f6'; e.currentTarget.style.boxShadow = '0 0 0 3px #3b82f620' } }}
-              onBlur={(e)  => { if (!error) { e.currentTarget.style.border = '1px solid #1e2847'; e.currentTarget.style.boxShadow = 'none' } }}
+              className="w-full h-11 px-4 pr-11 rounded-[10px] text-sm placeholder:text-slate-400 outline-none transition-all"
+              style={error ? inputError : inputBase}
+              onFocus={(e) => { if (!error) Object.assign(e.currentTarget.style, inputFocusOk) }}
+              onBlur={(e)  => Object.assign(e.currentTarget.style, error ? inputError : inputBase)}
             />
             <button type="button" onClick={() => setShowPass(!showPass)} tabIndex={-1}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-[#4a6080] hover:text-[#8899bb] transition-colors">
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors">
               {showPass ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
             </button>
           </div>
@@ -111,7 +116,7 @@ export default function RedefinirSenhaPage() {
 
         {/* Confirmar */}
         <div className="space-y-1.5">
-          <label htmlFor="confirm" className="text-xs font-semibold text-[#8899bb] uppercase tracking-wider">
+          <label htmlFor="confirm" className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
             Confirmar senha
           </label>
           <div className="relative">
@@ -122,16 +127,13 @@ export default function RedefinirSenhaPage() {
               placeholder="••••••••"
               value={confirm}
               onChange={(e) => { setConfirm(e.target.value); setError('') }}
-              className="w-full h-11 px-4 pr-11 rounded-[10px] text-sm text-white placeholder:text-[#6B6B6B] outline-none transition-all"
-              style={{
-                background: '#0d1021',
-                border: error ? '1px solid #f87171' : '1px solid #1e2847',
-              }}
-              onFocus={(e) => { if (!error) { e.currentTarget.style.border = '1px solid #3b82f6'; e.currentTarget.style.boxShadow = '0 0 0 3px #3b82f620' } }}
-              onBlur={(e)  => { if (!error) { e.currentTarget.style.border = '1px solid #1e2847'; e.currentTarget.style.boxShadow = 'none' } }}
+              className="w-full h-11 px-4 pr-11 rounded-[10px] text-sm placeholder:text-slate-400 outline-none transition-all"
+              style={error ? inputError : inputBase}
+              onFocus={(e) => { if (!error) Object.assign(e.currentTarget.style, inputFocusOk) }}
+              onBlur={(e)  => Object.assign(e.currentTarget.style, error ? inputError : inputBase)}
             />
             <button type="button" onClick={() => setShowConfirm(!showConfirm)} tabIndex={-1}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-[#4a6080] hover:text-[#8899bb] transition-colors">
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors">
               {showConfirm ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
             </button>
           </div>
@@ -141,7 +143,7 @@ export default function RedefinirSenhaPage() {
           type="submit"
           disabled={loading}
           className="w-full h-11 rounded-[10px] text-sm font-bold text-white transition-all disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2 mt-2"
-          style={{ background: 'linear-gradient(135deg, #3b82f6, #1d4ed8)', boxShadow: '0 4px 20px #3b82f640' }}
+          style={{ background: 'linear-gradient(135deg, #2563EB, #1D4ED8)', boxShadow: '0 4px 16px #2563EB30' }}
         >
           {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Redefinir senha'}
         </button>

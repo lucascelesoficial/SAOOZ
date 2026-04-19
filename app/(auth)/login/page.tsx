@@ -63,8 +63,7 @@ export default function LoginPage() {
         }).catch(() => undefined)
       }
 
-      router.refresh()
-      router.push('/central')
+      window.location.href = '/central'
     } catch (err) {
       console.error('[login] unexpected error:', err)
       setErrors({ auth: 'Erro de conexão. Verifique sua internet e tente novamente.' })
