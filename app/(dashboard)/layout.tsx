@@ -73,7 +73,21 @@ export default async function DashboardLayout({
   const isDev = process.env.NODE_ENV === 'development'
 
   // Em dev, garante profile mínimo para não quebrar componentes downstream
-  let profile = profileData ?? (isDev ? { id: user.id, mode: 'pf', name: 'Dev User', email: user.email } : null)
+  let profile = profileData ?? (isDev ? {
+    id: user.id,
+    mode: 'pf' as const,
+    name: 'Dev User',
+    email: user.email ?? '',
+    avatar_url: null,
+    active_business_id: null,
+    created_at: new Date().toISOString(),
+    cpf: null,
+    phone: null,
+    birth_date: null,
+    city: null,
+    state: null,
+    onboarding_completed_at: null,
+  } : null)
 
   // ── Layer 2 guard (middleware é layer 1) ──────────────────────────────────
   if (!profile?.mode) {
