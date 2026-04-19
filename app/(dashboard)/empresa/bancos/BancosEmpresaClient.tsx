@@ -75,7 +75,7 @@ function loadPluggyScript(): Promise<void> {
 
     const script = document.createElement('script')
     script.id = 'pluggy-connect-script'
-    script.src = 'https://cdn.pluggy.ai/pluggy-connect/v2/pluggy-connect.js'
+    script.src = '/api/banking/widget-js'
     script.async = true
     script.onload = () => resolve()
     script.onerror = () => {
