@@ -486,7 +486,7 @@ export default function BancosClient() {
             >
               <p className="font-semibold text-app mb-1">Como funciona a sincronização?</p>
               <p>
-                Ao clicar em "Sincronizar", os últimos 3 meses de transações de débito são importados
+                Ao clicar em &quot;Sincronizar&quot;, os últimos 3 meses de transações de débito são importados
                 automaticamente como despesas. Transações já importadas não são duplicadas.
               </p>
             </div>
