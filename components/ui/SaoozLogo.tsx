@@ -1,6 +1,5 @@
 'use client'
 
-import Image from 'next/image'
 import { useId } from 'react'
 
 interface Props { size?: 'sm' | 'md' | 'lg' | 'xl' }
@@ -9,19 +8,52 @@ const ICON_PX = { sm: 28, md: 40, lg: 56, xl: 80 } as const
 const WORD_H  = { sm: 26, md: 38, lg: 52, xl: 72 } as const
 
 /* ─────────────────────────────────────────────────────────────
-   SaoozIcon — oficial brand icon (PNG)
-   Arquivo: /public/saooz-icon.png
+   SaoozIcon — oficial brand icon (SVG inline)
+   Tile azul claro + "S" geométrico em azul royal — alinhado
+   ao brand guide SAOOZ 2025 (item 02 / 06).
 ───────────────────────────────────────────────────────────── */
 export function SaoozIcon({ size = 40 }: { size?: number }) {
+  const uid = useId().replace(/:/g, '')
+  const tile = `${uid}tile`
+  const sFill = `${uid}s`
+
   return (
-    <Image
-      src="/saooz-icon.png"
-      alt="SAOOZ"
+    <svg
       width={size}
       height={size}
-      priority
-      style={{ width: size, height: size, objectFit: 'contain' }}
-    />
+      viewBox="0 0 80 80"
+      xmlns="http://www.w3.org/2000/svg"
+      aria-label="SAOOZ"
+      role="img"
+    >
+      <defs>
+        <linearGradient id={tile} x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%"  stopColor="#DCE8FF" />
+          <stop offset="100%" stopColor="#BFDBFE" />
+        </linearGradient>
+        <linearGradient id={sFill} x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%"  stopColor="#3B82F6" />
+          <stop offset="100%" stopColor="#1E3A8A" />
+        </linearGradient>
+      </defs>
+
+      {/* Tile */}
+      <rect x="0" y="0" width="80" height="80" rx="18" fill={`url(#${tile})`} />
+
+      {/* S geométrico — formado por 3 barras horizontais + 2 conectores verticais */}
+      <g fill={`url(#${sFill})`}>
+        {/* Barra superior */}
+        <path d="M 22 18 H 58 C 62 18 64 20 64 24 V 26 C 64 30 62 32 58 32 H 22 Z" />
+        {/* Conector esquerdo (vertical curto) */}
+        <path d="M 16 22 H 26 V 38 H 16 Z" />
+        {/* Barra central */}
+        <path d="M 22 34 H 58 C 62 34 64 36 64 40 V 42 C 64 46 62 48 58 48 H 22 C 18 48 16 46 16 42 V 40 C 16 36 18 34 22 34 Z" />
+        {/* Conector direito (vertical curto) */}
+        <path d="M 54 42 H 64 V 58 H 54 Z" />
+        {/* Barra inferior */}
+        <path d="M 22 48 H 58 C 62 48 64 50 64 54 V 56 C 64 60 62 62 58 62 H 22 C 18 62 16 60 16 56 V 54 C 16 50 18 48 22 48 Z" />
+      </g>
+    </svg>
   )
 }
 

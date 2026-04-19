@@ -76,7 +76,12 @@ export default async function DashboardLayout({
   let profile = profileData ?? (isDev ? { id: user.id, mode: 'pf', name: 'Dev User', email: user.email } : null)
 
   // ── Layer 2 guard (middleware é layer 1) ──────────────────────────────────
-  if (!isDev && !profile?.mode) {
+  if (!profile?.mode) {
+    if (isDev) {
+      // em dev nunca chega aqui porque profile foi garantido acima,
+      // mas TS precisa da narrowing
+      redirect('/onboarding')
+    }
     redirect('/onboarding')
   }
 
