@@ -237,7 +237,7 @@ export async function POST(request: NextRequest) {
               .from('business_revenues')
               .insert({
                 user_id: auth.user.id,
-                business_id: businessId,
+                business_id: businessId as string,
                 description,
                 amount,
                 month,
@@ -282,7 +282,7 @@ export async function POST(request: NextRequest) {
               .from('business_expenses')
               .insert({
                 user_id: auth.user.id,
-                business_id: businessId,
+                business_id: businessId as string,
                 description,
                 amount,
                 month,
