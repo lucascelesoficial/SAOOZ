@@ -268,7 +268,7 @@ export function SaoozAI({ totals, categoryData }: SaoozAIProps) {
     )
   }
 
-  function toggleVoice() {
+  function _toggleVoice() {
     primeTTS()
 
     if (voiceMode) {

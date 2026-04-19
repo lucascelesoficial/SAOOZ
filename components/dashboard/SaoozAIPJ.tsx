@@ -270,7 +270,7 @@ export function SaoozAIPJ({ userId }: SaoozAIPJProps) {
     )
   }
 
-  function toggleVoice() {
+  function _toggleVoice() {
     primeTTS()
 
     if (voiceMode) {
