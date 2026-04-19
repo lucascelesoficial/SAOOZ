@@ -264,7 +264,7 @@ function parsePaymentMethod(value: string | null | undefined): PaymentMethod | n
     return 'card'
   }
 
-  if (normalized === 'pix') {
+  if (normalized === 'pix' || normalized === 'pix_auto') {
     return 'pix'
   }
 
