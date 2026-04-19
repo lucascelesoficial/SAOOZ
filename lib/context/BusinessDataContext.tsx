@@ -143,8 +143,13 @@ export function BusinessDataProvider({ businessId, children }: ProviderProps) {
     fetchData()
   }, [fetchData])
 
-  const totalRevenue = revenues.reduce((sum, revenue) => sum + revenue.amount, 0)
-  const totalExpenses = expenses.reduce((sum, expense) => sum + expense.amount, 0)
+  // Só conta o que foi efetivamente recebido/pago
+  const totalRevenue = revenues
+    .filter((r) => r.status === 'received')
+    .reduce((sum, r) => sum + r.amount, 0)
+  const totalExpenses = expenses
+    .filter((e) => e.status === 'paid')
+    .reduce((sum, e) => sum + e.amount, 0)
 
   const taxEstimate = business
     ? estimateTax(
