@@ -5,4 +5,5 @@ import { Resend } from 'resend'
 export const resend = new Resend(process.env.RESEND_API_KEY ?? 'missing')
 
 export const FROM_EMAIL = 'SAOOZ <noreply@saooz.com>'
+export const REPLY_TO_EMAIL = 'suporte@saooz.com'
 export const SUPPORT_EMAIL = 'suporte@saooz.com'

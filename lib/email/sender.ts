@@ -1,4 +1,4 @@
-import { resend, FROM_EMAIL } from './client'
+import { resend, FROM_EMAIL, REPLY_TO_EMAIL } from './client'
 import {
   welcomeEmail,
   trialStartedEmail,
@@ -21,6 +21,7 @@ async function send(to: string, subject: string, html: string) {
       to,
       subject,
       html,
+      replyTo: REPLY_TO_EMAIL,
     })
     if (error) {
       console.error('[email] send error:', error)
@@ -47,7 +48,7 @@ export async function sendTrialStartedEmail(
 ) {
   return send(
     to,
-    `Seu teste grátis de 7 dias no SAOOZ começou 🚀`,
+    `Bem-vindo ao SAOOZ — sua assinatura ${plan} está ativa`,
     trialStartedEmail(name, plan, trialEnd),
   )
 }
@@ -60,7 +61,7 @@ export async function sendTrialEndingSoonEmail(
 ) {
   return send(
     to,
-    `Seu teste no SAOOZ termina em ${daysLeft} dias`,
+    `SAOOZ — ${daysLeft} dias restantes na sua garantia`,
     trialEndingSoonEmail(name, plan, daysLeft),
   )
 }
@@ -73,7 +74,7 @@ export async function sendSubscriptionActiveEmail(
 ) {
   return send(
     to,
-    'Sua assinatura SAOOZ está ativa ✅',
+    'SAOOZ — assinatura confirmada',
     subscriptionActiveEmail(name, plan, nextBilling),
   )
 }
@@ -91,7 +92,7 @@ export async function sendDueDateReminderEmail(
   const count = items.length
   return send(
     to,
-    `Você tem ${count} vencimento${count !== 1 ? 's' : ''} nos próximos dias ⏰`,
+    `SAOOZ — ${count} vencimento${count !== 1 ? 's' : ''} nos próximos dias`,
     dueDateReminderEmail(name, items, scope),
   )
 }
@@ -105,7 +106,7 @@ export async function sendOverdueAlertEmail(
   const count = items.length
   return send(
     to,
-    `Atenção: ${count} lançamento${count !== 1 ? 's' : ''} em atraso no SAOOZ ⚠️`,
+    `SAOOZ — ${count} lançamento${count !== 1 ? 's' : ''} em atraso`,
     overdueAlertEmail(name, items, scope),
   )
 }
@@ -117,7 +118,7 @@ export async function sendMonthlyDigestEmail(
 ) {
   return send(
     to,
-    `Seu fechamento de ${data.month} está pronto 📊`,
+    `SAOOZ — fechamento de ${data.month} disponível`,
     monthlyDigestEmail(name, data),
   )
 }
