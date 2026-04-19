@@ -41,28 +41,35 @@ export default function LoginPage() {
       }
     }
 
-    const supabase = createClient()
-    const { error } = await supabase.auth.signInWithPassword({ email, password })
-    setLoading(false)
+    try {
+      const supabase = createClient()
+      const { error } = await supabase.auth.signInWithPassword({ email, password })
 
-    if (error) {
-      setErrors({ auth: 'Email ou senha incorretos. Verifique e tente novamente.' })
-      return
+      if (error) {
+        console.error('[login] supabase error:', error.message, error.status)
+        setErrors({ auth: 'Email ou senha incorretos. Verifique e tente novamente.' })
+        setLoading(false)
+        return
+      }
+
+      const { data: userData } = await supabase.auth.getUser()
+      if (userData.user) {
+        identifyUser(userData.user.id, { email })
+        trackEvent(EVENTS.USER_LOGIN, { method: 'email' })
+        fetch('/api/auth/log-event', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ eventType: 'auth.login', metadata: { method: 'email' } }),
+        }).catch(() => undefined)
+      }
+
+      router.refresh()
+      router.push('/central')
+    } catch (err) {
+      console.error('[login] unexpected error:', err)
+      setErrors({ auth: 'Erro de conexão. Verifique sua internet e tente novamente.' })
+      setLoading(false)
     }
-
-    const { data: userData } = await supabase.auth.getUser()
-    if (userData.user) {
-      identifyUser(userData.user.id, { email })
-      trackEvent(EVENTS.USER_LOGIN, { method: 'email' })
-      fetch('/api/auth/log-event', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ eventType: 'auth.login', metadata: { method: 'email' } }),
-      }).catch(() => undefined)
-    }
-
-    router.refresh()
-    router.push('/central')
   }
 
   const inputBase = {
