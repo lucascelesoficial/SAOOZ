@@ -7,6 +7,10 @@ import { mapPluggyCategoryToExpenseCategory } from '@/lib/banking/mapper'
 import { withSecurityHeaders, requireSameOrigin, requireJsonContentType } from '@/lib/server/security'
 import type { ExpenseCategory } from '@/types/database.types'
 
+// Local types for bank tables (not yet in generated DB types)
+interface DbSyncBankItem { id: string; pluggy_item_id: string }
+interface DbSyncBankAccount { id: string; pluggy_account_id: string; type: string }
+
 export const dynamic = 'force-dynamic'
 
 const syncSchema = z.object({
@@ -38,23 +42,25 @@ export async function POST(request: NextRequest) {
     const supabase = await createClient()
 
     // Verify ownership of the item
-    const { data: dbItem, error: itemError } = await supabase
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { data: dbItem, error: itemError } = await (supabase as any)
       .from('bank_items')
       .select('id, pluggy_item_id')
       .eq('id', itemId)
       .eq('user_id', auth.user.id)
-      .single()
+      .single() as { data: DbSyncBankItem | null; error: unknown }
 
     if (itemError || !dbItem) {
       return withSecurityHeaders(NextResponse.json({ error: 'Item não encontrado.' }, { status: 404 }))
     }
 
     // Get DB accounts for this item
-    const { data: dbAccounts, error: accError } = await supabase
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { data: dbAccounts, error: accError } = await (supabase as any)
       .from('bank_accounts')
       .select('id, pluggy_account_id, type')
       .eq('item_id', dbItem.id)
-      .eq('user_id', auth.user.id)
+      .eq('user_id', auth.user.id) as { data: DbSyncBankAccount[] | null; error: unknown }
 
     if (accError) throw accError
     if (!dbAccounts || dbAccounts.length === 0) {
@@ -69,10 +75,11 @@ export async function POST(request: NextRequest) {
     const toStr = to.toISOString().split('T')[0]
 
     // Fetch already-imported transaction IDs for this user (to skip duplicates)
-    const { data: alreadyImported } = await supabase
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { data: alreadyImported } = await (supabase as any)
       .from('bank_imported_transactions')
       .select('pluggy_transaction_id')
-      .eq('user_id', auth.user.id)
+      .eq('user_id', auth.user.id) as { data: { pluggy_transaction_id: string }[] | null }
 
     const importedIds = new Set(
       (alreadyImported ?? []).map((r) => r.pluggy_transaction_id)
@@ -85,7 +92,8 @@ export async function POST(request: NextRequest) {
       const liveAccounts = await getAccounts(apiKey, dbItem.pluggy_item_id)
       await Promise.all(
         liveAccounts.map((acc) =>
-          supabase
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          (supabase as any)
             .from('bank_accounts')
             .update({ balance: acc.balance, updated_at: new Date().toISOString() })
             .eq('pluggy_account_id', acc.id)
@@ -162,7 +170,8 @@ export async function POST(request: NextRequest) {
         }
 
         // Track the import
-        const { error: trackError } = await supabase
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const { error: trackError } = await (supabase as any)
           .from('bank_imported_transactions')
           .insert({
             user_id: auth.user.id,
@@ -188,7 +197,8 @@ export async function POST(request: NextRequest) {
     }
 
     // Update last_synced_at for all accounts in this item
-    await supabase
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    await (supabase as any)
       .from('bank_accounts')
       .update({ last_synced_at: new Date().toISOString() })
       .eq('item_id', dbItem.id)

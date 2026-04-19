@@ -5,6 +5,20 @@ import { getApiKey, getItem, getAccounts, deleteItem } from '@/lib/banking/plugg
 import { normalizeItemStatus } from '@/lib/banking/mapper'
 import { withSecurityHeaders, requireSameOrigin } from '@/lib/server/security'
 
+// Local types for bank tables (not yet in generated DB types)
+interface DbBankAccount {
+  id: string; pluggy_account_id: string; name: string; type: string
+  subtype: string | null; number: string | null; balance: number
+  currency_code: string; last_synced_at: string | null
+  created_at: string; updated_at: string
+}
+interface DbBankItem {
+  id: string; user_id: string; pluggy_item_id: string; connector_name: string
+  connector_id: number | null; status: string; last_updated_at: string | null
+  error_message: string | null; created_at: string; updated_at: string
+  bank_accounts: DbBankAccount[]
+}
+
 export const dynamic = 'force-dynamic'
 
 // ── GET /api/banking/items ────────────────────────────────────────────────────
@@ -18,13 +32,15 @@ export async function GET() {
     const supabase = await createClient()
 
     // Load all items + accounts from DB
-    const { data: dbItems, error } = await supabase
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { data: rawItems, error } = await (supabase as any)
       .from('bank_items')
       .select('*, bank_accounts(*)')
       .eq('user_id', auth.user.id)
       .order('created_at', { ascending: false })
 
     if (error) throw error
+    const dbItems = (rawItems ?? []) as DbBankItem[]
 
     // Enrich with live Pluggy data (best-effort; don't fail if Pluggy is slow)
     let apiKey: string | null = null
@@ -35,7 +51,7 @@ export async function GET() {
     }
 
     const enriched = await Promise.all(
-      (dbItems ?? []).map(async (item) => {
+      dbItems.map(async (item) => {
         let liveAccounts = null
 
         if (apiKey) {

@@ -7,6 +7,9 @@ export const dynamic = 'force-dynamic'
 
 // ── Pluggy Webhook event types ────────────────────────────────────────────────
 
+// Local type for bank_items (not yet in generated DB types)
+interface DbWebhookBankItem { id: string; user_id: string; pluggy_item_id: string; status: string }
+
 interface PluggyWebhookPayload {
   event: string
   itemId: string
@@ -35,11 +38,12 @@ export async function POST(request: NextRequest) {
     const admin = createAdminClient()
 
     // Find the item in our DB
-    const { data: dbItem } = await admin
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { data: dbItem } = await (admin as any)
       .from('bank_items')
       .select('id, user_id, pluggy_item_id, status')
       .eq('pluggy_item_id', body.itemId)
-      .maybeSingle()
+      .maybeSingle() as { data: DbWebhookBankItem | null }
 
     if (!dbItem) {
       // Item not in our DB — ignore
@@ -60,7 +64,8 @@ export async function POST(request: NextRequest) {
         const newStatus = normalizeItemStatus(liveItem.status)
 
         // Update item status
-        await admin
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        await (admin as any)
           .from('bank_items')
           .update({
             status: newStatus,
@@ -74,7 +79,8 @@ export async function POST(request: NextRequest) {
         if (accounts.length > 0) {
           await Promise.all(
             accounts.map((acc) =>
-              admin
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              (admin as any)
                 .from('bank_accounts')
                 .update({ balance: acc.balance, updated_at: new Date().toISOString() })
                 .eq('pluggy_account_id', acc.id)
@@ -87,7 +93,8 @@ export async function POST(request: NextRequest) {
         console.error('[banking/webhook] Failed to refresh item:', err)
       }
     } else if (event === 'item/error') {
-      await admin
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      await (admin as any)
         .from('bank_items')
         .update({
           status: 'error',
@@ -99,7 +106,8 @@ export async function POST(request: NextRequest) {
       console.log(`[banking/webhook] item/error → item ${dbItem.id}`)
     } else if (event === 'item/deleted') {
       // Item was deleted via Pluggy — remove from our DB too
-      await admin
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      await (admin as any)
         .from('bank_items')
         .delete()
         .eq('id', dbItem.id)
