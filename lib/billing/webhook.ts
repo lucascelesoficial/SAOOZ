@@ -326,7 +326,7 @@ export async function processBillingWebhookEvent(
     const nowIso = new Date().toISOString()
 
     // Find subscription by userId, or fall back to customer email lookup
-    let subQuery = admin.from('subscriptions').select('id,user_id,status')
+    const subQuery = admin.from('subscriptions').select('id,user_id,status')
 
     if (userId) {
       const { data: sub } = await subQuery.eq('user_id', userId).maybeSingle()
