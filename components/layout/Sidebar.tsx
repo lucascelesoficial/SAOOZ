@@ -27,7 +27,7 @@ import {
   Users,
   Waves,
 } from 'lucide-react'
-import { SaoozLogo } from '@/components/ui/SaoozLogo'
+import { SaoozIcon } from '@/components/ui/SaoozLogo'
 import { OverdueBadge } from '@/components/business/OverdueBadge'
 import { useAuth } from '@/lib/hooks/useAuth'
 import { useSidebar } from '@/lib/context/SidebarContext'
@@ -122,7 +122,7 @@ export function Sidebar({
           transition:   'padding 300ms ease',
         }}
       >
-        <SaoozLogo size="md" />
+        <SaoozIcon size={48} />
         <span
           className="ml-3 text-lg font-extrabold tracking-tight text-app whitespace-nowrap"
           style={{
