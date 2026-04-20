@@ -8,7 +8,7 @@ type Duration = 1 | 3 | 6 | 12
 
 const DURATIONS: { value: Duration; label: string; discount: number; badge?: string }[] = [
   { value: 1,  label: 'Mensal',    discount: 0   },
-  { value: 3,  label: '3 meses',   discount: 10  },
+  { value: 3,  label: '3 meses',   discount: 0   },
   { value: 6,  label: '6 meses',   discount: 15, badge: 'Popular' },
   { value: 12, label: 'Anual',     discount: 25, badge: '-25%' },
 ]

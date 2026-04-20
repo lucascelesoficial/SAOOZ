@@ -1,363 +1,282 @@
 import Link from 'next/link'
 import {
-  ArrowRight, BadgeCheck, Brain, Building2,
-  CheckCircle2, ChevronRight, Landmark, Layers,
-  Mail, MessageCircle, Shield, Star, User, Zap,
+  ArrowRight, BadgeCheck, Brain,
+  Building2, CheckCircle2, ChevronRight,
+  Layers, Mail, Shield, Star, User,
 } from 'lucide-react'
 import { SaoozWordmark } from '@/components/ui/SaoozLogo'
 import { PricingSection } from '@/components/marketing/PricingSection'
 
 // ─── Data ─────────────────────────────────────────────────────────────────────
 
-const FOR_WHOM = [
-  { icon: User,      color: '#2563EB', title: 'Profissional com renda variável',    description: 'Freelancers, consultores e autônomos que precisam de previsibilidade e método sem depender de contador para entender o básico.' },
-  { icon: Building2, color: '#1D4ED8', title: 'Empresário com operação PJ',         description: 'MEIs e pequenas empresas que precisam separar pessoa e empresa sem planilha paralela ou ferramenta adicional.' },
-  { icon: Layers,    color: '#2563EB', title: 'Operação PF + PJ unificada',         description: 'Quem tem renda pessoal e empresarial e precisa de visão total do dinheiro em um único sistema, sem retrabalho.' },
-]
-
 const TESTIMONIALS = [
-  { name: 'Lucas M.',    role: 'Designer · MEI',               quote: 'Finalmente consegui separar o pessoal do empresarial. Em uma semana já vi para onde o dinheiro estava indo todo mês.', stars: 5 },
-  { name: 'Fernanda C.', role: 'Consultora PJ',                quote: 'O módulo de impostos me economiza tempo toda semana. Antes abria 3 ferramentas diferentes só para montar o número básico.', stars: 5 },
-  { name: 'Rafael S.',   role: 'Gestor de tráfego · Autônomo', quote: 'A IA identifica onde está o vazamento antes do fim do mês. Muda completamente como tomo decisão sobre investimento e gasto.', stars: 5 },
+  {
+    name: 'Lucas M.',
+    role: 'Designer · MEI',
+    quote: 'Finalmente consegui separar o pessoal do empresarial. Em uma semana já vi para onde o dinheiro estava indo todo mês.',
+    stars: 5,
+  },
+  {
+    name: 'Fernanda C.',
+    role: 'Consultora PJ',
+    quote: 'O módulo de impostos me economiza tempo toda semana. Antes abria 3 ferramentas diferentes só para montar o número básico.',
+    stars: 5,
+  },
+  {
+    name: 'Rafael S.',
+    role: 'Gestor de tráfego · Autônomo',
+    quote: 'A IA identifica onde está o vazamento antes do fim do mês. Muda completamente como tomo decisão sobre investimento e gasto.',
+    stars: 5,
+  },
 ]
 
 const FAQ_ITEMS = [
-  { q: 'O que é a garantia de 7 dias?',                a: 'Se você assinar qualquer plano e não estiver satisfeito nos primeiros 7 dias, devolvemos 100% do valor pago. Sem perguntas, sem burocracia.' },
-  { q: 'Quando começa a cobrança?',                     a: 'Imediatamente após a confirmação do pagamento. Se decidir cancelar nos primeiros 7 dias, reembolsamos o valor integral. Sem fidelidade, sem multa de saída.' },
-  { q: 'Posso usar PF e PJ no mesmo plano?',           a: 'Sim, com o plano PRO você tem acesso aos dois módulos em uma única conta. Se precisar só de um, os planos PF ou PJ são mais indicados e mais baratos.' },
-  { q: 'Consigo ter mais de uma empresa cadastrada?',  a: 'Sim. O plano PJ suporta até 3 empresas e o PRO até 5. Ideal para quem opera mais de um CNPJ ou tem diferentes frentes de negócio.' },
-  { q: 'Em quanto tempo configuro o SAOOZ?',           a: 'A configuração inicial leva menos de 5 minutos. No mesmo dia você já consegue registrar, analisar e decidir com base em dados reais.' },
-  { q: 'O assistente IA usa meus dados reais?',        a: 'Sim. O assistente conhece seu contexto financeiro real — renda, gastos, categorias e operação PF/PJ — e entrega análises orientadas ao seu momento, não respostas genéricas de ChatGPT.' },
-  { q: 'Posso migrar de plano depois?',                a: 'Sim. Você pode trocar de plano a qualquer momento pelo painel de configurações. Sem perda de dados, sem burocracia.' },
+  {
+    q: 'O que é a garantia de 7 dias?',
+    a: 'Se você assinar qualquer plano e não estiver satisfeito nos primeiros 7 dias, devolvemos 100% do valor pago. Sem perguntas, sem e-mail de retenção, sem formulário longo.',
+  },
+  {
+    q: 'Quando começa a cobrança?',
+    a: 'Imediatamente após a confirmação do pagamento. Se decidir cancelar nos primeiros 7 dias, reembolsamos o valor integral. Sem fidelidade, sem multa de saída.',
+  },
+  {
+    q: 'Posso usar PF e PJ no mesmo plano?',
+    a: 'Sim, com o plano PRO você acessa os dois módulos em uma única conta. Se precisar só de um, os planos PF ou PJ são mais indicados e mais acessíveis.',
+  },
+  {
+    q: 'Consigo ter mais de uma empresa cadastrada?',
+    a: 'Sim. O plano PJ suporta até 3 empresas e o PRO até 5. Ideal para quem opera mais de um CNPJ ou tem diferentes frentes de negócio.',
+  },
+  {
+    q: 'Em quanto tempo configuro o SAOOZ?',
+    a: 'A configuração inicial leva menos de 5 minutos. No mesmo dia você já consegue registrar, analisar e decidir com base em dados reais.',
+  },
+  {
+    q: 'O assistente IA usa meus dados financeiros reais?',
+    a: 'Sim. O assistente conhece seu contexto real — renda, gastos, categorias e operação PF/PJ — e entrega análises orientadas ao seu momento, não respostas genéricas.',
+  },
+  {
+    q: 'Posso migrar de plano depois?',
+    a: 'Sim. Você pode trocar de plano a qualquer momento pelo painel de configurações. Sem perda de dados, sem burocracia.',
+  },
+  {
+    q: 'Como funciona o cancelamento?',
+    a: 'Você cancela pelo painel, sem precisar falar com ninguém. O acesso permanece até o fim do período pago. Sem multa, sem período de aviso prévio.',
+  },
 ]
 
-// ─── Orbital Ring System (pure SVG + CSS) ────────────────────────────────────
-
-function OrbitalSystem() {
-  return (
-    <div
-      aria-hidden
-      className="pointer-events-none select-none"
-      style={{ position: 'absolute', inset: 0, overflow: 'hidden' }}
-    >
-      {/* Rotating rings via SVG */}
-      <svg
-        viewBox="0 0 800 800"
-        style={{
-          position: 'absolute',
-          top: '50%', left: '50%',
-          transform: 'translate(-50%, -55%)',
-          width: 'min(900px, 130vw)',
-          height: 'min(900px, 130vw)',
-          opacity: 0.35,
-        }}
-      >
-        {/* Outer ring */}
-        <circle cx="400" cy="400" r="340" fill="none" stroke="url(#ring3)" strokeWidth="1" strokeDasharray="4 12" />
-        {/* Middle ring */}
-        <circle cx="400" cy="400" r="240" fill="none" stroke="url(#ring2)" strokeWidth="1" strokeDasharray="6 16" />
-        {/* Inner ring */}
-        <circle cx="400" cy="400" r="150" fill="none" stroke="url(#ring1)" strokeWidth="1" strokeDasharray="3 10" />
-        {/* Center glow */}
-        <circle cx="400" cy="400" r="60" fill="url(#center)" opacity="0.6" />
-        <circle cx="400" cy="400" r="20" fill="url(#centerDot)" />
-
-        <defs>
-          <radialGradient id="center" cx="50%" cy="50%" r="50%">
-            <stop offset="0%" stopColor="#2563EB" stopOpacity="0.4" />
-            <stop offset="100%" stopColor="#2563EB" stopOpacity="0" />
-          </radialGradient>
-          <radialGradient id="centerDot" cx="50%" cy="50%" r="50%">
-            <stop offset="0%" stopColor="#a5f3fc" />
-            <stop offset="100%" stopColor="#2563EB" />
-          </radialGradient>
-          <linearGradient id="ring1" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#2563EB" />
-            <stop offset="50%" stopColor="#1D4ED8" />
-            <stop offset="100%" stopColor="#2563EB" />
-          </linearGradient>
-          <linearGradient id="ring2" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#60A5FA" />
-            <stop offset="50%" stopColor="#22c55e" />
-            <stop offset="100%" stopColor="#60A5FA" />
-          </linearGradient>
-          <linearGradient id="ring3" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#1D4ED8" />
-            <stop offset="50%" stopColor="#2563EB" />
-            <stop offset="100%" stopColor="#1D4ED8" />
-          </linearGradient>
-        </defs>
-      </svg>
-
-      {/* Orbiting dots — CSS animations */}
-      <div
-        style={{
-          position: 'absolute',
-          top: '50%', left: '50%',
-          transform: 'translate(-50%, -55%)',
-          width: 'min(900px, 130vw)',
-          height: 'min(900px, 130vw)',
-        }}
-      >
-        {/* Dot 1 — inner ring */}
-        <div style={{ position: 'absolute', inset: 0, animation: 'saooz-orbit1 10s linear infinite' }}>
-          <div style={{ position: 'absolute', top: '50%', left: '50%', width: 8, height: 8, borderRadius: '50%', background: '#2563EB', boxShadow: '0 0 10px 3px #2563EB60', transform: 'translate(-50%, calc(-50% - min(168px, 18.7vw)))' }} />
-        </div>
-        {/* Dot 2 — middle ring */}
-        <div style={{ position: 'absolute', inset: 0, animation: 'saooz-orbit2 16s linear infinite' }}>
-          <div style={{ position: 'absolute', top: '50%', left: '50%', width: 10, height: 10, borderRadius: '50%', background: '#1D4ED8', boxShadow: '0 0 14px 4px #1D4ED860', transform: 'translate(-50%, calc(-50% - min(270px, 30vw)))' }} />
-        </div>
-        {/* Dot 3 — middle ring counter */}
-        <div style={{ position: 'absolute', inset: 0, animation: 'saooz-orbit2r 22s linear infinite' }}>
-          <div style={{ position: 'absolute', top: '50%', left: '50%', width: 7, height: 7, borderRadius: '50%', background: '#22c55e', boxShadow: '0 0 10px 3px #22c55e60', transform: 'translate(-50%, calc(-50% - min(270px, 30vw)))' }} />
-        </div>
-        {/* Dot 4 — outer ring */}
-        <div style={{ position: 'absolute', inset: 0, animation: 'saooz-orbit3 28s linear infinite' }}>
-          <div style={{ position: 'absolute', top: '50%', left: '50%', width: 12, height: 12, borderRadius: '50%', background: '#60A5FA', boxShadow: '0 0 16px 5px #60A5FA40', transform: 'translate(-50%, calc(-50% - min(383px, 42.5vw)))' }} />
-        </div>
-        {/* Dot 5 — outer ring offset */}
-        <div style={{ position: 'absolute', inset: 0, animation: 'saooz-orbit3r 20s linear infinite' }}>
-          <div style={{ position: 'absolute', top: '50%', left: '50%', width: 8, height: 8, borderRadius: '50%', background: '#f59e0b', boxShadow: '0 0 12px 4px #f59e0b50', transform: 'translate(-50%, calc(-50% - min(383px, 42.5vw)))' }} />
-        </div>
-      </div>
-    </div>
-  )
-}
-
-// ─── Dashboard Mockup (detailed, realistic) ──────────────────────────────────
+// ─── Dashboard Mockup — light ─────────────────────────────────────────────────
 
 function DashboardMockup() {
   const bars = [35, 55, 42, 70, 48, 65, 82, 58, 72, 88, 45, 90]
   const cats = [
-    { name: 'Moradia',     pct: 32, val: 'R$ 1.400', color: '#2563EB' },
-    { name: 'Alimentação', pct: 22, val: 'R$ 963',   color: '#60A5FA' },
-    { name: 'Transporte',  pct: 15, val: 'R$ 656',   color: '#22c55e' },
-    { name: 'Assinaturas', pct: 9,  val: 'R$ 394',   color: '#1D4ED8' },
-    { name: 'Outros',      pct: 22, val: 'R$ 963',   color: '#f59e0b' },
+    { name: 'Moradia',     pct: 32, color: '#3b82f6' },
+    { name: 'Alimentação', pct: 22, color: '#60a5fa' },
+    { name: 'Transporte',  pct: 15, color: '#4ade80' },
+    { name: 'Assinaturas', pct: 9,  color: '#a78bfa' },
   ]
   return (
-    <div
-      className="relative mx-auto mt-16"
-      style={{ maxWidth: 900, perspective: '1200px' }}
-    >
-      {/* Glow under the card */}
-      <div
-        aria-hidden
-        style={{
-          position: 'absolute', inset: '-20px 40px', bottom: -40,
-          background: 'radial-gradient(ellipse at 50% 100%, rgba(37,99,235,0.18), transparent 70%)',
-          filter: 'blur(30px)',
-          zIndex: 0,
-        }}
-      />
+    <div className="relative mx-auto mt-16" style={{ maxWidth: 860, perspective: '1200px' }}>
+      {/* Glow */}
+      <div aria-hidden style={{
+        position: 'absolute', inset: '-20px 40px', bottom: -40,
+        background: 'radial-gradient(ellipse at 50% 100%, rgba(59,130,246,0.15), transparent 70%)',
+        filter: 'blur(40px)', zIndex: 0,
+      }} />
 
-      <div
-        style={{
-          position: 'relative',
-          zIndex: 1,
-          transform: 'rotateX(6deg) rotateY(-1deg)',
-          transformOrigin: 'center top',
-          borderRadius: 20,
-          overflow: 'hidden',
-          border: '1px solid rgba(37,99,235,0.25)',
-          boxShadow: '0 40px 100px rgba(37,99,235,0.14), 0 0 0 1px rgba(226,232,240,0.4), inset 0 1px 0 rgba(255,255,255,0.08)',
-        }}
-      >
+      <div style={{
+        position: 'relative', zIndex: 1,
+        transform: 'rotateX(5deg) rotateY(-1deg)',
+        transformOrigin: 'center top',
+        borderRadius: 16, overflow: 'hidden',
+        border: '1px solid #CBD5E1',
+        boxShadow: '0 24px 80px rgba(0,0,0,0.10), 0 0 0 1px rgba(0,0,0,0.04)',
+      }}>
         {/* Browser chrome */}
-        <div
-          style={{
-            display: 'flex', alignItems: 'center', gap: 8,
-            padding: '10px 16px',
-            background: '#F8FAFC',
-            borderBottom: '1px solid #E2E8F0',
-          }}
-        >
-          <span style={{ width: 12, height: 12, borderRadius: '50%', background: '#ff5f57', display: 'inline-block' }} />
-          <span style={{ width: 12, height: 12, borderRadius: '50%', background: '#ffbd2e', display: 'inline-block' }} />
-          <span style={{ width: 12, height: 12, borderRadius: '50%', background: '#28c840', display: 'inline-block' }} />
-          <div
-            style={{
-              marginLeft: 12, flex: 1, borderRadius: 6, padding: '4px 12px',
-              background: '#FFFFFF',
-              border: '1px solid #E2E8F0',
-              fontSize: 11, color: '#94A3B8',
-              display: 'flex', alignItems: 'center', gap: 6,
-            }}
-          >
-            <Shield style={{ width: 10, height: 10, color: '#22c55e' }} />
+        <div style={{
+          display: 'flex', alignItems: 'center', gap: 8,
+          padding: '10px 16px',
+          background: '#F1F5F9',
+          borderBottom: '1px solid #E2E8F0',
+        }}>
+          <span style={{ width: 10, height: 10, borderRadius: '50%', background: '#ff5f57', display: 'inline-block' }} />
+          <span style={{ width: 10, height: 10, borderRadius: '50%', background: '#ffbd2e', display: 'inline-block' }} />
+          <span style={{ width: 10, height: 10, borderRadius: '50%', background: '#28c840', display: 'inline-block' }} />
+          <div style={{
+            marginLeft: 12, flex: 1, borderRadius: 6, padding: '4px 12px',
+            background: '#FFFFFF', border: '1px solid #E2E8F0',
+            fontSize: 11, color: '#94A3B8',
+            display: 'flex', alignItems: 'center', gap: 6,
+          }}>
+            <Shield style={{ width: 9, height: 9, color: '#4ade80', flexShrink: 0 }} />
             app.saooz.com/central
           </div>
         </div>
 
         {/* Dashboard body */}
-        <div style={{ background: '#FFFFFF', padding: 0 }}>
+        <div style={{ background: '#FFFFFF', display: 'grid', gridTemplateColumns: '52px 1fr' }}>
+          {/* Sidebar */}
+          <div style={{
+            background: '#F8FAFC', borderRight: '1px solid #E2E8F0',
+            padding: '12px 0', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10,
+          }}>
+            {['#3b82f6','#60a5fa','#4ade80','#a78bfa','#f59e0b'].map((c, i) => (
+              <div key={i} style={{
+                width: 28, height: 28, borderRadius: 8,
+                background: i === 0 ? 'rgba(59,130,246,0.12)' : '#F1F5F9',
+                border: `1px solid ${i === 0 ? 'rgba(59,130,246,0.3)' : '#E2E8F0'}`,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+              }}>
+                <div style={{ width: 10, height: 10, borderRadius: i === 0 ? '50%' : 2, background: i === 0 ? c : '#CBD5E1', opacity: i === 0 ? 1 : 0.7 }} />
+              </div>
+            ))}
+          </div>
 
-          {/* Sidebar + content */}
-          <div style={{ display: 'grid', gridTemplateColumns: '56px 1fr' }}>
+          {/* Content */}
+          <div style={{ padding: '14px 16px', minHeight: 300 }}>
+            {/* Header */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
+              <div>
+                <div style={{ fontSize: 10, color: '#94A3B8', marginBottom: 2 }}>Central financeira</div>
+                <div style={{ fontSize: 14, fontWeight: 700, color: '#0F172A' }}>Abril 2026</div>
+              </div>
+              <div style={{ display: 'flex', gap: 6 }}>
+                {['PF','PJ'].map((t, i) => (
+                  <span key={t} style={{
+                    fontSize: 10, fontWeight: 700, padding: '3px 8px', borderRadius: 6,
+                    background: i === 0 ? 'rgba(59,130,246,0.10)' : '#F1F5F9',
+                    color: i === 0 ? '#2563eb' : '#94A3B8',
+                    border: `1px solid ${i === 0 ? 'rgba(59,130,246,0.25)' : '#E2E8F0'}`,
+                  }}>{t}</span>
+                ))}
+              </div>
+            </div>
 
-            {/* Mini sidebar */}
-            <div
-              style={{
-                background: '#F8FAFC',
-                borderRight: '1px solid #E2E8F0',
-                padding: '12px 0',
-                display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10,
-              }}
-            >
-              {['#2563EB','#60A5FA','#22c55e','#1D4ED8','#f59e0b'].map((c, i) => (
-                <div key={i} style={{ width: 28, height: 28, borderRadius: 8, background: i === 0 ? `rgba(37,99,235,0.15)` : '#F1F5F9', border: `1px solid ${i === 0 ? 'rgba(37,99,235,0.3)' : '#E2E8F0'}`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <div style={{ width: 10, height: 10, borderRadius: i === 0 ? '50%' : 2, background: i === 0 ? c : '#CBD5E1', opacity: i === 0 ? 1 : 0.6 }} />
+            {/* Metric cards */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8, marginBottom: 12 }}>
+              {[
+                { label: 'Saldo disponível', value: 'R$ 8.420',  color: '#16a34a',  delta: '+12%'  },
+                { label: 'Entradas do mês',  value: 'R$ 12.800', color: '#2563eb',  delta: 'estável' },
+                { label: 'Saídas do mês',    value: 'R$ 4.380',  color: '#dc2626',  delta: '-8%'   },
+                { label: 'Consumo mensal',   value: '34%',        color: '#7c3aed',  delta: 'ideal' },
+              ].map((m) => (
+                <div key={m.label} style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: 10, padding: '9px 11px' }}>
+                  <div style={{ fontSize: 9, color: '#94A3B8', marginBottom: 3, textTransform: 'uppercase', letterSpacing: '0.05em' }}>{m.label}</div>
+                  <div style={{ fontSize: 14, fontWeight: 800, color: m.color }}>{m.value}</div>
+                  <div style={{ fontSize: 9, marginTop: 2, padding: '1px 5px', borderRadius: 4, background: '#F1F5F9', display: 'inline-block', color: m.color }}>{m.delta}</div>
                 </div>
               ))}
             </div>
 
-            {/* Main content */}
-            <div style={{ padding: '14px 16px', minHeight: 320 }}>
-
-              {/* Top header */}
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
-                <div>
-                  <div style={{ fontSize: 11, color: '#94A3B8', marginBottom: 2 }}>Central financeira</div>
-                  <div style={{ fontSize: 14, fontWeight: 700, color: '#0F172A' }}>Abril 2026</div>
+            {/* Charts */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1.6fr 1fr', gap: 8, marginBottom: 10 }}>
+              <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: 10, padding: '10px 12px' }}>
+                <div style={{ fontSize: 9, color: '#94A3B8', marginBottom: 7, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Fluxo de caixa — 2026</div>
+                <div style={{ display: 'flex', alignItems: 'flex-end', gap: 3, height: 52 }}>
+                  {bars.map((h, i) => (
+                    <div key={i} style={{ flex: 1, borderRadius: '3px 3px 0 0', height: `${h}%`, background: i >= 10 ? 'rgba(59,130,246,0.15)' : `rgba(59,130,246,${0.25 + h / 280})`, border: i === 11 ? '1px solid rgba(59,130,246,0.4)' : 'none' }} />
+                  ))}
                 </div>
-                <div style={{ display: 'flex', gap: 6 }}>
-                  {['PF','PJ'].map((t, i) => (
-                    <span key={t} style={{ fontSize: 10, fontWeight: 700, padding: '3px 8px', borderRadius: 6, background: i === 0 ? 'rgba(37,99,235,0.12)' : '#F1F5F9', color: i === 0 ? '#2563EB' : '#64748B', border: `1px solid ${i === 0 ? 'rgba(37,99,235,0.25)' : '#E2E8F0'}` }}>{t}</span>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 4 }}>
+                  {['Jan','Fev','Mar','Abr'].map(m => <span key={m} style={{ fontSize: 8, color: '#CBD5E1' }}>{m}</span>)}
+                </div>
+              </div>
+
+              <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: 10, padding: '10px 12px' }}>
+                <div style={{ fontSize: 9, color: '#94A3B8', marginBottom: 7, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Categorias</div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                  {cats.map((c) => (
+                    <div key={c.name}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 2 }}>
+                        <span style={{ fontSize: 9, color: '#64748B' }}>{c.name}</span>
+                        <span style={{ fontSize: 9, color: c.color, fontWeight: 700 }}>{c.pct}%</span>
+                      </div>
+                      <div style={{ height: 3, borderRadius: 2, background: '#E2E8F0' }}>
+                        <div style={{ height: '100%', borderRadius: 2, width: `${c.pct}%`, background: c.color }} />
+                      </div>
+                    </div>
                   ))}
                 </div>
               </div>
+            </div>
 
-              {/* Metric cards */}
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8, marginBottom: 14 }}>
-                {[
-                  { label: 'Saldo disponível', value: 'R$ 8.420', color: '#22c55e', delta: '+12%' },
-                  { label: 'Entradas do mês',  value: 'R$ 12.800', color: '#2563EB', delta: 'estável' },
-                  { label: 'Saídas do mês',    value: 'R$ 4.380',  color: '#f87171', delta: '-8%' },
-                  { label: 'Consumo mensal',   value: '34%',       color: '#1D4ED8', delta: 'ideal' },
-                ].map((m) => (
-                  <div key={m.label} style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: 10, padding: '10px 12px' }}>
-                    <div style={{ fontSize: 9, color: '#94A3B8', marginBottom: 4, textTransform: 'uppercase', letterSpacing: '0.05em' }}>{m.label}</div>
-                    <div style={{ fontSize: 15, fontWeight: 800, color: m.color }}>{m.value}</div>
-                    <div style={{ fontSize: 9, marginTop: 3, padding: '1px 5px', borderRadius: 4, background: `rgba(0,0,0,0.05)`, display: 'inline-block', color: m.color }}>{m.delta}</div>
-                  </div>
-                ))}
-              </div>
-
-              {/* Charts row */}
-              <div style={{ display: 'grid', gridTemplateColumns: '1.6fr 1fr', gap: 8, marginBottom: 12 }}>
-
-                {/* Bar chart */}
-                <div style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: 10, padding: '10px 12px' }}>
-                  <div style={{ fontSize: 9, color: '#94A3B8', marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Fluxo de caixa — 2026</div>
-                  <div style={{ display: 'flex', alignItems: 'flex-end', gap: 3, height: 56 }}>
-                    {bars.map((h, i) => (
-                      <div key={i} style={{ flex: 1, borderRadius: '3px 3px 0 0', height: `${h}%`, background: i >= 10 ? `rgba(37,99,235,0.25)` : `rgba(37,99,235,${0.4 + h / 200})`, border: i === 11 ? '1px solid rgba(37,99,235,0.5)' : 'none' }} />
-                    ))}
-                  </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 4 }}>
-                    {['Jan','Fev','Mar','Abr'].map(m => (
-                      <span key={m} style={{ fontSize: 8, color: '#CBD5E1' }}>{m}</span>
-                    ))}
-                  </div>
+            {/* AI preview */}
+            <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: 10, padding: '10px 12px' }}>
+              <div style={{ fontSize: 9, color: '#94A3B8', marginBottom: 7, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Assistente IA · SAOOZ</div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
+                <div style={{ alignSelf: 'flex-start', maxWidth: '75%', background: '#EFF6FF', border: '1px solid #BFDBFE', borderRadius: '0 8px 8px 8px', padding: '6px 10px', fontSize: 10, color: '#475569', lineHeight: 1.5 }}>
+                  Alimentação subiu 18% em abril. Quer revisar a meta?
                 </div>
-
-                {/* Category breakdown */}
-                <div style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: 10, padding: '10px 12px' }}>
-                  <div style={{ fontSize: 9, color: '#94A3B8', marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Categorias</div>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                    {cats.slice(0, 4).map((c) => (
-                      <div key={c.name} style={{ marginBottom: 6 }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 2 }}>
-                          <span style={{ fontSize: 9, color: '#475569' }}>{c.name}</span>
-                          <span style={{ fontSize: 9, color: c.color, fontWeight: 700 }}>{c.pct}%</span>
-                        </div>
-                        <div style={{ height: 3, borderRadius: 2, background: '#F1F5F9' }}>
-                          <div style={{ height: '100%', borderRadius: 2, width: `${c.pct}%`, background: c.color }} />
-                        </div>
-                      </div>
-                    ))}
-                  </div>
+                <div style={{ alignSelf: 'flex-end', maxWidth: '60%', background: '#F1F5F9', border: '1px solid #E2E8F0', borderRadius: '8px 0 8px 8px', padding: '6px 10px', fontSize: 10, color: '#475569' }}>
+                  Sim — qual seria o valor ideal?
+                </div>
+                <div style={{ alignSelf: 'flex-start', maxWidth: '80%', background: '#EFF6FF', border: '1px solid #BFDBFE', borderRadius: '0 8px 8px 8px', padding: '6px 10px', fontSize: 10, color: '#475569', lineHeight: 1.5 }}>
+                  Com base no histórico, R$ 1.100/mês mantém o padrão sem pressão no caixa.
                 </div>
               </div>
-
-              {/* AI chat preview */}
-              <div style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: 10, padding: '10px 12px' }}>
-                <div style={{ fontSize: 9, color: '#94A3B8', marginBottom: 7, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Assistente IA · Saooz</div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
-                  <div style={{ alignSelf: 'flex-start', maxWidth: '75%', background: 'rgba(29,78,216,0.08)', border: '1px solid rgba(29,78,216,0.15)', borderRadius: '0 8px 8px 8px', padding: '6px 10px', fontSize: 10, color: '#334155', lineHeight: 1.5 }}>
-                    Seus gastos com alimentação subiram 18% em abril. Deseja revisar a meta da categoria?
-                  </div>
-                  <div style={{ alignSelf: 'flex-end', maxWidth: '60%', background: '#F1F5F9', borderRadius: '8px 0 8px 8px', padding: '6px 10px', fontSize: 10, color: '#334155' }}>
-                    Sim — sugira um valor realista.
-                  </div>
-                  <div style={{ alignSelf: 'flex-start', maxWidth: '80%', background: 'rgba(29,78,216,0.08)', border: '1px solid rgba(29,78,216,0.15)', borderRadius: '0 8px 8px 8px', padding: '6px 10px', fontSize: 10, color: '#334155', lineHeight: 1.5 }}>
-                    Com base no histórico, R$ 1.100/mês mantém o padrão sem pressão no caixa.
-                  </div>
-                </div>
-              </div>
-
             </div>
           </div>
         </div>
       </div>
 
-      {/* Bottom gradient fade */}
-      <div
-        aria-hidden
-        style={{
-          position: 'absolute', bottom: 0, left: 0, right: 0, height: 100,
-          background: 'linear-gradient(to top, #FFFFFF, transparent)',
-          pointerEvents: 'none', zIndex: 2,
-        }}
-      />
+      {/* Bottom fade */}
+      <div aria-hidden style={{
+        position: 'absolute', bottom: 0, left: 0, right: 0, height: 80,
+        background: 'linear-gradient(to top, #FFFFFF, transparent)',
+        pointerEvents: 'none', zIndex: 2,
+      }} />
     </div>
   )
 }
 
-// ─── Feature Visual Cards ──────────────────────────────────────────────────────
+// ─── Feature Visuals — light ──────────────────────────────────────────────────
 
 function FeatureVisualPanels() {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 12, width: '100%', maxWidth: 380 }}>
-      {/* PF Card */}
-      <div style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: 14, padding: '14px 16px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
-          <span style={{ fontSize: 11, fontWeight: 700, color: '#2563EB' }}>Pessoal (PF)</span>
-          <span style={{ fontSize: 10, background: 'rgba(37,99,235,0.1)', color: '#2563EB', padding: '2px 7px', borderRadius: 6, border: '1px solid rgba(37,99,235,0.2)' }}>Abril 2026</span>
+      <div style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: 14, padding: '16px 18px', boxShadow: '0 4px 20px rgba(0,0,0,0.06)' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+          <span style={{ fontSize: 11, fontWeight: 700, color: '#2563eb' }}>Pessoal · PF</span>
+          <span style={{ fontSize: 10, background: '#EFF6FF', color: '#2563eb', padding: '2px 7px', borderRadius: 6, border: '1px solid #BFDBFE' }}>Abril 2026</span>
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
-          <div style={{ background: '#F8FAFC', borderRadius: 10, padding: '10px 12px' }}>
-            <div style={{ fontSize: 9, color: '#94A3B8', marginBottom: 3 }}>Saldo</div>
-            <div style={{ fontSize: 16, fontWeight: 800, color: '#22c55e' }}>R$ 8.420</div>
+          <div style={{ background: '#F8FAFC', borderRadius: 10, padding: '10px 12px', border: '1px solid #E2E8F0' }}>
+            <div style={{ fontSize: 9, color: '#94A3B8', marginBottom: 4 }}>Saldo</div>
+            <div style={{ fontSize: 18, fontWeight: 800, color: '#16a34a' }}>R$ 8.420</div>
           </div>
-          <div style={{ background: '#F8FAFC', borderRadius: 10, padding: '10px 12px' }}>
-            <div style={{ fontSize: 9, color: '#94A3B8', marginBottom: 3 }}>Saídas</div>
-            <div style={{ fontSize: 16, fontWeight: 800, color: '#f87171' }}>R$ 4.380</div>
+          <div style={{ background: '#F8FAFC', borderRadius: 10, padding: '10px 12px', border: '1px solid #E2E8F0' }}>
+            <div style={{ fontSize: 9, color: '#94A3B8', marginBottom: 4 }}>Saídas</div>
+            <div style={{ fontSize: 18, fontWeight: 800, color: '#dc2626' }}>R$ 4.380</div>
           </div>
         </div>
       </div>
-      {/* PJ Card */}
-      <div style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: 14, padding: '14px 16px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
-          <span style={{ fontSize: 11, fontWeight: 700, color: '#1D4ED8' }}>Empresa (PJ)</span>
-          <span style={{ fontSize: 10, background: 'rgba(29,78,216,0.1)', color: '#1D4ED8', padding: '2px 7px', borderRadius: 6, border: '1px solid rgba(29,78,216,0.2)' }}>Abril 2026</span>
+
+      <div style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: 14, padding: '16px 18px', boxShadow: '0 4px 20px rgba(0,0,0,0.06)' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+          <span style={{ fontSize: 11, fontWeight: 700, color: '#3b82f6' }}>Empresa · PJ</span>
+          <span style={{ fontSize: 10, background: '#EFF6FF', color: '#3b82f6', padding: '2px 7px', borderRadius: 6, border: '1px solid #BFDBFE' }}>Abril 2026</span>
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
-          <div style={{ background: '#F8FAFC', borderRadius: 10, padding: '10px 12px' }}>
-            <div style={{ fontSize: 9, color: '#94A3B8', marginBottom: 3 }}>Faturamento</div>
-            <div style={{ fontSize: 16, fontWeight: 800, color: '#1D4ED8' }}>R$ 28.5k</div>
+          <div style={{ background: '#F8FAFC', borderRadius: 10, padding: '10px 12px', border: '1px solid #E2E8F0' }}>
+            <div style={{ fontSize: 9, color: '#94A3B8', marginBottom: 4 }}>Faturamento</div>
+            <div style={{ fontSize: 18, fontWeight: 800, color: '#3b82f6' }}>R$ 28.5k</div>
           </div>
-          <div style={{ background: '#F8FAFC', borderRadius: 10, padding: '10px 12px' }}>
-            <div style={{ fontSize: 9, color: '#94A3B8', marginBottom: 3 }}>Lucro</div>
-            <div style={{ fontSize: 16, fontWeight: 800, color: '#22c55e' }}>R$ 15.8k</div>
+          <div style={{ background: '#F8FAFC', borderRadius: 10, padding: '10px 12px', border: '1px solid #E2E8F0' }}>
+            <div style={{ fontSize: 9, color: '#94A3B8', marginBottom: 4 }}>Lucro</div>
+            <div style={{ fontSize: 18, fontWeight: 800, color: '#16a34a' }}>R$ 15.8k</div>
           </div>
         </div>
       </div>
-      {/* Toggle hint */}
+
       <div style={{ display: 'flex', justifyContent: 'center', gap: 8 }}>
-        <span style={{ fontSize: 11, background: 'rgba(37,99,235,0.1)', color: '#2563EB', padding: '4px 12px', borderRadius: 20, border: '1px solid rgba(37,99,235,0.2)', fontWeight: 600 }}>PF</span>
-        <span style={{ fontSize: 11, background: '#F1F5F9', color: '#64748B', padding: '4px 12px', borderRadius: 20, border: '1px solid #E2E8F0', fontWeight: 600 }}>PJ</span>
-        <span style={{ fontSize: 11, background: '#F1F5F9', color: '#64748B', padding: '4px 12px', borderRadius: 20, border: '1px solid #E2E8F0', fontWeight: 600 }}>Ambos</span>
+        {['PF', 'PJ', 'Ambos'].map((t, i) => (
+          <span key={t} style={{
+            fontSize: 11, padding: '4px 14px', borderRadius: 20, fontWeight: 600,
+            background: i === 0 ? '#EFF6FF' : '#F8FAFC',
+            color: i === 0 ? '#2563eb' : '#94A3B8',
+            border: `1px solid ${i === 0 ? '#BFDBFE' : '#E2E8F0'}`,
+          }}>{t}</span>
+        ))}
       </div>
     </div>
   )
@@ -365,31 +284,30 @@ function FeatureVisualPanels() {
 
 function FeatureVisualCategories() {
   const cats = [
-    { name: 'Moradia',     pct: 32, color: '#2563EB' },
-    { name: 'Alimentação', pct: 22, color: '#f87171' },
-    { name: 'Transporte',  pct: 15, color: '#22c55e' },
+    { name: 'Moradia',     pct: 32, color: '#3b82f6' },
+    { name: 'Alimentação', pct: 22, color: '#ef4444' },
+    { name: 'Transporte',  pct: 15, color: '#16a34a' },
     { name: 'Lazer',       pct: 9,  color: '#f59e0b' },
   ]
   return (
-    <div style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: 20, padding: '20px 22px', width: '100%', maxWidth: 380, boxShadow: '0 20px 60px rgba(30,58,138,0.10)' }}>
-      <div style={{ fontSize: 12, fontWeight: 700, color: '#0F172A', marginBottom: 14 }}>Gastos por categoria</div>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+    <div style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: 20, padding: '22px 24px', width: '100%', maxWidth: 380, boxShadow: '0 8px 40px rgba(0,0,0,0.08)' }}>
+      <div style={{ fontSize: 12, fontWeight: 700, color: '#0F172A', marginBottom: 16 }}>Gastos por categoria</div>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
         {cats.map((c) => (
           <div key={c.name}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 5 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
               <span style={{ fontSize: 12, color: '#475569', fontWeight: 500 }}>{c.name}</span>
               <span style={{ fontSize: 12, color: c.color, fontWeight: 700 }}>{c.pct}%</span>
             </div>
-            <div style={{ height: 6, borderRadius: 3, background: '#F1F5F9' }}>
-              <div style={{ height: '100%', borderRadius: 3, width: `${c.pct * 2.8}%`, background: c.color }} />
+            <div style={{ height: 4, borderRadius: 2, background: '#F1F5F9' }}>
+              <div style={{ height: '100%', borderRadius: 2, width: `${c.pct * 2.8}%`, background: c.color }} />
             </div>
           </div>
         ))}
       </div>
-      {/* Alert chip */}
-      <div style={{ marginTop: 14, background: 'rgba(248,113,113,0.08)', border: '1px solid rgba(248,113,113,0.25)', borderRadius: 10, padding: '8px 12px', display: 'flex', alignItems: 'center', gap: 8 }}>
-        <span style={{ fontSize: 14 }}>⚠</span>
-        <span style={{ fontSize: 11, color: '#f87171', fontWeight: 600 }}>↑ Alimentação +18% este mês</span>
+      <div style={{ marginTop: 16, background: '#FEF2F2', border: '1px solid #FECACA', borderRadius: 10, padding: '9px 13px', display: 'flex', alignItems: 'center', gap: 8 }}>
+        <span style={{ fontSize: 13 }}>⚠</span>
+        <span style={{ fontSize: 11, color: '#dc2626', fontWeight: 600 }}>Alimentação +18% — acima do padrão</span>
       </div>
     </div>
   )
@@ -397,20 +315,20 @@ function FeatureVisualCategories() {
 
 function FeatureVisualDRE() {
   return (
-    <div style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: 20, padding: '20px 22px', width: '100%', maxWidth: 380, boxShadow: '0 20px 60px rgba(30,58,138,0.10)' }}>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+    <div style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: 20, padding: '22px 24px', width: '100%', maxWidth: 380, boxShadow: '0 8px 40px rgba(0,0,0,0.08)' }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 18 }}>
         <span style={{ fontSize: 12, fontWeight: 700, color: '#0F172A' }}>DRE — Abril 2026</span>
-        <span style={{ fontSize: 10, background: 'rgba(37,99,235,0.1)', color: '#2563EB', padding: '3px 9px', borderRadius: 6, border: '1px solid rgba(37,99,235,0.2)', fontWeight: 600 }}>Simples Nacional</span>
+        <span style={{ fontSize: 10, background: '#EFF6FF', color: '#2563eb', padding: '3px 9px', borderRadius: 6, border: '1px solid #BFDBFE', fontWeight: 600 }}>Simples Nacional</span>
       </div>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
         {[
-          { label: 'Faturamento', value: 'R$ 28.500', color: '#22c55e' },
-          { label: 'Despesas',    value: 'R$ 11.200', color: '#f87171' },
-          { label: 'Imposto',     value: 'R$ 1.425',  color: '#f59e0b' },
-          { label: 'Lucro',       value: 'R$ 15.875', color: '#2563EB' },
+          { label: 'Faturamento', value: 'R$ 28.500', color: '#16a34a' },
+          { label: 'Despesas',    value: 'R$ 11.200', color: '#dc2626' },
+          { label: 'Imposto',     value: 'R$ 1.425',  color: '#d97706' },
+          { label: 'Lucro',       value: 'R$ 15.875', color: '#2563eb' },
         ].map((row) => (
-          <div key={row.label} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 14px', background: '#F8FAFC', borderRadius: 10, border: '1px solid #E2E8F0' }}>
-            <span style={{ fontSize: 12, color: '#475569', fontWeight: 500 }}>{row.label}</span>
+          <div key={row.label} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '11px 14px', background: '#F8FAFC', borderRadius: 10, border: '1px solid #E2E8F0' }}>
+            <span style={{ fontSize: 12, color: '#64748B', fontWeight: 500 }}>{row.label}</span>
             <span style={{ fontSize: 14, fontWeight: 800, color: row.color }}>{row.value}</span>
           </div>
         ))}
@@ -421,22 +339,22 @@ function FeatureVisualDRE() {
 
 function FeatureVisualChat() {
   return (
-    <div style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: 20, padding: '20px 22px', width: '100%', maxWidth: 380, boxShadow: '0 20px 60px rgba(30,58,138,0.10)' }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
-        <div style={{ width: 28, height: 28, borderRadius: '50%', background: 'linear-gradient(135deg, #1E3A8A, #2563EB)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+    <div style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: 20, padding: '22px 24px', width: '100%', maxWidth: 380, boxShadow: '0 8px 40px rgba(0,0,0,0.08)' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 18 }}>
+        <div style={{ width: 30, height: 30, borderRadius: '50%', background: 'linear-gradient(135deg, #1e3a8a, #3b82f6)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
           <Brain style={{ width: 14, height: 14, color: '#fff' }} />
         </div>
         <span style={{ fontSize: 12, fontWeight: 700, color: '#0F172A' }}>Assistente IA · SAOOZ</span>
       </div>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-        <div style={{ alignSelf: 'flex-start', maxWidth: '88%', background: 'rgba(29,78,216,0.07)', border: '1px solid rgba(29,78,216,0.15)', borderRadius: '0 12px 12px 12px', padding: '10px 13px', fontSize: 12, color: '#334155', lineHeight: 1.5 }}>
-          Em abril você gastou R$ 4.380, 12% mais que março. Quer ver onde subiu?
+        <div style={{ alignSelf: 'flex-start', maxWidth: '88%', background: '#EFF6FF', border: '1px solid #BFDBFE', borderRadius: '0 12px 12px 12px', padding: '10px 13px', fontSize: 12, color: '#1E293B', lineHeight: 1.55 }}>
+          Em abril você gastou R$ 4.380 — 12% acima de março. Quer ver onde aumentou?
         </div>
-        <div style={{ alignSelf: 'flex-end', maxWidth: '60%', background: '#F1F5F9', borderRadius: '12px 0 12px 12px', padding: '10px 13px', fontSize: 12, color: '#334155' }}>
+        <div style={{ alignSelf: 'flex-end', maxWidth: '60%', background: '#F1F5F9', border: '1px solid #E2E8F0', borderRadius: '12px 0 12px 12px', padding: '10px 13px', fontSize: 12, color: '#475569' }}>
           Sim, onde foi?
         </div>
-        <div style={{ alignSelf: 'flex-start', maxWidth: '88%', background: 'rgba(29,78,216,0.07)', border: '1px solid rgba(29,78,216,0.15)', borderRadius: '0 12px 12px 12px', padding: '10px 13px', fontSize: 12, color: '#334155', lineHeight: 1.5 }}>
-          Alimentação +R$ 340 e assinaturas +R$ 180. Posso sugerir ajuste?
+        <div style={{ alignSelf: 'flex-start', maxWidth: '88%', background: '#EFF6FF', border: '1px solid #BFDBFE', borderRadius: '0 12px 12px 12px', padding: '10px 13px', fontSize: 12, color: '#1E293B', lineHeight: 1.55 }}>
+          Alimentação +R$ 340 e assinaturas +R$ 180. Posso sugerir um ajuste de meta?
         </div>
       </div>
     </div>
@@ -448,67 +366,66 @@ function FeatureVisualChat() {
 export function SalesLanding() {
   return (
     <>
-      {/* ── Keyframe animations injected once ── */}
       <style>{`
         @keyframes saooz-orbit1  { to { transform: rotate(360deg); } }
         @keyframes saooz-orbit2  { to { transform: rotate(360deg); } }
         @keyframes saooz-orbit2r { to { transform: rotate(-360deg); } }
         @keyframes saooz-orbit3  { to { transform: rotate(360deg); } }
         @keyframes saooz-orbit3r { to { transform: rotate(-360deg); } }
-        @keyframes saooz-float   { 0%,100% { transform: translateY(0px); } 50% { transform: translateY(-24px); } }
-        @keyframes saooz-pulse   { 0%,100% { opacity: 0.5; } 50% { opacity: 1; } }
-        @keyframes saooz-shimmer { from { background-position: -200% center; } to { background-position: 200% center; } }
-        @keyframes saooz-spin-slow { to { transform: rotate(360deg); } }
-        @keyframes saooz-grid-fade { 0%,100%{opacity:0.04} 50%{opacity:0.08} }
+
+        .saooz-landing { background: #FFFFFF; color: #475569; }
+        .saooz-nav-link { color: #64748B; font-size: 14px; font-weight: 500; transition: color 0.15s; text-decoration: none; }
+        .saooz-nav-link:hover { color: #0F172A; }
+
+        .saooz-details summary::-webkit-details-marker { display: none; }
+        .saooz-details[open] .saooz-chevron { transform: rotate(90deg); }
+        .saooz-chevron { transition: transform 0.2s; }
+
+        @media (max-width: 768px) {
+          .md-grid-2 { grid-template-columns: 1fr !important; }
+          .md-order-1 { order: 1 !important; }
+          .md-order-2 { order: 2 !important; }
+          .md-hidden { display: none !important; }
+          .sm-grid-1 { grid-template-columns: 1fr !important; }
+        }
       `}</style>
 
-      <div className="force-light relative min-h-screen overflow-x-hidden" style={{ background: '#FFFFFF', color: '#334155' }}>
+      <div className="saooz-landing force-light relative min-h-screen overflow-x-hidden">
 
         {/* ══════════════════════════════════════════════════════════
             NAVBAR
         ══════════════════════════════════════════════════════════ */}
-        <header
-          className="relative z-20 sticky top-0"
-          style={{
-            borderBottom: '1px solid #E2E8F0',
-            background: 'rgba(255,255,255,0.92)',
-            backdropFilter: 'blur(16px)',
-            boxShadow: '0 1px 8px rgba(30,58,138,0.06)',
-          }}
-        >
+        <header className="relative z-20 sticky top-0" style={{
+          borderBottom: '1px solid #E2E8F0',
+          background: 'rgba(255,255,255,0.95)',
+          backdropFilter: 'blur(16px)',
+        }}>
           <div className="mx-auto flex w-full max-w-6xl items-center justify-between px-4 py-4 md:px-6">
             <SaoozWordmark size="sm" />
-            <nav className="hidden items-center gap-6 md:flex">
+            <nav className="md-hidden hidden items-center gap-7 md:flex">
               {[
-                ['#como-funciona', 'Como funciona'],
+                ['#visao', 'Como funciona'],
                 ['#recursos', 'Recursos'],
                 ['#precos', 'Preços'],
                 ['#faq', 'FAQ'],
               ].map(([href, label]) => (
-                <Link
-                  key={href}
-                  href={href}
-                  className="text-sm font-medium transition-colors hover:text-[#1E3A8A]"
-                  style={{ color: '#475569' }}
-                >
-                  {label}
-                </Link>
+                <a key={href} href={href} className="saooz-nav-link">{label}</a>
               ))}
             </nav>
             <div className="flex items-center gap-2">
               <Link
                 href="/login"
                 className="hidden md:inline-flex h-9 items-center rounded-[9px] px-4 text-sm font-medium transition-colors"
-                style={{ color: '#475569', border: '2px solid #E2E8F0' }}
+                style={{ color: '#64748B', border: '1px solid #E2E8F0' }}
               >
                 Entrar
               </Link>
               <Link
                 href="/cadastro"
                 className="inline-flex h-9 items-center gap-1.5 rounded-[9px] px-4 text-sm font-semibold text-white"
-                style={{ background: 'linear-gradient(135deg, #1E3A8A, #1D4ED8)' }}
+                style={{ background: '#1d4ed8' }}
               >
-                Começar grátis <ChevronRight className="h-3.5 w-3.5" />
+                Assinar agora <ChevronRight className="h-3.5 w-3.5" />
               </Link>
             </div>
           </div>
@@ -519,56 +436,97 @@ export function SalesLanding() {
           {/* ══════════════════════════════════════════════════════════
               HERO
           ══════════════════════════════════════════════════════════ */}
-          <section className="relative mx-auto w-full max-w-6xl px-4 pt-16 pb-0 md:px-6 md:pt-24">
-            {/* Orbital system behind hero */}
-            <OrbitalSystem />
+          <section className="relative mx-auto w-full max-w-6xl px-4 pt-20 pb-0 md:px-6 md:pt-28">
+            {/* Background glow */}
+            <div aria-hidden style={{
+              position: 'absolute', top: 0, left: '50%', transform: 'translateX(-50%)',
+              width: 800, height: 400,
+              background: 'radial-gradient(ellipse at center top, rgba(59,130,246,0.08), transparent 70%)',
+              pointerEvents: 'none',
+            }} />
 
-            <div className="mx-auto max-w-4xl text-center space-y-6 relative">
-              {/* Pill tag */}
-              <div className="inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-sm font-semibold"
-                style={{ background: '#EFF6FF', color: '#1E3A8A', border: '1px solid #BFDBFE' }}>
-                Controle financeiro pessoal e empresarial
+            {/* Orbital rings */}
+            <div aria-hidden className="pointer-events-none select-none" style={{ position: 'absolute', inset: 0, overflow: 'hidden' }}>
+              <svg viewBox="0 0 800 800" style={{
+                position: 'absolute', top: '50%', left: '50%',
+                transform: 'translate(-50%, -55%)',
+                width: 'min(900px, 130vw)', height: 'min(900px, 130vw)',
+                opacity: 0.12,
+              }}>
+                <circle cx="400" cy="400" r="340" fill="none" stroke="url(#hr3)" strokeWidth="1" strokeDasharray="4 14" />
+                <circle cx="400" cy="400" r="240" fill="none" stroke="url(#hr2)" strokeWidth="1" strokeDasharray="5 18" />
+                <circle cx="400" cy="400" r="150" fill="none" stroke="url(#hr1)" strokeWidth="1" strokeDasharray="3 12" />
+                <defs>
+                  <linearGradient id="hr1" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stopColor="#3b82f6" /><stop offset="100%" stopColor="#1d4ed8" />
+                  </linearGradient>
+                  <linearGradient id="hr2" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stopColor="#1d4ed8" /><stop offset="100%" stopColor="#3b82f6" />
+                  </linearGradient>
+                  <linearGradient id="hr3" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stopColor="#3b82f6" stopOpacity="0.5" /><stop offset="100%" stopColor="#1d4ed8" stopOpacity="0.5" />
+                  </linearGradient>
+                </defs>
+              </svg>
+            </div>
+
+            <div className="mx-auto max-w-4xl text-center relative" style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+              {/* Tag */}
+              <div style={{ display: 'flex', justifyContent: 'center' }}>
+                <span style={{
+                  display: 'inline-flex', alignItems: 'center', gap: 8,
+                  padding: '6px 16px', borderRadius: 100,
+                  background: '#EFF6FF', border: '1px solid #BFDBFE',
+                  fontSize: 12, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase',
+                  color: '#2563eb',
+                }}>
+                  <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#3b82f6', boxShadow: '0 0 6px 2px rgba(59,130,246,0.4)', display: 'inline-block' }} />
+                  Sistema de Gestão Financeira Premium
+                </span>
               </div>
 
               {/* H1 */}
-              <h1 style={{ fontSize: 'clamp(2rem, 5.5vw, 3.75rem)', fontWeight: 900, lineHeight: 1.1, color: '#0F172A' }}>
-                Você sabe quanto entrou.
-                <br />
-                <span style={{ color: '#1D4ED8' }}>Mas sabe onde foi?</span>
+              <h1 style={{ fontSize: 'clamp(2rem, 5.5vw, 3.6rem)', fontWeight: 900, lineHeight: 1.08, color: '#0F172A', margin: 0 }}>
+                Quem vive sem visão financeira{' '}
+                <br className="hidden md:block" />
+                <span style={{ color: '#1d4ed8' }}>opera no improviso — e paga caro.</span>
               </h1>
 
-              {/* Subtitle */}
-              <p className="mx-auto max-w-2xl text-base leading-relaxed md:text-lg" style={{ color: '#64748B' }}>
-                O SAOOZ conecta sua conta bancária via Open Finance, categoriza tudo automaticamente e mostra — antes do fim do mês — o que precisa da sua atenção. Para pessoa física, empresa ou os dois.
+              {/* Sub */}
+              <p className="mx-auto max-w-2xl" style={{ fontSize: 'clamp(1rem, 2vw, 1.1rem)', lineHeight: 1.75, color: '#475569', margin: 0 }}>
+                O SAOOZ foi construído para devolver comando sobre a vida financeira e o negócio. Pessoal e empresarial em um único sistema — com inteligência que lê seus dados reais e entrega clareza antes que o problema apareça.
               </p>
 
               {/* CTAs */}
-              <div className="flex flex-wrap items-center justify-center gap-3">
+              <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'center', gap: 12 }}>
                 <Link
                   href="/cadastro"
-                  className="inline-flex h-12 items-center gap-2 rounded-[12px] px-7 text-base font-bold text-white"
-                  style={{ background: 'linear-gradient(135deg, #1E3A8A, #1D4ED8)', boxShadow: '0 8px 32px rgba(30,58,138,0.3)' }}
+                  className="inline-flex items-center gap-2 font-bold text-white"
+                  style={{
+                    height: 52, padding: '0 32px', borderRadius: 12, fontSize: 16,
+                    background: 'linear-gradient(135deg, #1e3a8a, #1d4ed8)',
+                    boxShadow: '0 8px 32px rgba(29,78,216,0.25)',
+                  }}
                 >
-                  Começar agora — é grátis <ArrowRight className="h-4 w-4" />
+                  Assumir o controle <ArrowRight className="h-4 w-4" />
                 </Link>
-                <Link
-                  href="#como-funciona"
-                  className="inline-flex h-12 items-center gap-2 rounded-[12px] px-7 text-base font-medium"
-                  style={{ border: '2px solid #1E3A8A', color: '#1E3A8A', background: '#FFFFFF' }}
+                <a
+                  href="#visao"
+                  className="inline-flex items-center gap-2 font-medium"
+                  style={{
+                    height: 52, padding: '0 28px', borderRadius: 12, fontSize: 15,
+                    border: '1px solid #E2E8F0', color: '#475569', background: 'transparent',
+                    textDecoration: 'none',
+                  }}
                 >
                   Ver como funciona
-                </Link>
+                </a>
               </div>
 
-              {/* Social proof */}
-              <div className="flex flex-wrap items-center justify-center gap-4 text-sm" style={{ color: '#94A3B8' }}>
-                <span className="flex items-center gap-1.5">
-                  <span style={{ color: '#f59e0b', fontSize: 16 }}>★★★★★</span>
-                  <span style={{ color: '#64748B', fontWeight: 500 }}>Avaliado 5 estrelas pelos usuários</span>
-                </span>
-                <span style={{ color: '#E2E8F0' }}>·</span>
-                <span style={{ color: '#64748B' }}>Open Finance · regulamentado pelo Banco Central</span>
-              </div>
+              {/* Sub-CTA */}
+              <p style={{ fontSize: 13, color: '#94A3B8', margin: 0 }}>
+                7 dias de garantia · Cancele quando quiser · Sem fidelidade
+              </p>
             </div>
 
             {/* Dashboard Mockup */}
@@ -576,56 +534,57 @@ export function SalesLanding() {
           </section>
 
           {/* ══════════════════════════════════════════════════════════
-              TRUST BAR / LOGOS
+              VERDADE INCÔMODA
           ══════════════════════════════════════════════════════════ */}
-          <section style={{ borderTop: '1px solid #E2E8F0', borderBottom: '1px solid #E2E8F0', background: '#FFFFFF' }}>
-            <div className="mx-auto w-full max-w-6xl px-4 py-10 md:px-6">
-              <p className="text-center text-sm font-medium mb-8" style={{ color: '#94A3B8' }}>
-                Construído com os padrões que você espera de um banco
-              </p>
-              <div className="grid grid-cols-2 gap-6 md:grid-cols-4">
-                {[
-                  { Icon: Shield,      label: 'Criptografia AES-256' },
-                  { Icon: BadgeCheck,  label: 'Open Finance oficial' },
-                  { Icon: Zap,         label: 'IA com seus dados reais' },
-                  { Icon: CheckCircle2, label: 'Cancele quando quiser' },
-                ].map(({ Icon, label }) => (
-                  <div key={label} className="flex flex-col items-center gap-2 text-center">
-                    <div className="inline-flex h-10 w-10 items-center justify-center rounded-[10px]"
-                      style={{ background: '#EFF6FF', border: '1px solid #BFDBFE' }}>
-                      <Icon className="h-5 w-5" style={{ color: '#1E3A8A' }} />
-                    </div>
-                    <span className="text-sm font-medium" style={{ color: '#475569' }}>{label}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </section>
-
-          {/* ══════════════════════════════════════════════════════════
-              COMO FUNCIONA
-          ══════════════════════════════════════════════════════════ */}
-          <section id="como-funciona" style={{ background: '#FFFFFF' }}>
-            <div className="mx-auto w-full max-w-6xl px-4 py-20 md:px-6">
-              <div className="mb-14 text-center">
-                <h2 className="text-3xl font-black md:text-4xl" style={{ color: '#0F172A' }}>
-                  Simples de começar, poderoso para usar
+          <section id="visao" style={{ background: '#FFFFFF', borderTop: '1px solid #E2E8F0' }}>
+            <div className="mx-auto w-full max-w-6xl px-4 py-24 md:px-6">
+              <div className="mb-16 text-center" style={{ maxWidth: 680, margin: '0 auto 64px' }}>
+                <p style={{ fontSize: 12, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#2563eb', marginBottom: 16 }}>
+                  A verdade que ninguém quer nomear
+                </p>
+                <h2 style={{ fontSize: 'clamp(1.75rem, 4vw, 2.75rem)', fontWeight: 900, lineHeight: 1.15, color: '#0F172A', margin: '0 0 20px' }}>
+                  A maioria não está sem dinheiro.
+                  <br />Está sem visão.
                 </h2>
+                <p style={{ fontSize: 16, lineHeight: 1.7, color: '#64748B', margin: 0 }}>
+                  Trabalhar, faturar e pagar contas não é o mesmo que ter clareza financeira. O caos pode existir mesmo com renda boa — e quase sempre existe.
+                </p>
               </div>
-              <div className="grid gap-8 md:grid-cols-3">
+
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 16 }} className="md-grid-2">
                 {[
-                  { num: '1', title: 'Crie sua conta',                  desc: 'Dois minutos. Nome, e-mail, senha. Sem cartão de crédito agora.' },
-                  { num: '2', title: 'Conecte seu banco',               desc: 'Via Open Finance, regulamentado pelo Banco Central. As transações entram sozinhas.' },
-                  { num: '3', title: 'Feche o mês sabendo tudo',        desc: 'A IA organiza, categoriza e avisa antes que o problema apareça.' },
-                ].map((step) => (
-                  <div key={step.num} className="relative text-center space-y-4 p-8 rounded-[18px]"
-                    style={{ border: '1px solid #E2E8F0', background: '#FFFFFF' }}>
-                    <div className="mx-auto h-14 w-14 rounded-full flex items-center justify-center text-2xl font-black text-white"
-                      style={{ background: 'linear-gradient(135deg, #1E3A8A, #1D4ED8)' }}>
-                      {step.num}
-                    </div>
-                    <h3 className="text-base font-bold" style={{ color: '#0F172A' }}>{step.title}</h3>
-                    <p className="text-sm leading-relaxed" style={{ color: '#64748B' }}>{step.desc}</p>
+                  {
+                    icon: '◎',
+                    title: 'Você não sabe o que sobra de verdade.',
+                    body: 'Saldo na conta não é sobra. Impostos, despesas recorrentes e gastos invisíveis comem a margem antes de você perceber. No fim do mês, o número nunca fecha onde você esperava.',
+                  },
+                  {
+                    icon: '⊗',
+                    title: 'Pessoal e empresa misturados destroem a clareza.',
+                    body: 'Misturar PF e PJ é impossível de analisar, impossível de separar e caro de descobrir tarde. Você não sabe quanto o negócio realmente gerou — e quanto entrou só porque você era a conta disponível.',
+                  },
+                  {
+                    icon: '◻',
+                    title: 'Planilha não é controle. É anotação.',
+                    body: 'Planilha não tem análise automática, não detecta desvio, não separa PF de PJ, não calcula imposto, não projeta caixa. É uma promessa de organização que depende de você nunca errar e nunca esquecer.',
+                  },
+                  {
+                    icon: '↑',
+                    title: 'Ganhar mais sem visão só aumenta o caos.',
+                    body: 'Aumentar faturamento sem clareza sobre para onde vai o dinheiro não resolve o problema. Mantém o mesmo descontrole em volume maior. O improviso escala junto com a receita.',
+                  },
+                ].map((card) => (
+                  <div key={card.title} style={{
+                    background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: 16, padding: '28px 30px',
+                    display: 'flex', flexDirection: 'column', gap: 14,
+                  }}>
+                    <span style={{ fontSize: 22, color: '#CBD5E1', lineHeight: 1 }}>{card.icon}</span>
+                    <h3 style={{ fontSize: 16, fontWeight: 800, color: '#0F172A', lineHeight: 1.35, margin: 0 }}>
+                      {card.title}
+                    </h3>
+                    <p style={{ fontSize: 14, lineHeight: 1.7, color: '#64748B', margin: 0 }}>
+                      {card.body}
+                    </p>
                   </div>
                 ))}
               </div>
@@ -633,356 +592,288 @@ export function SalesLanding() {
           </section>
 
           {/* ══════════════════════════════════════════════════════════
-              FEATURE SECTIONS (alternadas, estilo Pierre)
+              MECANISMO — O QUE O SAOOZ FAZ
           ══════════════════════════════════════════════════════════ */}
-          <section id="recursos" style={{ background: '#F8FAFC' }}>
+          <section style={{ background: '#F8FAFC', borderTop: '1px solid #E2E8F0', borderBottom: '1px solid #E2E8F0' }}>
+            <div className="mx-auto w-full max-w-6xl px-4 py-24 md:px-6">
+              <div className="text-center mb-16" style={{ maxWidth: 700, margin: '0 auto 64px' }}>
+                <p style={{ fontSize: 12, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#2563eb', marginBottom: 16 }}>
+                  O que o SAOOZ faz de verdade
+                </p>
+                <h2 style={{ fontSize: 'clamp(1.75rem, 4vw, 2.75rem)', fontWeight: 900, lineHeight: 1.15, color: '#0F172A', margin: '0 0 20px' }}>
+                  Não é mais um app financeiro.
+                  <br />É estrutura de comando.
+                </h2>
+                <p style={{ fontSize: 16, lineHeight: 1.7, color: '#64748B', margin: 0 }}>
+                  O SAOOZ centraliza, separa, organiza e interpreta — para você decidir com base em dados reais, não no feeling de quanto acha que sobrou.
+                </p>
+              </div>
 
-            {/* Feature 1 — texto esquerda, visual direita */}
-            <div className="mx-auto w-full max-w-6xl px-4 py-20 md:px-6">
-              <div className="grid gap-12 md:grid-cols-2 md:items-center">
-                {/* Texto */}
-                <div className="space-y-6">
-                  <span className="inline-block rounded-full px-3 py-1 text-xs font-bold uppercase tracking-wider"
-                    style={{ background: '#EFF6FF', color: '#1E3A8A', border: '1px solid #BFDBFE' }}>
-                    Visão geral
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16 }} className="sm-grid-1">
+                {[
+                  {
+                    num: '01',
+                    title: 'Centraliza',
+                    color: '#2563eb',
+                    body: 'PF e PJ no mesmo sistema. Sem ferramentas paralelas, sem retrabalho, sem informação espalhada. Um lugar, toda a visão.',
+                  },
+                  {
+                    num: '02',
+                    title: 'Separa',
+                    color: '#3b82f6',
+                    body: 'Pessoal de um lado. Empresa do outro. Um clique muda o contexto. Nada se mistura. Cada lado tem sua própria lógica, categorias e análise.',
+                  },
+                  {
+                    num: '03',
+                    title: 'Interpreta',
+                    color: '#7c3aed',
+                    body: 'A IA lê os dados, identifica padrões, detecta desvios e entrega análises antes que o problema apareça. Dados soltos se tornam visão acionável.',
+                  },
+                ].map((p) => (
+                  <div key={p.num} style={{
+                    background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: 16, padding: '32px',
+                    position: 'relative', overflow: 'hidden',
+                    boxShadow: '0 2px 12px rgba(0,0,0,0.04)',
+                  }}>
+                    <div style={{
+                      position: 'absolute', top: 20, right: 20,
+                      fontSize: 48, fontWeight: 900, color: p.color, opacity: 0.06, lineHeight: 1,
+                    }}>{p.num}</div>
+                    <div style={{ marginBottom: 20 }}>
+                      <span style={{
+                        fontSize: 11, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase',
+                        color: p.color, padding: '4px 12px', borderRadius: 100,
+                        background: '#EFF6FF', border: `1px solid #BFDBFE`,
+                      }}>{p.num}</span>
+                    </div>
+                    <h3 style={{ fontSize: 22, fontWeight: 900, color: '#0F172A', marginBottom: 12, lineHeight: 1 }}>
+                      {p.title}
+                    </h3>
+                    <p style={{ fontSize: 14, lineHeight: 1.7, color: '#64748B', margin: 0 }}>
+                      {p.body}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </section>
+
+          {/* ══════════════════════════════════════════════════════════
+              FEATURE SECTIONS
+          ══════════════════════════════════════════════════════════ */}
+          <section id="recursos" style={{ background: '#FFFFFF' }}>
+
+            {/* Feature 1 — PF + PJ */}
+            <div className="mx-auto w-full max-w-6xl px-4 py-24 md:px-6">
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 64, alignItems: 'center' }} className="md-grid-2">
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+                  <span style={{
+                    display: 'inline-block', padding: '4px 14px', borderRadius: 100, fontSize: 11,
+                    fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase',
+                    background: '#EFF6FF', border: '1px solid #BFDBFE', color: '#2563eb',
+                    width: 'fit-content',
+                  }}>
+                    Visão geral · PF + PJ
                   </span>
-                  <h2 className="text-3xl font-black md:text-4xl" style={{ color: '#0F172A', lineHeight: 1.15 }}>
-                    Pessoal e empresa no mesmo lugar — sem misturar
+                  <h2 style={{ fontSize: 'clamp(1.6rem, 3.5vw, 2.4rem)', fontWeight: 900, lineHeight: 1.15, color: '#0F172A', margin: 0 }}>
+                    Pessoal e empresa no mesmo lugar — sem misturar nada.
                   </h2>
-                  <p className="text-base leading-relaxed" style={{ color: '#475569' }}>
-                    Um painel para o seu financeiro pessoal. Outro para a empresa. Um clique separa os dois. Você vê cada lado com clareza — e ainda consegue comparar quando quiser.
+                  <p style={{ fontSize: 15, lineHeight: 1.75, color: '#475569', margin: 0 }}>
+                    Um painel para o financeiro pessoal. Outro para a empresa. Um clique separa os dois — e você vê cada lado com a clareza que ele merece. Dados corretos, contexto correto, decisão correta.
                   </p>
-                  <ul className="space-y-3">
+                  <ul style={{ display: 'flex', flexDirection: 'column', gap: 12, margin: 0, padding: 0, listStyle: 'none' }}>
                     {[
-                      'Painel PF e painel PJ independentes',
-                      'Troca de modo com um clique no topo',
-                      'Saldo, entradas e saídas sempre atualizados',
-                      'Histórico mês a mês sem perder nenhum dado',
+                      'Painel PF e painel PJ totalmente independentes',
+                      'Troca de modo com um clique — sem recarregar',
+                      'Saldo, entradas e saídas sempre em tempo real',
+                      'Histórico mês a mês sem perda de dados',
                     ].map((b) => (
-                      <li key={b} className="flex items-center gap-3 text-sm" style={{ color: '#334155' }}>
-                        <BadgeCheck className="h-5 w-5 shrink-0" style={{ color: '#1E3A8A' }} />
+                      <li key={b} style={{ display: 'flex', alignItems: 'flex-start', gap: 12, fontSize: 14, color: '#475569' }}>
+                        <BadgeCheck className="h-5 w-5 shrink-0 mt-0.5" style={{ color: '#2563eb' }} />
                         {b}
                       </li>
                     ))}
                   </ul>
-                  <Link href="/cadastro" className="inline-flex h-11 items-center gap-2 rounded-[11px] px-6 text-sm font-bold text-white"
-                    style={{ background: 'linear-gradient(135deg, #1E3A8A, #1D4ED8)' }}>
+                  <Link href="/cadastro" className="inline-flex items-center gap-2 font-bold text-white" style={{
+                    height: 46, padding: '0 24px', borderRadius: 11, fontSize: 14, width: 'fit-content',
+                    background: 'linear-gradient(135deg, #1e3a8a, #1d4ed8)',
+                  }}>
                     Criar minha conta <ArrowRight className="h-4 w-4" />
                   </Link>
                 </div>
-                {/* Visual */}
-                <div className="flex justify-center md:justify-end">
-                  <div style={{ borderRadius: 20, padding: 24, background: '#FFFFFF', boxShadow: '0 20px 60px rgba(30,58,138,0.12)', border: '1px solid #E2E8F0', width: '100%', maxWidth: 400 }}>
-                    <FeatureVisualPanels />
-                  </div>
+                <div style={{ display: 'flex', justifyContent: 'flex-end' }} className="md-order-1">
+                  <FeatureVisualPanels />
                 </div>
               </div>
             </div>
 
-            {/* Feature 2 — texto direita, visual esquerda */}
-            <div style={{ background: '#FFFFFF' }}>
-              <div className="mx-auto w-full max-w-6xl px-4 py-20 md:px-6">
-                <div className="grid gap-12 md:grid-cols-2 md:items-center">
-                  {/* Visual (esquerda) */}
-                  <div className="flex justify-center md:justify-start order-2 md:order-1">
-                    <FeatureVisualCategories />
+            {/* Feature 2 — PJ Módulo */}
+            <div style={{ background: '#F8FAFC', borderTop: '1px solid #E2E8F0', borderBottom: '1px solid #E2E8F0' }}>
+              <div className="mx-auto w-full max-w-6xl px-4 py-24 md:px-6">
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 64, alignItems: 'center' }} className="md-grid-2">
+                  <div className="md-order-2" style={{ display: 'flex', justifyContent: 'flex-start' }}>
+                    <FeatureVisualDRE />
                   </div>
-                  {/* Texto (direita) */}
-                  <div className="space-y-6 order-1 md:order-2">
-                    <span className="inline-block rounded-full px-3 py-1 text-xs font-bold uppercase tracking-wider"
-                      style={{ background: '#EFF6FF', color: '#1E3A8A', border: '1px solid #BFDBFE' }}>
-                      Controle pessoal
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }} className="md-order-1">
+                    <span style={{
+                      display: 'inline-block', padding: '4px 14px', borderRadius: 100, fontSize: 11,
+                      fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase',
+                      background: '#EFF6FF', border: '1px solid #BFDBFE', color: '#2563eb',
+                      width: 'fit-content',
+                    }}>
+                      Módulo Empresarial · PJ
                     </span>
-                    <h2 className="text-3xl font-black md:text-4xl" style={{ color: '#0F172A', lineHeight: 1.15 }}>
-                      Nada some sem você saber
+                    <h2 style={{ fontSize: 'clamp(1.6rem, 3.5vw, 2.4rem)', fontWeight: 900, lineHeight: 1.15, color: '#0F172A', margin: 0 }}>
+                      O que só o contador sabia, agora você vê no mesmo dia.
                     </h2>
-                    <p className="text-base leading-relaxed" style={{ color: '#475569' }}>
-                      Cada transação que entra pelo banco já chega categorizada. A IA acompanha o padrão dos seus gastos e avisa quando algo sobe fora do normal — antes de virar problema no fim do mês.
+                    <p style={{ fontSize: 15, lineHeight: 1.75, color: '#475569', margin: 0 }}>
+                      DRE, fluxo de caixa e imposto estimado — calculados pelo regime tributário correto, atualizados com cada lançamento. Você fecha o mês com o número real. Sem esperar ninguém.
                     </p>
-                    <ul className="space-y-3">
+                    <ul style={{ display: 'flex', flexDirection: 'column', gap: 12, margin: 0, padding: 0, listStyle: 'none' }}>
                       {[
-                        'Categorização automática das transações',
-                        'Alerta quando um gasto sobe além do padrão',
-                        'Reserva de emergência com meta e progresso',
-                        'Registro por texto, voz ou WhatsApp',
+                        'Imposto calculado por regime: MEI, Simples, Presumido, Real',
+                        'DRE mensal gerado automaticamente com cada lançamento',
+                        'Fluxo de caixa com projeção e datas de vencimento',
+                        'Pró-labore, distribuição de lucros e gestão de sócios',
                       ].map((b) => (
-                        <li key={b} className="flex items-center gap-3 text-sm" style={{ color: '#334155' }}>
-                          <BadgeCheck className="h-5 w-5 shrink-0" style={{ color: '#1E3A8A' }} />
+                        <li key={b} style={{ display: 'flex', alignItems: 'flex-start', gap: 12, fontSize: 14, color: '#475569' }}>
+                          <BadgeCheck className="h-5 w-5 shrink-0 mt-0.5" style={{ color: '#2563eb' }} />
                           {b}
                         </li>
                       ))}
                     </ul>
-                    <Link href="/cadastro" className="inline-flex h-11 items-center gap-2 rounded-[11px] px-6 text-sm font-bold text-white"
-                      style={{ background: 'linear-gradient(135deg, #1E3A8A, #1D4ED8)' }}>
-                      Controlar meus gastos <ArrowRight className="h-4 w-4" />
-                    </Link>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Feature 3 — texto esquerda, visual direita */}
-            <div style={{ background: '#F8FAFC' }}>
-              <div className="mx-auto w-full max-w-6xl px-4 py-20 md:px-6">
-                <div className="grid gap-12 md:grid-cols-2 md:items-center">
-                  {/* Texto */}
-                  <div className="space-y-6">
-                    <span className="inline-block rounded-full px-3 py-1 text-xs font-bold uppercase tracking-wider"
-                      style={{ background: '#EFF6FF', color: '#1E3A8A', border: '1px solid #BFDBFE' }}>
-                      Módulo Empresarial
-                    </span>
-                    <h2 className="text-3xl font-black md:text-4xl" style={{ color: '#0F172A', lineHeight: 1.15 }}>
-                      O que só contador sabia, agora você vê sozinho
-                    </h2>
-                    <p className="text-base leading-relaxed" style={{ color: '#475569' }}>
-                      DRE, fluxo de caixa e imposto calculados automaticamente conforme o seu regime — MEI, Simples, Lucro Presumido ou Real. Você fecha o mês com o número certo, sem esperar ninguém.
-                    </p>
-                    <ul className="space-y-3">
-                      {[
-                        'Imposto calculado pelo regime tributário certo',
-                        'DRE mensal gerado automaticamente',
-                        'Fluxo de caixa com o que vence esta semana',
-                        'Até 5 empresas no mesmo plano PRO',
-                      ].map((b) => (
-                        <li key={b} className="flex items-center gap-3 text-sm" style={{ color: '#334155' }}>
-                          <BadgeCheck className="h-5 w-5 shrink-0" style={{ color: '#1E3A8A' }} />
-                          {b}
-                        </li>
-                      ))}
-                    </ul>
-                    <Link href="/cadastro" className="inline-flex h-11 items-center gap-2 rounded-[11px] px-6 text-sm font-bold text-white"
-                      style={{ background: 'linear-gradient(135deg, #1E3A8A, #1D4ED8)' }}>
+                    <Link href="/cadastro" className="inline-flex items-center gap-2 font-bold text-white" style={{
+                      height: 46, padding: '0 24px', borderRadius: 11, fontSize: 14, width: 'fit-content',
+                      background: 'linear-gradient(135deg, #1e3a8a, #1d4ed8)',
+                    }}>
                       Gerenciar minha empresa <ArrowRight className="h-4 w-4" />
                     </Link>
                   </div>
-                  {/* Visual */}
-                  <div className="flex justify-center md:justify-end">
-                    <FeatureVisualDRE />
+                </div>
+              </div>
+            </div>
+
+            {/* Feature 3 — PF Módulo */}
+            <div style={{ background: '#FFFFFF', borderBottom: '1px solid #E2E8F0' }}>
+              <div className="mx-auto w-full max-w-6xl px-4 py-24 md:px-6">
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 64, alignItems: 'center' }} className="md-grid-2">
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+                    <span style={{
+                      display: 'inline-block', padding: '4px 14px', borderRadius: 100, fontSize: 11,
+                      fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase',
+                      background: '#EFF6FF', border: '1px solid #BFDBFE', color: '#2563eb',
+                      width: 'fit-content',
+                    }}>
+                      Módulo Pessoal · PF
+                    </span>
+                    <h2 style={{ fontSize: 'clamp(1.6rem, 3.5vw, 2.4rem)', fontWeight: 900, lineHeight: 1.15, color: '#0F172A', margin: 0 }}>
+                      Visão pessoal que você nunca teve — e precisava.
+                    </h2>
+                    <p style={{ fontSize: 15, lineHeight: 1.75, color: '#475569', margin: 0 }}>
+                      Do saldo real ao breakdown de cada categoria. A IA acompanha o padrão dos seus gastos e avisa quando algo sobe fora do normal — antes de virar problema no fechamento do mês.
+                    </p>
+                    <ul style={{ display: 'flex', flexDirection: 'column', gap: 12, margin: 0, padding: 0, listStyle: 'none' }}>
+                      {[
+                        'Despesas com 16 categorias e análise de tendência',
+                        'Alerta automático quando um gasto sobe além do padrão',
+                        'Reserva de emergência com meta, progresso e recomendação',
+                        'Carteira de investimentos pessoal com histórico de movimentações',
+                      ].map((b) => (
+                        <li key={b} style={{ display: 'flex', alignItems: 'flex-start', gap: 12, fontSize: 14, color: '#475569' }}>
+                          <BadgeCheck className="h-5 w-5 shrink-0 mt-0.5" style={{ color: '#2563eb' }} />
+                          {b}
+                        </li>
+                      ))}
+                    </ul>
+                    <Link href="/cadastro" className="inline-flex items-center gap-2 font-bold text-white" style={{
+                      height: 46, padding: '0 24px', borderRadius: 11, fontSize: 14, width: 'fit-content',
+                      background: 'linear-gradient(135deg, #1e3a8a, #1d4ed8)',
+                    }}>
+                      Ver meus gastos <ArrowRight className="h-4 w-4" />
+                    </Link>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                    <FeatureVisualCategories />
                   </div>
                 </div>
               </div>
             </div>
 
-            {/* Feature 4 — texto direita, visual esquerda */}
-            <div style={{ background: '#FFFFFF' }}>
-              <div className="mx-auto w-full max-w-6xl px-4 py-20 md:px-6">
-                <div className="grid gap-12 md:grid-cols-2 md:items-center">
-                  {/* Visual (esquerda) */}
-                  <div className="flex justify-center md:justify-start order-2 md:order-1">
+            {/* Feature 4 — IA */}
+            <div style={{ background: '#F8FAFC', borderBottom: '1px solid #E2E8F0' }}>
+              <div className="mx-auto w-full max-w-6xl px-4 py-24 md:px-6">
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 64, alignItems: 'center' }} className="md-grid-2">
+                  <div className="md-order-2" style={{ display: 'flex', justifyContent: 'flex-start' }}>
                     <FeatureVisualChat />
                   </div>
-                  {/* Texto (direita) */}
-                  <div className="space-y-6 order-1 md:order-2">
-                    <span className="inline-block rounded-full px-3 py-1 text-xs font-bold uppercase tracking-wider"
-                      style={{ background: '#EFF6FF', color: '#1E3A8A', border: '1px solid #BFDBFE' }}>
-                      Assistente IA
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }} className="md-order-1">
+                    <span style={{
+                      display: 'inline-block', padding: '4px 14px', borderRadius: 100, fontSize: 11,
+                      fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase',
+                      background: '#EFF6FF', border: '1px solid #BFDBFE', color: '#2563eb',
+                      width: 'fit-content',
+                    }}>
+                      Inteligência Artificial
                     </span>
-                    <h2 className="text-3xl font-black md:text-4xl" style={{ color: '#0F172A', lineHeight: 1.15 }}>
-                      Uma IA que sabe o que entrou e o que saiu
+                    <h2 style={{ fontSize: 'clamp(1.6rem, 3.5vw, 2.4rem)', fontWeight: 900, lineHeight: 1.15, color: '#0F172A', margin: 0 }}>
+                      Uma IA que conhece seus números.
+                      <br />Não uma IA genérica.
                     </h2>
-                    <p className="text-base leading-relaxed" style={{ color: '#475569' }}>
-                      Diferente de um ChatGPT genérico, o assistente do SAOOZ conhece seu histórico real. Pergunta qualquer coisa &mdash; &ldquo;quanto sobrou em março?&rdquo;, &ldquo;onde estou gastando mais?&rdquo; &mdash; e a resposta vem dos seus dados, não de exemplo.
+                    <p style={{ fontSize: 15, lineHeight: 1.75, color: '#475569', margin: 0 }}>
+                      Diferente do ChatGPT, o assistente do SAOOZ acessa seu histórico real de entradas, saídas, categorias e operação PF/PJ. A resposta é sobre você — não sobre &ldquo;o usuário médio&rdquo;. Registre um gasto em linguagem natural. Pergunte o que quiser sobre seus dados. Ouça a análise em áudio.
                     </p>
-                    <ul className="space-y-3">
+                    <ul style={{ display: 'flex', flexDirection: 'column', gap: 12, margin: 0, padding: 0, listStyle: 'none' }}>
                       {[
-                        'Acessa seu histórico real de entradas e saídas',
-                        'Registra gastos por texto, voz ou WhatsApp',
-                        'Compara meses e detecta mudanças de padrão',
-                        'Funciona para PF e PJ ao mesmo tempo',
+                        'Acessa seu histórico real — não exemplos genéricos',
+                        'Registra lançamentos por linguagem natural ou voz',
+                        'Compara meses, detecta desvios, sugere ajustes de meta',
+                        'Plano PRO: IA ilimitada — PF/PJ: 60 ações por mês',
                       ].map((b) => (
-                        <li key={b} className="flex items-center gap-3 text-sm" style={{ color: '#334155' }}>
-                          <BadgeCheck className="h-5 w-5 shrink-0" style={{ color: '#1E3A8A' }} />
+                        <li key={b} style={{ display: 'flex', alignItems: 'flex-start', gap: 12, fontSize: 14, color: '#475569' }}>
+                          <BadgeCheck className="h-5 w-5 shrink-0 mt-0.5" style={{ color: '#2563eb' }} />
                           {b}
                         </li>
                       ))}
                     </ul>
-                    <Link href="/cadastro" className="inline-flex h-11 items-center gap-2 rounded-[11px] px-6 text-sm font-bold text-white"
-                      style={{ background: 'linear-gradient(135deg, #1E3A8A, #1D4ED8)' }}>
-                      Falar com a IA <ArrowRight className="h-4 w-4" />
+                    <Link href="/cadastro" className="inline-flex items-center gap-2 font-bold text-white" style={{
+                      height: 46, padding: '0 24px', borderRadius: 11, fontSize: 14, width: 'fit-content',
+                      background: 'linear-gradient(135deg, #1e3a8a, #1d4ed8)',
+                    }}>
+                      Conversar com a IA <ArrowRight className="h-4 w-4" />
                     </Link>
                   </div>
                 </div>
               </div>
             </div>
 
-          </section>
-
-          {/* ══════════════════════════════════════════════════════════
-              OPEN FINANCE
-          ══════════════════════════════════════════════════════════ */}
-          <section style={{ background: '#F8FAFC', borderTop: '1px solid #E2E8F0' }}>
-            <div className="mx-auto w-full max-w-6xl px-4 py-20 md:px-6">
-              <div className="grid gap-12 md:grid-cols-2 md:items-center">
-                {/* Texto */}
-                <div className="space-y-6">
-                  <span className="inline-block rounded-full px-3 py-1 text-xs font-bold uppercase tracking-wider"
-                    style={{ background: '#EFF6FF', color: '#1E3A8A', border: '1px solid #BFDBFE' }}>
-                    Open Finance
-                  </span>
-                  <h2 className="text-3xl font-black md:text-4xl" style={{ color: '#0F172A', lineHeight: 1.15 }}>
-                    Seu banco entra sozinho.<br />Você não digita nada.
-                  </h2>
-                  <p className="text-base leading-relaxed" style={{ color: '#475569' }}>
-                    Via Open Finance — tecnologia regulamentada pelo Banco Central — suas transações chegam automaticamente no SAOOZ. Sem exportar planilha, sem copiar extrato, sem lançamento manual.
-                  </p>
-                  <ul className="space-y-3">
-                    {[
-                      'Conexão segura, sem compartilhar senha',
-                      'Transações importadas e já categorizadas',
-                      'Regulamentado pelo Banco Central do Brasil',
-                      'Compatível com os principais bancos e fintechs',
-                    ].map((b) => (
-                      <li key={b} className="flex items-center gap-3 text-sm" style={{ color: '#334155' }}>
-                        <BadgeCheck className="h-5 w-5 shrink-0" style={{ color: '#1E3A8A' }} />
-                        {b}
-                      </li>
-                    ))}
-                  </ul>
-                  <Link href="/cadastro" className="inline-flex h-11 items-center gap-2 rounded-[11px] px-6 text-sm font-bold text-white"
-                    style={{ background: 'linear-gradient(135deg, #1E3A8A, #1D4ED8)' }}>
-                    Conectar meu banco <ArrowRight className="h-4 w-4" />
-                  </Link>
-                </div>
-                {/* Visual */}
-                <div className="flex justify-center md:justify-end">
-                  <div style={{ borderRadius: 20, padding: 28, background: '#FFFFFF', boxShadow: '0 20px 60px rgba(30,58,138,0.10)', border: '1px solid #E2E8F0', width: '100%', maxWidth: 400 }}>
-                    <div style={{ marginBottom: 20 }}>
-                      <p style={{ fontSize: 11, fontWeight: 700, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 12 }}>
-                        Bancos compatíveis
-                      </p>
-                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10 }}>
-                        {[
-                          { name: 'Nubank',    color: '#820AD1' },
-                          { name: 'Itaú',      color: '#EC7000' },
-                          { name: 'Bradesco',  color: '#CC092F' },
-                          { name: 'Santander', color: '#EC0000' },
-                          { name: 'Inter',     color: '#FF7A00' },
-                          { name: 'C6 Bank',   color: '#2D2D2D' },
-                        ].map((bank) => (
-                          <div key={bank.name} style={{ borderRadius: 10, padding: '10px 8px', border: '1px solid #E2E8F0', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
-                            <div style={{ width: 8, height: 8, borderRadius: '50%', background: bank.color, flexShrink: 0 }} />
-                            <span style={{ fontSize: 11, fontWeight: 600, color: '#334155' }}>{bank.name}</span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                    <div style={{ borderRadius: 12, padding: '14px 16px', background: '#F0FDF4', border: '1px solid #BBF7D0', display: 'flex', alignItems: 'center', gap: 12 }}>
-                      <div style={{ width: 36, height: 36, borderRadius: '50%', background: '#22c55e', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                        <Landmark style={{ width: 18, height: 18, color: '#FFFFFF' }} />
-                      </div>
-                      <div>
-                        <p style={{ fontSize: 12, fontWeight: 700, color: '#15803D' }}>Conta conectada com sucesso</p>
-                        <p style={{ fontSize: 11, color: '#4ADE80', marginTop: 2 }}>47 transações importadas · hoje às 09:12</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </section>
-
-          {/* ══════════════════════════════════════════════════════════
-              WHATSAPP
-          ══════════════════════════════════════════════════════════ */}
-          <section style={{ background: '#FFFFFF', borderTop: '1px solid #E2E8F0' }}>
-            <div className="mx-auto w-full max-w-6xl px-4 py-20 md:px-6">
-              <div className="grid gap-12 md:grid-cols-2 md:items-center">
-                {/* Visual (esquerda) */}
-                <div className="flex justify-center md:justify-start order-2 md:order-1">
-                  <div style={{ borderRadius: 20, overflow: 'hidden', background: '#FFFFFF', boxShadow: '0 20px 60px rgba(30,58,138,0.10)', border: '1px solid #E2E8F0', width: '100%', maxWidth: 360 }}>
-                    {/* Header do WhatsApp */}
-                    <div style={{ background: '#25D366', padding: '14px 16px', display: 'flex', alignItems: 'center', gap: 10 }}>
-                      <div style={{ width: 36, height: 36, borderRadius: '50%', background: '#FFFFFF', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                        <span style={{ fontSize: 14, fontWeight: 900, color: '#25D366' }}>S</span>
-                      </div>
-                      <div>
-                        <p style={{ fontSize: 13, fontWeight: 700, color: '#FFFFFF' }}>SAOOZ</p>
-                        <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.75)' }}>online</p>
-                      </div>
-                    </div>
-                    {/* Mensagens */}
-                    <div style={{ padding: '16px 14px', background: '#ECE5DD', display: 'flex', flexDirection: 'column', gap: 8, minHeight: 200 }}>
-                      <div style={{ alignSelf: 'flex-end', background: '#DCF8C6', borderRadius: '12px 0 12px 12px', padding: '8px 12px', maxWidth: '80%' }}>
-                        <p style={{ fontSize: 13, color: '#1A1A1A' }}>Paguei R$ 80 de farmácia agora</p>
-                        <p style={{ fontSize: 10, color: '#8B8B8B', marginTop: 2, textAlign: 'right' }}>14:32 ✓✓</p>
-                      </div>
-                      <div style={{ alignSelf: 'flex-start', background: '#FFFFFF', borderRadius: '0 12px 12px 12px', padding: '8px 12px', maxWidth: '85%' }}>
-                        <p style={{ fontSize: 13, color: '#1A1A1A' }}>✅ Lançado! R$ 80 em <strong>Saúde</strong> — {new Date().toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' })}</p>
-                        <p style={{ fontSize: 10, color: '#8B8B8B', marginTop: 2 }}>14:32</p>
-                      </div>
-                      <div style={{ alignSelf: 'flex-end', background: '#DCF8C6', borderRadius: '12px 0 12px 12px', padding: '8px 12px', maxWidth: '80%' }}>
-                        <p style={{ fontSize: 13, color: '#1A1A1A' }}>Qual meu saldo hoje?</p>
-                        <p style={{ fontSize: 10, color: '#8B8B8B', marginTop: 2, textAlign: 'right' }}>14:33 ✓✓</p>
-                      </div>
-                      <div style={{ alignSelf: 'flex-start', background: '#FFFFFF', borderRadius: '0 12px 12px 12px', padding: '8px 12px', maxWidth: '85%' }}>
-                        <p style={{ fontSize: 13, color: '#1A1A1A' }}>Saldo disponível: <strong style={{ color: '#22c55e' }}>R$ 3.240</strong>. Você gastou R$ 1.890 este mês — 18% a mais que abril.</p>
-                        <p style={{ fontSize: 10, color: '#8B8B8B', marginTop: 2 }}>14:33</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                {/* Texto (direita) */}
-                <div className="space-y-6 order-1 md:order-2">
-                  <span className="inline-block rounded-full px-3 py-1 text-xs font-bold uppercase tracking-wider"
-                    style={{ background: '#F0FDF4', color: '#15803D', border: '1px solid #BBF7D0' }}>
-                    WhatsApp
-                  </span>
-                  <h2 className="text-3xl font-black md:text-4xl" style={{ color: '#0F172A', lineHeight: 1.15 }}>
-                    Registrar um gasto<br />leva 10 segundos
-                  </h2>
-                  <p className="text-base leading-relaxed" style={{ color: '#475569' }}>
-                    Manda uma mensagem no WhatsApp: &ldquo;Paguei R$ 80 de farmácia&rdquo;. O SAOOZ lança, categoriza e atualiza o painel. Sem abrir app, sem parar o que estava fazendo.
-                  </p>
-                  <ul className="space-y-3">
-                    {[
-                      'Registro por mensagem de texto ou áudio',
-                      'Categorização automática pelo contexto',
-                      'Pergunte o saldo, o gasto do mês, o que vence',
-                      'Funciona para PF e PJ',
-                    ].map((b) => (
-                      <li key={b} className="flex items-center gap-3 text-sm" style={{ color: '#334155' }}>
-                        <MessageCircle className="h-5 w-5 shrink-0" style={{ color: '#25D366' }} />
-                        {b}
-                      </li>
-                    ))}
-                  </ul>
-                  <Link href="/cadastro" className="inline-flex h-11 items-center gap-2 rounded-[11px] px-6 text-sm font-bold text-white"
-                    style={{ background: 'linear-gradient(135deg, #1E3A8A, #1D4ED8)' }}>
-                    Começar agora <ArrowRight className="h-4 w-4" />
-                  </Link>
-                </div>
-              </div>
-            </div>
           </section>
 
           {/* ══════════════════════════════════════════════════════════
               SEGURANÇA
           ══════════════════════════════════════════════════════════ */}
-          <section style={{ background: '#F8FAFC', borderTop: '1px solid #E2E8F0', borderBottom: '1px solid #E2E8F0' }}>
+          <section style={{ background: '#FFFFFF', borderBottom: '1px solid #E2E8F0' }}>
             <div className="mx-auto w-full max-w-6xl px-4 py-20 md:px-6">
-              <div className="mb-12 text-center space-y-3">
-                <h2 className="text-3xl font-black md:text-4xl" style={{ color: '#0F172A' }}>
-                  Seus dados só são seus
+              <div className="text-center mb-12" style={{ maxWidth: 580, margin: '0 auto 48px' }}>
+                <h2 style={{ fontSize: 'clamp(1.5rem, 3.5vw, 2.25rem)', fontWeight: 900, color: '#0F172A', margin: '0 0 16px' }}>
+                  Seus dados pertencem a você.
                 </h2>
-                <p className="text-base" style={{ color: '#64748B' }}>
-                  Construído com os mesmos padrões de segurança dos bancos digitais.
+                <p style={{ fontSize: 15, color: '#64748B', margin: 0 }}>
+                  Construído com os padrões de segurança dos bancos digitais.
                 </p>
               </div>
-              <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 14 }} className="sm-grid-1">
                 {[
-                  { Icon: Shield,       title: 'Criptografia ponta a ponta', desc: 'Seus dados são protegidos com AES-256, o mesmo padrão usado por bancos.' },
-                  { Icon: Shield,       title: 'Sem acesso a senhas',         desc: 'Conectamos via integrações seguras. Nunca pedimos e nunca armazenamos sua senha bancária.' },
-                  { Icon: BadgeCheck,   title: 'Somente leitura',             desc: 'A IA analisa seus dados mas não realiza transações. Você tem controle total.' },
-                  { Icon: CheckCircle2, title: 'Você controla tudo',          desc: 'Apague seus dados quando quiser. Sem burocracia, sem multa de saída.' },
+                  { Icon: Shield,       title: 'Criptografia AES-256',    desc: 'Os mesmos padrões usados por bancos digitais. Seus dados em trânsito e em repouso são protegidos.' },
+                  { Icon: CheckCircle2, title: 'Sem senha bancária',       desc: 'Nunca pedimos e nunca armazenamos credenciais bancárias. Integrações são feitas por tokens de leitura.' },
+                  { Icon: BadgeCheck,   title: 'Somente leitura',         desc: 'A IA analisa seus dados mas não executa nenhuma transação. Você tem controle total sobre cada ação.' },
+                  { Icon: Shield,       title: 'Exclusão sob demanda',     desc: 'Apague todos os seus dados a qualquer momento. Sem burocracia, sem formulário, sem espera de 30 dias.' },
                 ].map(({ Icon, title, desc }) => (
-                  <div key={title} className="p-6 rounded-[16px] space-y-4"
-                    style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: 16 }}>
-                    <div className="inline-flex h-12 w-12 items-center justify-center rounded-[14px]"
-                      style={{ background: '#EFF6FF', border: '1px solid #BFDBFE' }}>
-                      <Icon className="h-6 w-6" style={{ color: '#1E3A8A' }} />
+                  <div key={title} style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: 16, padding: '24px', display: 'flex', flexDirection: 'column', gap: 14 }}>
+                    <div style={{ width: 44, height: 44, borderRadius: 12, background: '#EFF6FF', border: '1px solid #BFDBFE', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <Icon className="h-5 w-5" style={{ color: '#2563eb' }} />
                     </div>
-                    <h3 className="text-sm font-bold" style={{ color: '#0F172A' }}>{title}</h3>
-                    <p className="text-sm leading-relaxed" style={{ color: '#64748B' }}>{desc}</p>
+                    <h3 style={{ fontSize: 14, fontWeight: 700, color: '#0F172A', margin: 0 }}>{title}</h3>
+                    <p style={{ fontSize: 13, lineHeight: 1.65, color: '#64748B', margin: 0 }}>{desc}</p>
                   </div>
                 ))}
               </div>
@@ -992,62 +883,40 @@ export function SalesLanding() {
           {/* ══════════════════════════════════════════════════════════
               PARA QUEM É
           ══════════════════════════════════════════════════════════ */}
-          <section style={{ background: '#FFFFFF' }}>
+          <section style={{ background: '#F8FAFC', borderBottom: '1px solid #E2E8F0' }}>
             <div className="mx-auto w-full max-w-6xl px-4 py-20 md:px-6">
-              <div className="mb-12 text-center">
-                <h2 className="text-3xl font-black md:text-4xl" style={{ color: '#0F172A' }}>
-                  Para quem o SAOOZ foi feito
+              <div className="text-center mb-12" style={{ margin: '0 auto 48px' }}>
+                <h2 style={{ fontSize: 'clamp(1.5rem, 3.5vw, 2.25rem)', fontWeight: 900, color: '#0F172A', margin: '0 0 16px' }}>
+                  Para quem o SAOOZ foi construído
                 </h2>
+                <p style={{ fontSize: 15, color: '#64748B', margin: 0 }}>
+                  Não para todo mundo. Para quem precisa de visão real e está cansado de improvisar.
+                </p>
               </div>
-              <div className="grid gap-6 md:grid-cols-3">
-                {FOR_WHOM.map((profile) => {
-                  const Icon = profile.icon
-                  return (
-                    <div key={profile.title} className="p-6 rounded-[16px] space-y-4"
-                      style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: 16 }}>
-                      <div className="inline-flex h-12 w-12 items-center justify-center rounded-[14px]"
-                        style={{ background: '#EFF6FF', border: '1px solid #BFDBFE' }}>
-                        <Icon className="h-6 w-6" style={{ color: '#1E3A8A' }} />
-                      </div>
-                      <h3 className="text-base font-bold" style={{ color: '#0F172A' }}>{profile.title}</h3>
-                      <p className="text-sm leading-relaxed" style={{ color: '#64748B' }}>{profile.description}</p>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 14 }} className="sm-grid-1">
+                {[
+                  {
+                    Icon: User,
+                    title: 'Profissional com renda variável',
+                    description: 'Freelancers, consultores e autônomos que precisam de previsibilidade e método — sem depender de contador para entender o básico do próprio dinheiro.',
+                  },
+                  {
+                    Icon: Building2,
+                    title: 'Empresário com operação PJ',
+                    description: 'MEIs e pequenas empresas que precisam separar pessoa e empresa, calcular imposto corretamente e fechar o mês sem planilha paralela ou ferramenta adicional.',
+                  },
+                  {
+                    Icon: Layers,
+                    title: 'Quem tem PF + PJ ao mesmo tempo',
+                    description: 'Renda pessoal e empresarial ao mesmo tempo, precisando de visão total em um único sistema — sem retrabalho, sem confusão, sem mistura.',
+                  },
+                ].map(({ Icon, title, description }) => (
+                  <div key={title} style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: 16, padding: '28px', display: 'flex', flexDirection: 'column', gap: 16, boxShadow: '0 2px 12px rgba(0,0,0,0.04)' }}>
+                    <div style={{ width: 44, height: 44, borderRadius: 12, background: '#EFF6FF', border: '1px solid #BFDBFE', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <Icon className="h-5 w-5" style={{ color: '#2563eb' }} />
                     </div>
-                  )
-                })}
-              </div>
-            </div>
-          </section>
-
-          {/* ══════════════════════════════════════════════════════════
-              DEPOIMENTOS
-          ══════════════════════════════════════════════════════════ */}
-          <section style={{ background: '#F8FAFC', borderTop: '1px solid #E2E8F0' }}>
-            <div className="mx-auto w-full max-w-6xl px-4 py-20 md:px-6">
-              <div className="mb-12 text-center">
-                <h2 className="text-3xl font-black md:text-4xl" style={{ color: '#0F172A' }}>
-                  O que dizem quem já usa
-                </h2>
-              </div>
-              <div className="grid gap-6 md:grid-cols-3">
-                {TESTIMONIALS.map((t) => (
-                  <div key={t.name} className="p-6 rounded-[16px] space-y-4"
-                    style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: 16 }}>
-                    <div className="flex gap-0.5">
-                      {Array.from({ length: t.stars }).map((_, i) => (
-                        <Star key={i} className="h-4 w-4 fill-current" style={{ color: '#f59e0b' }} />
-                      ))}
-                    </div>
-                    <p className="text-sm leading-relaxed" style={{ color: '#334155' }}>&ldquo;{t.quote}&rdquo;</p>
-                    <div className="flex items-center gap-3 pt-1">
-                      <div className="h-9 w-9 rounded-full flex items-center justify-center text-sm font-bold text-white"
-                        style={{ background: 'linear-gradient(135deg, #1E3A8A, #1D4ED8)' }}>
-                        {t.name.charAt(0)}
-                      </div>
-                      <div>
-                        <p className="text-sm font-semibold" style={{ color: '#0F172A' }}>{t.name}</p>
-                        <p className="text-xs" style={{ color: '#94A3B8' }}>{t.role}</p>
-                      </div>
-                    </div>
+                    <h3 style={{ fontSize: 16, fontWeight: 800, color: '#0F172A', lineHeight: 1.35, margin: 0 }}>{title}</h3>
+                    <p style={{ fontSize: 14, lineHeight: 1.7, color: '#64748B', margin: 0 }}>{description}</p>
                   </div>
                 ))}
               </div>
@@ -1055,25 +924,40 @@ export function SalesLanding() {
           </section>
 
           {/* ══════════════════════════════════════════════════════════
-              RESULTADOS
+              DEPOIMENTOS
           ══════════════════════════════════════════════════════════ */}
-          <section style={{ background: '#1E3A8A' }}>
+          <section style={{ background: '#FFFFFF', borderBottom: '1px solid #E2E8F0' }}>
             <div className="mx-auto w-full max-w-6xl px-4 py-20 md:px-6">
-              <div className="mb-12 text-center">
-                <h2 className="text-3xl font-black md:text-4xl" style={{ color: '#FFFFFF' }}>
-                  O que muda quando você tem controle de verdade
+              <div className="text-center mb-12" style={{ margin: '0 auto 48px' }}>
+                <h2 style={{ fontSize: 'clamp(1.5rem, 3.5vw, 2.25rem)', fontWeight: 900, color: '#0F172A', margin: '0 0 16px' }}>
+                  Quem já usa, fala.
                 </h2>
               </div>
-              <div className="grid gap-8 md:grid-cols-3">
-                {[
-                  { metric: '10 seg',   label: 'para registrar um gasto pelo WhatsApp', desc: 'Sem abrir app. Só mandar a mensagem.' },
-                  { metric: 'Zero',     label: 'planilhas paralelas',                    desc: 'Tudo no mesmo lugar, atualizado em tempo real.' },
-                  { metric: 'Antes',    label: 'de virar problema',                      desc: 'A IA detecta o desvio antes do fim do mês.' },
-                ].map((r) => (
-                  <div key={r.label} className="text-center space-y-2">
-                    <p className="text-4xl font-black md:text-5xl" style={{ color: '#FFFFFF' }}>{r.metric}</p>
-                    <p className="text-base font-semibold" style={{ color: '#93C5FD' }}>{r.label}</p>
-                    <p className="text-sm" style={{ color: 'rgba(255,255,255,0.6)' }}>{r.desc}</p>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16 }} className="sm-grid-1">
+                {TESTIMONIALS.map((t) => (
+                  <div key={t.name} style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: 16, padding: '28px', display: 'flex', flexDirection: 'column', gap: 18 }}>
+                    <div style={{ display: 'flex', gap: 3 }}>
+                      {Array.from({ length: t.stars }).map((_, i) => (
+                        <Star key={i} className="h-4 w-4 fill-current" style={{ color: '#f59e0b' }} />
+                      ))}
+                    </div>
+                    <p style={{ fontSize: 15, lineHeight: 1.7, color: '#475569', margin: 0, fontStyle: 'italic' }}>
+                      &ldquo;{t.quote}&rdquo;
+                    </p>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 12, paddingTop: 4, borderTop: '1px solid #E2E8F0' }}>
+                      <div style={{
+                        width: 38, height: 38, borderRadius: '50%',
+                        background: 'linear-gradient(135deg, #1e3a8a, #3b82f6)',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        fontSize: 14, fontWeight: 700, color: '#fff', flexShrink: 0,
+                      }}>
+                        {t.name.charAt(0)}
+                      </div>
+                      <div>
+                        <p style={{ fontSize: 14, fontWeight: 700, color: '#0F172A', margin: 0 }}>{t.name}</p>
+                        <p style={{ fontSize: 12, color: '#94A3B8', margin: 0 }}>{t.role}</p>
+                      </div>
+                    </div>
                   </div>
                 ))}
               </div>
@@ -1083,73 +967,111 @@ export function SalesLanding() {
           {/* ══════════════════════════════════════════════════════════
               PREÇOS
           ══════════════════════════════════════════════════════════ */}
-          <section id="precos" style={{ background: '#FFFFFF' }}>
-            <div className="mx-auto w-full max-w-6xl px-4 pt-20 pb-4 md:px-6 text-center space-y-3">
-              <h2 className="text-3xl font-black md:text-4xl" style={{ color: '#0F172A' }}>
-                Escolha o plano certo para você
+          <section id="precos" style={{ background: '#F8FAFC' }}>
+            <div className="mx-auto w-full max-w-6xl px-4 pt-20 pb-4 md:px-6 text-center">
+              <p style={{ fontSize: 12, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#2563eb', marginBottom: 16 }}>
+                Planos
+              </p>
+              <h2 style={{ fontSize: 'clamp(1.75rem, 4vw, 2.75rem)', fontWeight: 900, color: '#0F172A', margin: '0 0 16px' }}>
+                Sem enrolação. Escolha o plano.
               </h2>
-              <p className="text-base" style={{ color: '#64748B' }}>
-                Comece grátis por 7 dias. Cancele quando quiser, sem multa.
+              <p style={{ fontSize: 15, color: '#64748B', margin: 0 }}>
+                Cada plano com 7 dias de garantia — reembolso total se não for o que esperava.
               </p>
             </div>
             <PricingSection />
           </section>
 
           {/* ══════════════════════════════════════════════════════════
-              FAQ
+              GARANTIA
           ══════════════════════════════════════════════════════════ */}
-          <section id="faq" style={{ background: '#F8FAFC', borderTop: '1px solid #E2E8F0' }}>
-            <div className="mx-auto w-full max-w-3xl px-4 py-20 md:px-6">
-              <div className="mb-12 text-center">
-                <h2 className="text-3xl font-black md:text-4xl" style={{ color: '#0F172A' }}>
-                  Perguntas frequentes
-                </h2>
+          <section style={{ background: '#EFF6FF', borderTop: '1px solid #BFDBFE', borderBottom: '1px solid #BFDBFE' }}>
+            <div className="mx-auto w-full max-w-3xl px-4 py-20 md:px-6 text-center">
+              <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 64, height: 64, borderRadius: '50%', background: '#DBEAFE', border: '1px solid #BFDBFE', marginBottom: 28 }}>
+                <Shield className="h-7 w-7" style={{ color: '#1d4ed8' }} />
               </div>
-              <div className="space-y-3">
-                {FAQ_ITEMS.map((item) => (
-                  <details key={item.q} className="group" style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: 14, overflow: 'hidden' }}>
-                    <summary
-                      className="flex cursor-pointer list-none items-center justify-between px-5 py-4 text-sm font-semibold select-none"
-                      style={{ color: '#0F172A' }}
-                    >
-                      {item.q}
-                      <ChevronRight className="h-4 w-4 shrink-0 transition-transform duration-200 group-open:rotate-90" style={{ color: '#94A3B8' }} />
-                    </summary>
-                    <div className="px-5 pb-4 pt-0">
-                      <p className="text-sm leading-relaxed" style={{ color: '#64748B' }}>{item.a}</p>
-                    </div>
-                  </details>
-                ))}
-              </div>
-              <div className="mt-8 text-center text-sm" style={{ color: '#94A3B8' }}>
-                Ainda tem dúvida?{' '}
-                <a href="/suporte" className="font-semibold" style={{ color: '#1E3A8A' }}>
-                  Fale com o suporte
-                </a>
-              </div>
+              <h2 style={{ fontSize: 'clamp(1.75rem, 4vw, 2.5rem)', fontWeight: 900, color: '#0F172A', margin: '0 0 20px', lineHeight: 1.15 }}>
+                7 dias de garantia. Ponto.
+              </h2>
+              <p style={{ fontSize: 16, lineHeight: 1.75, color: '#475569', margin: '0 0 16px' }}>
+                Assine qualquer plano. Se nos primeiros 7 dias não for o que esperava, devolvemos 100% do valor pago. Sem formulário longo, sem e-mail de retenção, sem pergunta sobre o motivo.
+              </p>
+              <p style={{ fontSize: 15, lineHeight: 1.75, color: '#64748B', margin: '0 0 36px' }}>
+                Não é trial. É a compra com segurança de que você não está apostando no escuro.
+              </p>
+              <Link href="/cadastro" className="inline-flex items-center gap-2 font-bold text-white" style={{
+                height: 52, padding: '0 32px', borderRadius: 12, fontSize: 15,
+                background: 'linear-gradient(135deg, #1e3a8a, #1d4ed8)',
+                boxShadow: '0 8px 32px rgba(29,78,216,0.2)',
+              }}>
+                Assinar com garantia <ArrowRight className="h-4 w-4" />
+              </Link>
             </div>
           </section>
 
           {/* ══════════════════════════════════════════════════════════
-              CTA FINAL
+              FAQ
           ══════════════════════════════════════════════════════════ */}
-          <section style={{ background: 'linear-gradient(135deg, #1E3A8A, #1D4ED8, #2563EB)' }}>
-            <div className="mx-auto w-full max-w-6xl px-4 py-24 md:px-6 text-center space-y-6">
-              <h2 className="text-3xl font-black md:text-4xl" style={{ color: '#FFFFFF' }}>
-                Feche o mês sabendo exatamente onde você está
-              </h2>
-              <p className="mx-auto max-w-xl text-base" style={{ color: 'rgba(255,255,255,0.7)' }}>
-                Dois minutos para criar a conta. Seu banco conecta sozinho. A IA faz o resto.
+          <section id="faq" style={{ background: '#FFFFFF', borderBottom: '1px solid #E2E8F0' }}>
+            <div className="mx-auto w-full max-w-3xl px-4 py-20 md:px-6">
+              <div className="text-center mb-12">
+                <h2 style={{ fontSize: 'clamp(1.5rem, 3.5vw, 2.25rem)', fontWeight: 900, color: '#0F172A', margin: '0 0 12px' }}>
+                  Perguntas diretas. Respostas diretas.
+                </h2>
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                {FAQ_ITEMS.map((item) => (
+                  <details key={item.q} className="saooz-details" style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: 14, overflow: 'hidden' }}>
+                    <summary style={{ display: 'flex', cursor: 'pointer', listStyle: 'none', alignItems: 'center', justifyContent: 'space-between', padding: '18px 20px', fontSize: 14, fontWeight: 600, color: '#0F172A', userSelect: 'none' }}>
+                      {item.q}
+                      <ChevronRight className="saooz-chevron h-4 w-4 shrink-0" style={{ color: '#94A3B8' }} />
+                    </summary>
+                    <div style={{ padding: '0 20px 18px' }}>
+                      <p style={{ fontSize: 14, lineHeight: 1.7, color: '#64748B', margin: 0 }}>{item.a}</p>
+                    </div>
+                  </details>
+                ))}
+              </div>
+              <p className="mt-8 text-center" style={{ fontSize: 13, color: '#94A3B8' }}>
+                Outra dúvida?{' '}
+                <a href="/suporte" style={{ color: '#2563eb', fontWeight: 600, textDecoration: 'none' }}>
+                  Fale com o suporte
+                </a>
               </p>
-              <Link
-                href="/cadastro"
-                className="inline-flex h-12 items-center gap-2 rounded-[12px] px-7 text-base font-bold"
-                style={{ background: '#FFFFFF', color: '#1E3A8A' }}
-              >
-                Criar conta grátis <ArrowRight className="h-4 w-4" />
+            </div>
+          </section>
+
+          {/* ══════════════════════════════════════════════════════════
+              CTA FINAL — dark accent section (contraste intencional)
+          ══════════════════════════════════════════════════════════ */}
+          <section style={{ background: '#0F172A', position: 'relative', overflow: 'hidden' }}>
+            <div aria-hidden style={{
+              position: 'absolute', top: '50%', left: '50%',
+              transform: 'translate(-50%, -50%)',
+              width: 700, height: 400,
+              background: 'radial-gradient(ellipse at center, rgba(29,78,216,0.18), transparent 70%)',
+              pointerEvents: 'none',
+            }} />
+            <div className="mx-auto w-full max-w-5xl px-4 py-28 md:px-6 text-center relative" style={{ display: 'flex', flexDirection: 'column', gap: 24, alignItems: 'center' }}>
+              <p style={{ fontSize: 12, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#60a5fa', margin: 0 }}>
+                Chega de improvisar
+              </p>
+              <h2 style={{ fontSize: 'clamp(2rem, 5vw, 3.25rem)', fontWeight: 900, lineHeight: 1.1, color: '#F1F5F9', margin: 0 }}>
+                Você já passou tempo suficiente
+                <br />no escuro financeiro.
+              </h2>
+              <p className="mx-auto" style={{ fontSize: 16, lineHeight: 1.75, color: '#64748B', maxWidth: 560, margin: 0 }}>
+                Assine agora e tenha visão, separação e controle sobre a vida financeira e o negócio — sem planilha, sem feeling, sem esperar o fim do mês para entender onde foi o dinheiro.
+              </p>
+              <Link href="/cadastro" className="inline-flex items-center gap-2 font-bold" style={{
+                height: 56, padding: '0 40px', borderRadius: 14, fontSize: 16,
+                background: '#FFFFFF', color: '#0F172A',
+                boxShadow: '0 8px 40px rgba(255,255,255,0.12)',
+              }}>
+                Assumir o controle agora <ArrowRight className="h-5 w-5" />
               </Link>
-              <p className="text-sm" style={{ color: 'rgba(255,255,255,0.5)' }}>
-                7 dias grátis · Cancela quando quiser · Sem cartão de crédito agora
+              <p style={{ fontSize: 13, color: '#334155', margin: 0 }}>
+                7 dias de garantia · Cancele quando quiser · Sem fidelidade
               </p>
             </div>
           </section>
@@ -1159,50 +1081,36 @@ export function SalesLanding() {
         {/* ══════════════════════════════════════════════════════════
             FOOTER
         ══════════════════════════════════════════════════════════ */}
-        <footer style={{ background: '#FFFFFF', borderTop: '1px solid #E2E8F0' }}>
-          <div className="mx-auto w-full max-w-6xl px-4 py-12 md:px-6">
-            <div className="grid gap-8 md:grid-cols-4">
-              <div className="md:col-span-2 space-y-3">
+        <footer style={{ background: '#F8FAFC', borderTop: '1px solid #E2E8F0' }}>
+          <div className="mx-auto w-full max-w-6xl px-4 py-14 md:px-6">
+            <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr', gap: 48 }} className="sm-grid-1">
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
                 <SaoozWordmark size="sm" />
-                <p className="text-sm max-w-xs leading-relaxed" style={{ color: '#64748B' }}>
-                  Seu sistema financeiro pessoal e empresarial
+                <p style={{ fontSize: 13, lineHeight: 1.65, color: '#64748B', maxWidth: 260, margin: 0 }}>
+                  Sistema de gestão financeira pessoal e empresarial com inteligência artificial.
                 </p>
-                <a href="mailto:suporte@saooz.com" className="inline-flex items-center gap-2 text-sm" style={{ color: '#64748B' }}>
-                  <Mail className="h-4 w-4" style={{ color: '#1E3A8A' }} /> suporte@saooz.com
+                <a href="mailto:suporte@saooz.com" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, fontSize: 13, color: '#64748B', textDecoration: 'none' }}>
+                  <Mail className="h-4 w-4" style={{ color: '#2563eb' }} /> suporte@saooz.com
                 </a>
               </div>
               <div>
-                <p className="text-xs font-bold uppercase tracking-wider mb-4" style={{ color: '#94A3B8' }}>Legal</p>
-                <div className="space-y-2">
-                  {[
-                    ['/termos', 'Termos'],
-                    ['/privacidade', 'Privacidade'],
-                    ['/suporte', 'Suporte'],
-                    ['/contato', 'Contato'],
-                  ].map(([href, label]) => (
-                    <Link key={href} href={href} className="block text-sm transition-colors" style={{ color: '#64748B' }}>
-                      {label}
-                    </Link>
+                <p style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#94A3B8', marginBottom: 16 }}>Legal</p>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                  {[['/termos','Termos de uso'],['/privacidade','Privacidade'],['/suporte','Suporte'],['/contato','Contato']].map(([href, label]) => (
+                    <Link key={href} href={href} style={{ fontSize: 13, color: '#64748B', textDecoration: 'none' }}>{label}</Link>
                   ))}
                 </div>
               </div>
               <div>
-                <p className="text-xs font-bold uppercase tracking-wider mb-4" style={{ color: '#94A3B8' }}>Produto</p>
-                <div className="space-y-2">
-                  {[
-                    ['#como-funciona', 'Como funciona'],
-                    ['#recursos', 'Recursos'],
-                    ['#precos', 'Preços'],
-                    ['#faq', 'FAQ'],
-                  ].map(([href, label]) => (
-                    <Link key={href} href={href} className="block text-sm transition-colors" style={{ color: '#64748B' }}>
-                      {label}
-                    </Link>
+                <p style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#94A3B8', marginBottom: 16 }}>Produto</p>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                  {[['#visao','Como funciona'],['#recursos','Recursos'],['#precos','Preços'],['#faq','FAQ']].map(([href, label]) => (
+                    <a key={href} href={href} style={{ fontSize: 13, color: '#64748B', textDecoration: 'none' }}>{label}</a>
                   ))}
                 </div>
               </div>
             </div>
-            <div className="mt-10 pt-6 text-center text-xs" style={{ borderTop: '1px solid #E2E8F0', color: '#CBD5E1' }}>
+            <div style={{ marginTop: 48, paddingTop: 24, borderTop: '1px solid #E2E8F0', textAlign: 'center', fontSize: 12, color: '#CBD5E1' }}>
               © 2025 SAOOZ · Todos os direitos reservados
             </div>
           </div>
