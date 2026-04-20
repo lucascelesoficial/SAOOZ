@@ -1,27 +1,37 @@
 import { resend, FROM_EMAIL, REPLY_TO_EMAIL } from './client'
 import {
-  welcomeEmail,
-  trialStartedEmail,
-  trialEndingSoonEmail,
-  subscriptionActiveEmail,
-  passwordResetEmail,
-  dueDateReminderEmail,
-  overdueAlertEmail,
-  monthlyDigestEmail,
+  welcomeEmail,          welcomeEmailText,
+  trialStartedEmail,     trialStartedEmailText,
+  trialEndingSoonEmail,  trialEndingSoonEmailText,
+  subscriptionActiveEmail, subscriptionActiveEmailText,
+  passwordResetEmail,    passwordResetEmailText,
+  dueDateReminderEmail,  dueDateReminderEmailText,
+  overdueAlertEmail,     overdueAlertEmailText,
+  monthlyDigestEmail,    monthlyDigestEmailText,
   type DueItem,
   type MonthlyDigestData,
 } from './templates'
 
-// ─── Helpers ──────────────────────────────────────────────────────────────────
+// ─── Headers comuns a todos os e-mails ────────────────────────────────────────
+// List-Unsubscribe é exigido por Gmail e Yahoo para remetentes em volume.
+// Sem ele os provedores aumentam a pontuação de spam automaticamente.
+const BASE_HEADERS = {
+  'List-Unsubscribe': '<https://saooz.com/configuracoes>, <mailto:suporte@saooz.com?subject=unsubscribe>',
+  'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click',
+  'X-Entity-Ref-ID': 'saooz-transactional',
+}
 
-async function send(to: string, subject: string, html: string) {
+// ─── Helper central ───────────────────────────────────────────────────────────
+async function send(to: string, subject: string, html: string, text: string) {
   try {
     const { data, error } = await resend.emails.send({
-      from: FROM_EMAIL,
+      from:    FROM_EMAIL,
       to,
       subject,
       html,
+      text,                 // plain-text obrigatório para evitar spam
       replyTo: REPLY_TO_EMAIL,
+      headers: BASE_HEADERS,
     })
     if (error) {
       console.error('[email] send error:', error)
@@ -34,10 +44,15 @@ async function send(to: string, subject: string, html: string) {
   }
 }
 
-// ─── Public API ──────────────────────────────────────────────────────────────
+// ─── Public API ───────────────────────────────────────────────────────────────
 
 export async function sendWelcomeEmail(to: string, name: string, confirmUrl: string) {
-  return send(to, 'Confirme seu email no SAOOZ', welcomeEmail(name, confirmUrl))
+  return send(
+    to,
+    'Ative sua conta no SAOOZ',
+    welcomeEmail(name, confirmUrl),
+    welcomeEmailText(name, confirmUrl),
+  )
 }
 
 export async function sendTrialStartedEmail(
@@ -48,8 +63,9 @@ export async function sendTrialStartedEmail(
 ) {
   return send(
     to,
-    `Bem-vindo ao SAOOZ — sua assinatura ${plan} está ativa`,
+    `Seu acesso ao SAOOZ está ativo — plano ${plan}`,
     trialStartedEmail(name, plan, trialEnd),
+    trialStartedEmailText(name, plan, trialEnd),
   )
 }
 
@@ -61,8 +77,9 @@ export async function sendTrialEndingSoonEmail(
 ) {
   return send(
     to,
-    `SAOOZ — ${daysLeft} dias restantes na sua garantia`,
+    `Seu período gratuito termina em ${daysLeft} ${daysLeft === 1 ? 'dia' : 'dias'}`,
     trialEndingSoonEmail(name, plan, daysLeft),
+    trialEndingSoonEmailText(name, plan, daysLeft),
   )
 }
 
@@ -74,13 +91,19 @@ export async function sendSubscriptionActiveEmail(
 ) {
   return send(
     to,
-    'SAOOZ — assinatura confirmada',
+    `Plano ${plan} confirmado — SAOOZ`,
     subscriptionActiveEmail(name, plan, nextBilling),
+    subscriptionActiveEmailText(name, plan, nextBilling),
   )
 }
 
 export async function sendPasswordResetEmail(to: string, resetUrl: string) {
-  return send(to, 'Redefina sua senha no SAOOZ', passwordResetEmail(resetUrl))
+  return send(
+    to,
+    'Sua solicitação de nova senha — SAOOZ',
+    passwordResetEmail(resetUrl),
+    passwordResetEmailText(resetUrl),
+  )
 }
 
 export async function sendDueDateReminderEmail(
@@ -92,8 +115,9 @@ export async function sendDueDateReminderEmail(
   const count = items.length
   return send(
     to,
-    `SAOOZ — ${count} vencimento${count !== 1 ? 's' : ''} nos próximos dias`,
+    `${count} vencimento${count !== 1 ? 's' : ''} chegando — SAOOZ`,
     dueDateReminderEmail(name, items, scope),
+    dueDateReminderEmailText(name, items, scope),
   )
 }
 
@@ -106,8 +130,9 @@ export async function sendOverdueAlertEmail(
   const count = items.length
   return send(
     to,
-    `SAOOZ — ${count} lançamento${count !== 1 ? 's' : ''} em atraso`,
+    `${count} lançamento${count !== 1 ? 's' : ''} em atraso — SAOOZ`,
     overdueAlertEmail(name, items, scope),
+    overdueAlertEmailText(name, items, scope),
   )
 }
 
@@ -118,10 +143,11 @@ export async function sendMonthlyDigestEmail(
 ) {
   return send(
     to,
-    `SAOOZ — fechamento de ${data.month} disponível`,
+    `Fechamento de ${data.month} disponível — SAOOZ`,
     monthlyDigestEmail(name, data),
+    monthlyDigestEmailText(name, data),
   )
 }
 
-// Re-export types for convenience
+// Re-export types
 export type { DueItem, MonthlyDigestData }
