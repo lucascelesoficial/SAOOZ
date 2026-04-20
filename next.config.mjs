@@ -24,7 +24,7 @@ const CSP = [
   "default-src 'self'",
   // unsafe-eval removed — not required by Next.js 14 App Router in production
   // unsafe-inline retained for Next.js hydration inline scripts
-  "script-src 'self' 'unsafe-inline' https://js.stripe.com https://maps.stripe.com https://challenges.cloudflare.com",
+  "script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval' https://js.stripe.com https://maps.stripe.com https://challenges.cloudflare.com",
   "style-src 'self' 'unsafe-inline'",
   "font-src 'self' data:",
   `img-src 'self' data: blob: https://*.supabase.co https://*.stripe.com`,
