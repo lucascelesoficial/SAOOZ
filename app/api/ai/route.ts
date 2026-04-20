@@ -3,6 +3,12 @@ import { aiActionSchema } from '@/lib/ai/schemas'
 import { canAccessScope, resolveUserAccessPolicy } from '@/lib/billing/policy'
 import { enforceRateLimit, requireUser } from '@/lib/server/request-guard'
 import { requireCompletedOnboarding } from '@/lib/server/onboarding-gate'
+import {
+  requireSameOrigin,
+  requireJsonContentType,
+  rejectLargeBody,
+  withSecurityHeaders,
+} from '@/lib/server/security'
 
 export const dynamic = 'force-dynamic'
 
@@ -162,12 +168,22 @@ function extractStructuredAction(raw: string) {
 // ─── Route handler ────────────────────────────────────────────────────────────
 
 export async function POST(request: NextRequest) {
+  // ── CSRF / Content-Type / body-size guards ──────────────────────────────
+  const originCheck = requireSameOrigin(request)
+  if (originCheck) return withSecurityHeaders(originCheck)
+
+  const ctCheck = requireJsonContentType(request)
+  if (ctCheck) return withSecurityHeaders(ctCheck)
+
+  const bodyCheck = rejectLargeBody(request, 8_192)  // 8 KB — AI messages can be larger
+  if (bodyCheck) return withSecurityHeaders(bodyCheck)
+
   try {
     const auth = await requireUser()
-    if (!auth.ok) return auth.response
+    if (!auth.ok) return withSecurityHeaders(auth.response)
 
     const gate = await requireCompletedOnboarding(auth.user.id)
-    if (!gate.ok) return gate.response
+    if (!gate.ok) return withSecurityHeaders(gate.response)
 
     const policy = await resolveUserAccessPolicy(auth.user.id)
 
@@ -177,21 +193,21 @@ export async function POST(request: NextRequest) {
       maxRequests: 30,
       windowMs: 60_000,
     })
-    if (!rate.ok) return rate.response
+    if (!rate.ok) return withSecurityHeaders(rate.response)
 
     if (!process.env.GROQ_API_KEY) {
       console.error('[ai] GROQ_API_KEY não configurada — IA indisponível')
-      return NextResponse.json(
+      return withSecurityHeaders(NextResponse.json(
         { error: 'A inteligência está temporariamente indisponível. Tente novamente em instantes.' },
         { status: 503 }
-      )
+      ))
     }
 
     const { message, context } = await request.json() as { message: unknown; context: Record<string, unknown> }
     const userMessage = typeof message === 'string' ? message.trim() : ''
 
-    if (!userMessage) return NextResponse.json({ error: 'Mensagem vazia.' }, { status: 400 })
-    if (userMessage.length > 1500) return NextResponse.json({ error: 'Mensagem muito longa.' }, { status: 400 })
+    if (!userMessage) return withSecurityHeaders(NextResponse.json({ error: 'Mensagem vazia.' }, { status: 400 }))
+    if (userMessage.length > 1500) return withSecurityHeaders(NextResponse.json({ error: 'Mensagem muito longa.' }, { status: 400 }))
 
     // Inject plan info into context
     const enrichedContext = {
@@ -232,33 +248,33 @@ export async function POST(request: NextRequest) {
     const raw = (payload.choices?.[0]?.message?.content ?? '').trim()
     const action = extractStructuredAction(raw)
 
-    if (!action) return NextResponse.json({ text: raw })
-    if (action.action === 'read_only') return NextResponse.json({ text: action.message })
+    if (!action) return withSecurityHeaders(NextResponse.json({ text: raw }))
+    if (action.action === 'read_only') return withSecurityHeaders(NextResponse.json({ text: action.message }))
 
     if (action.scope === 'business' && !canAccessScope(policy, 'business')) {
-      return NextResponse.json({
+      return withSecurityHeaders(NextResponse.json({
         text: 'Seu plano atual não inclui o módulo empresarial. Acesse Planos para ativar o módulo PJ.',
-      })
+      }))
     }
 
     if (action.scope === 'personal' && !canAccessScope(policy, 'personal')) {
-      return NextResponse.json({
+      return withSecurityHeaders(NextResponse.json({
         text: 'Seu plano atual não inclui o módulo pessoal. Acesse Planos para ativar o módulo PF.',
-      })
+      }))
     }
 
-    return NextResponse.json({ text: action.message, proposal: action })
+    return withSecurityHeaders(NextResponse.json({ text: action.message, proposal: action }))
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : String(error)
     console.error('AI route error:', message)
 
     if (message.includes('429') || message.includes('quota') || message.includes('Too Many Requests')) {
-      return NextResponse.json(
+      return withSecurityHeaders(NextResponse.json(
         { text: 'Limite de requisições atingido. Tente novamente em alguns instantes.' },
         { status: 200 }
-      )
+      ))
     }
 
-    return NextResponse.json({ error: message }, { status: 500 })
+    return withSecurityHeaders(NextResponse.json({ error: 'Erro interno.' }, { status: 500 }))
   }
 }

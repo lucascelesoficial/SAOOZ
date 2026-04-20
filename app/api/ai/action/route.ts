@@ -11,6 +11,12 @@ import { createOptionalAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
 import { enforceRateLimit, requireUser } from '@/lib/server/request-guard'
 import { requireCompletedOnboarding } from '@/lib/server/onboarding-gate'
+import {
+  requireSameOrigin,
+  requireJsonContentType,
+  rejectLargeBody,
+  withSecurityHeaders,
+} from '@/lib/server/security'
 import type { Database, Json } from '@/types/database.types'
 
 export const dynamic = 'force-dynamic'
@@ -88,13 +94,23 @@ async function resolveActiveBusinessId(input: {
 }
 
 export async function POST(request: NextRequest) {
+  // ── CSRF / Content-Type / body-size guards ──────────────────────────────
+  const originCheck = requireSameOrigin(request)
+  if (originCheck) return withSecurityHeaders(originCheck)
+
+  const ctCheck = requireJsonContentType(request)
+  if (ctCheck) return withSecurityHeaders(ctCheck)
+
+  const bodyCheck = rejectLargeBody(request, 4_096)  // 4 KB
+  if (bodyCheck) return withSecurityHeaders(bodyCheck)
+
   const auth = await requireUser()
   if (!auth.ok) {
-    return auth.response
+    return withSecurityHeaders(auth.response)
   }
 
   const gate = await requireCompletedOnboarding(auth.user.id)
-  if (!gate.ok) return gate.response
+  if (!gate.ok) return withSecurityHeaders(gate.response)
 
   const rate = await enforceRateLimit({
     scope: 'ai-action',
@@ -104,7 +120,7 @@ export async function POST(request: NextRequest) {
   })
 
   if (!rate.ok) {
-    return rate.response
+    return withSecurityHeaders(rate.response)
   }
 
   try {
@@ -112,7 +128,7 @@ export async function POST(request: NextRequest) {
     const parsed = aiActionExecutionSchema.safeParse(body)
 
     if (!parsed.success) {
-      return NextResponse.json({ error: 'Proposta de ação inválida.' }, { status: 400 })
+      return withSecurityHeaders(NextResponse.json({ error: 'Proposta de ação inválida.' }, { status: 400 }))
     }
 
     const policy = await resolveUserAccessPolicy(auth.user.id)
@@ -140,7 +156,7 @@ export async function POST(request: NextRequest) {
     const { proposal, month } = parsed.data
 
     if (proposal.scope === 'business' && !canAccessScope(policy, 'business')) {
-      return NextResponse.json(
+      return withSecurityHeaders(NextResponse.json(
         {
           error: 'Seu plano atual não libera ações empresariais por IA.',
           code: 'business_scope_locked',
@@ -148,11 +164,11 @@ export async function POST(request: NextRequest) {
           upgradeHref: '/planos?feature=business',
         },
         { status: 403 }
-      )
+      ))
     }
 
     if (proposal.scope === 'personal' && !canAccessScope(policy, 'personal')) {
-      return NextResponse.json(
+      return withSecurityHeaders(NextResponse.json(
         {
           error: 'Seu plano atual não libera ações pessoais por IA.',
           code: 'personal_scope_locked',
@@ -160,7 +176,7 @@ export async function POST(request: NextRequest) {
           upgradeHref: '/planos?feature=personal',
         },
         { status: 403 }
-      )
+      ))
     }
 
     const activeBusinessId = await resolveActiveBusinessId({
@@ -177,10 +193,10 @@ export async function POST(request: NextRequest) {
     if (proposal.action === 'add_expense') {
       if (proposal.scope === 'business') {
         if (!activeBusinessId) {
-          return NextResponse.json(
+          return withSecurityHeaders(NextResponse.json(
             { error: 'Selecione uma empresa ativa antes de registrar despesas empresariais.' },
             { status: 400 }
-          )
+          ))
         }
 
         const payload: Database['public']['Tables']['business_expenses']['Insert'] = {
@@ -236,10 +252,10 @@ export async function POST(request: NextRequest) {
     if (proposal.action === 'add_income') {
       if (proposal.scope === 'business') {
         if (!activeBusinessId) {
-          return NextResponse.json(
+          return withSecurityHeaders(NextResponse.json(
             { error: 'Selecione uma empresa ativa antes de registrar receitas empresariais.' },
             { status: 400 }
-          )
+          ))
         }
 
         const payload: Database['public']['Tables']['business_revenues']['Insert'] = {
@@ -306,18 +322,18 @@ export async function POST(request: NextRequest) {
       } as Json,
     })
 
-    return NextResponse.json({
+    return withSecurityHeaders(NextResponse.json({
       ok: true,
       text,
       label,
       resourceId,
       resourceType,
-    })
+    }))
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Erro interno.'
 
     if (error instanceof BillingLimitError) {
-      return NextResponse.json(
+      return withSecurityHeaders(NextResponse.json(
         {
           error: error.message,
           code: error.code,
@@ -325,23 +341,23 @@ export async function POST(request: NextRequest) {
           upgradeRequired: true,
         },
         { status: 403 }
-      )
+      ))
     }
 
     if (isTransactionLimitError(message)) {
-      return NextResponse.json(
+      return withSecurityHeaders(NextResponse.json(
         {
           error: 'Seu limite atual de lançamentos foi atingido. Faça upgrade para continuar registrando.',
           code: 'transaction_limit_reached',
           upgradeRequired: true,
         },
         { status: 403 }
-      )
+      ))
     }
 
     if (isScopeLockedError(message)) {
       const isBusinessLock = message.includes('business_scope_locked')
-      return NextResponse.json(
+      return withSecurityHeaders(NextResponse.json(
         {
           error: isBusinessLock
             ? 'Seu plano atual nao permite lancamentos empresariais.'
@@ -351,10 +367,10 @@ export async function POST(request: NextRequest) {
           upgradeHref: isBusinessLock ? '/planos?feature=business' : '/planos?feature=personal',
         },
         { status: 403 }
-      )
+      ))
     }
 
     console.error('AI action route error:', message)
-    return NextResponse.json({ error: message }, { status: 500 })
+    return withSecurityHeaders(NextResponse.json({ error: 'Erro interno.' }, { status: 500 }))
   }
 }

@@ -34,6 +34,12 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { requireUser } from '@/lib/server/request-guard'
+import {
+  requireSameOrigin,
+  requireJsonContentType,
+  rejectLargeBody,
+  withSecurityHeaders,
+} from '@/lib/server/security'
 import { createClient } from '@/lib/supabase/server'
 import { getBillingProvider } from '@/lib/billing/providers'
 import { PLAN_CATALOG } from '@/lib/billing/plans'
@@ -57,24 +63,34 @@ const PLAN_PRICES_CENTS: Record<SubscriptionPlanType, Record<number, number>> = 
 }
 
 export async function POST(request: NextRequest) {
+  // ── CSRF / Content-Type / body-size guards ────────────────────────────────
+  const originCheck = requireSameOrigin(request)
+  if (originCheck) return withSecurityHeaders(originCheck)
+
+  const ctCheck = requireJsonContentType(request)
+  if (ctCheck) return withSecurityHeaders(ctCheck)
+
+  const bodyCheck = rejectLargeBody(request, 512)
+  if (bodyCheck) return withSecurityHeaders(bodyCheck)
+
   try {
     // ── Auth ───────────────────────────────────────────────────────────────
     const auth = await requireUser()
     if (!auth.ok) {
-      return NextResponse.json(
+      return withSecurityHeaders(NextResponse.json(
         { error: 'Sessão expirada. Faça login novamente.' },
         { status: 401 }
-      )
+      ))
     }
     const { user } = auth
 
     // ── Provider availability ─────────────────────────────────────────────
     const provider = getBillingProvider('cakto')
     if (!provider.isConfigured()) {
-      return NextResponse.json(
-        { error: 'Cakto não está configurado neste ambiente.' },
+      return withSecurityHeaders(NextResponse.json(
+        { error: 'Método de pagamento indisponível no momento.' },
         { status: 503 }
-      )
+      ))
     }
 
     // ── Parse body ─────────────────────────────────────────────────────────
@@ -83,28 +99,28 @@ export async function POST(request: NextRequest) {
 
     const parsed = checkoutSchema.safeParse(body)
     if (!parsed.success) {
-      return NextResponse.json(
-        { error: 'Dados inválidos.', details: parsed.error.issues },
+      return withSecurityHeaders(NextResponse.json(
+        { error: 'Dados inválidos.' },
         { status: 400 }
-      )
+      ))
     }
 
     const { planType, duration, paymentMethod } = parsed.data
 
     if (!provider.supportsPaymentMethod(paymentMethod)) {
-      return NextResponse.json(
-        { error: `Método de pagamento '${paymentMethod}' não suportado pela Cakto.` },
+      return withSecurityHeaders(NextResponse.json(
+        { error: 'Método de pagamento não suportado.' },
         { status: 400 }
-      )
+      ))
     }
 
     // ── App URL ────────────────────────────────────────────────────────────
     const appUrl = (process.env.NEXT_PUBLIC_APP_URL ?? '').trim().replace(/\/$/, '')
     if (!appUrl) {
-      return NextResponse.json(
-        { error: 'NEXT_PUBLIC_APP_URL não configurada.' },
+      return withSecurityHeaders(NextResponse.json(
+        { error: 'Erro de configuração do servidor.' },
         { status: 500 }
-      )
+      ))
     }
 
     // ── Supabase email (best-effort) ───────────────────────────────────────
@@ -136,17 +152,17 @@ export async function POST(request: NextRequest) {
       cancelUrl: `${appUrl}/planos?checkout=cancelled`,
     })
 
-    return NextResponse.json({
+    return withSecurityHeaders(NextResponse.json({
       checkoutUrl: result.checkoutUrl,
       provider: 'cakto',
       gateway: result.gateway,
-    })
+    }))
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Erro interno.'
     console.error('[cakto/checkout] unexpected error:', message, error)
-    return NextResponse.json(
-      { error: `Erro ao gerar checkout Cakto: ${message}` },
+    return withSecurityHeaders(NextResponse.json(
+      { error: 'Erro ao processar pagamento.' },
       { status: 500 }
-    )
+    ))
   }
 }

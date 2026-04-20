@@ -88,16 +88,17 @@ export async function POST(request: NextRequest) {
 
     const { error: deleteError } = await admin.auth.admin.deleteUser(user.id)
     if (deleteError) {
+      console.error('[account/delete] deleteUser error:', deleteError.message)
       return withSecurityHeaders(
-        NextResponse.json({ error: deleteError.message }, { status: 500 })
+        NextResponse.json({ error: 'Erro ao excluir conta.' }, { status: 500 })
       )
     }
 
     return withSecurityHeaders(NextResponse.json({ ok: true }))
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : String(error)
+    console.error('[account/delete] unexpected error:', error)
     return withSecurityHeaders(
-      NextResponse.json({ error: message }, { status: 500 })
+      NextResponse.json({ error: 'Erro interno.' }, { status: 500 })
     )
   }
 }

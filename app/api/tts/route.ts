@@ -1,17 +1,33 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { enforceRateLimit, requireUser } from '@/lib/server/request-guard'
 import { requireCompletedOnboarding } from '@/lib/server/onboarding-gate'
+import {
+  requireSameOrigin,
+  requireJsonContentType,
+  rejectLargeBody,
+  withSecurityHeaders,
+} from '@/lib/server/security'
 
 export const dynamic = 'force-dynamic'
 
 const DEFAULT_VOICE_ID = 'dtSEyYGNJqjrtBArPCVZ'
 
 export async function POST(req: NextRequest) {
+  // ── CSRF / Content-Type / body-size guards ──────────────────────────────
+  const originCheck = requireSameOrigin(req)
+  if (originCheck) return withSecurityHeaders(originCheck)
+
+  const ctCheck = requireJsonContentType(req)
+  if (ctCheck) return withSecurityHeaders(ctCheck)
+
+  const bodyCheck = rejectLargeBody(req, 4_096)  // 4 KB — text payloads
+  if (bodyCheck) return withSecurityHeaders(bodyCheck)
+
   const auth = await requireUser()
-  if (!auth.ok) return auth.response
+  if (!auth.ok) return withSecurityHeaders(auth.response)
 
   const gate = await requireCompletedOnboarding(auth.user.id)
-  if (!gate.ok) return gate.response
+  if (!gate.ok) return withSecurityHeaders(gate.response)
 
   const rate = await enforceRateLimit({
     scope: 'tts',
@@ -19,19 +35,19 @@ export async function POST(req: NextRequest) {
     maxRequests: 20,
     windowMs: 60_000,
   })
-  if (!rate.ok) return rate.response
+  if (!rate.ok) return withSecurityHeaders(rate.response)
 
   const key = process.env.ELEVENLABS_API_KEY
   if (!key) {
-    return NextResponse.json({ error: 'ELEVENLABS_API_KEY not configured' }, { status: 501 })
+    return withSecurityHeaders(NextResponse.json({ error: 'Serviço de voz temporariamente indisponível.' }, { status: 501 }))
   }
 
   const { text } = await req.json()
   if (!text?.trim()) {
-    return NextResponse.json({ error: 'No text provided' }, { status: 400 })
+    return withSecurityHeaders(NextResponse.json({ error: 'Texto não fornecido.' }, { status: 400 }))
   }
   if (text.trim().length > 1200) {
-    return NextResponse.json({ error: 'Text too long' }, { status: 400 })
+    return withSecurityHeaders(NextResponse.json({ error: 'Texto muito longo.' }, { status: 400 }))
   }
 
   const voiceId = process.env.ELEVENLABS_VOICE_ID ?? DEFAULT_VOICE_ID
@@ -62,14 +78,17 @@ export async function POST(req: NextRequest) {
   if (!res.ok) {
     const err = await res.text()
     console.error('ElevenLabs error:', res.status, err)
-    return NextResponse.json({ error: `ElevenLabs ${res.status}` }, { status: res.status })
+    return withSecurityHeaders(NextResponse.json({ error: 'Erro ao sintetizar voz.' }, { status: res.status }))
   }
 
   const audio = await res.arrayBuffer()
   return new NextResponse(audio, {
     headers: {
-      'Content-Type':  'audio/mpeg',
-      'Cache-Control': 'no-cache',
+      'Content-Type':        'audio/mpeg',
+      'Cache-Control':       'no-store',
+      'X-Content-Type-Options': 'nosniff',
+      'X-Frame-Options':    'DENY',
+      'Referrer-Policy':    'no-referrer',
     },
   })
 }

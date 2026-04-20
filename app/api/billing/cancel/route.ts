@@ -106,6 +106,6 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Erro interno.'
     console.error('Cancel subscription error:', message)
-    return withSecurityHeaders(NextResponse.json({ error: message }, { status: 500 }))
+    return withSecurityHeaders(NextResponse.json({ error: 'Erro ao cancelar assinatura.' }, { status: 500 }))
   }
 }

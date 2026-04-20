@@ -1,6 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { requireUser } from '@/lib/server/request-guard'
+import {
+  requireSameOrigin,
+  requireJsonContentType,
+  rejectLargeBody,
+  withSecurityHeaders,
+} from '@/lib/server/security'
 import { PLAN_CATALOG } from '@/lib/billing/plans'
 import type { SubscriptionPlanType } from '@/types/database.types'
 
@@ -26,12 +32,21 @@ function log(...args: unknown[]) {
 }
 
 export async function POST(request: NextRequest) {
+  const originCheck = requireSameOrigin(request)
+  if (originCheck) return withSecurityHeaders(originCheck)
+
+  const ctCheck = requireJsonContentType(request)
+  if (ctCheck) return withSecurityHeaders(ctCheck)
+
+  const bodyCheck = rejectLargeBody(request, 512)
+  if (bodyCheck) return withSecurityHeaders(bodyCheck)
+
   try {
     // ── Auth ──────────────────────────────────────────────────────────────
     const auth = await requireUser()
     if (!auth.ok) {
       log('401 unauthenticated')
-      return NextResponse.json({ error: 'Sessão expirada. Faça login novamente.' }, { status: 401 })
+      return withSecurityHeaders(NextResponse.json({ error: 'Sessão expirada. Faça login novamente.' }, { status: 401 }))
     }
     const { user } = auth
 
@@ -42,10 +57,10 @@ export async function POST(request: NextRequest) {
     const parsed = checkoutSchema.safeParse(body)
     if (!parsed.success) {
       log('400 invalid body', parsed.error.issues)
-      return NextResponse.json(
-        { error: 'Dados inválidos.', details: parsed.error.issues },
+      return withSecurityHeaders(NextResponse.json(
+        { error: 'Dados inválidos.' },
         { status: 400 }
-      )
+      ))
     }
 
     const { planType, duration } = parsed.data
@@ -53,19 +68,12 @@ export async function POST(request: NextRequest) {
 
     // ── Stripe key ────────────────────────────────────────────────────────
     const secretKey = process.env.STRIPE_SECRET_KEY?.trim()
-    if (!secretKey) {
-      log('503 missing STRIPE_SECRET_KEY')
-      return NextResponse.json(
-        { error: 'Stripe não configurado no servidor (STRIPE_SECRET_KEY ausente).' },
+    if (!secretKey || !secretKey.startsWith('sk_')) {
+      log('503 missing/invalid STRIPE_SECRET_KEY')
+      return withSecurityHeaders(NextResponse.json(
+        { error: 'Pagamento temporariamente indisponível.' },
         { status: 503 }
-      )
-    }
-    if (!secretKey.startsWith('sk_')) {
-      log('503 invalid key format')
-      return NextResponse.json(
-        { error: 'STRIPE_SECRET_KEY inválida (deve começar com sk_test_ ou sk_live_).' },
-        { status: 503 }
-      )
+      ))
     }
     const keyMode = secretKey.startsWith('sk_live_') ? 'LIVE' : 'TEST'
     log('stripe key mode:', keyMode)
@@ -73,29 +81,22 @@ export async function POST(request: NextRequest) {
     // ── Price ID ──────────────────────────────────────────────────────────
     const envKey = priceEnvKey(planType, duration)
     const priceId = process.env[envKey]?.trim()
-    if (!priceId) {
-      log(`503 missing ${envKey}`)
-      return NextResponse.json(
-        { error: `Price ID não configurado: ${envKey}. Crie o preço no Stripe e defina a env var.` },
+    if (!priceId || !priceId.startsWith('price_')) {
+      log(`503 missing/invalid ${envKey}`)
+      return withSecurityHeaders(NextResponse.json(
+        { error: 'Plano ou duração não disponível no momento.' },
         { status: 503 }
-      )
-    }
-    if (!priceId.startsWith('price_')) {
-      log(`503 invalid ${envKey}=${priceId.substring(0, 12)}...`)
-      return NextResponse.json(
-        { error: `${envKey} inválido (deve começar com price_).` },
-        { status: 503 }
-      )
+      ))
     }
 
     // ── App URL ───────────────────────────────────────────────────────────
     const appUrl = (process.env.NEXT_PUBLIC_APP_URL ?? '').trim().replace(/\/$/, '')
     if (!appUrl) {
       log('500 missing NEXT_PUBLIC_APP_URL')
-      return NextResponse.json(
-        { error: 'NEXT_PUBLIC_APP_URL não configurada no servidor.' },
+      return withSecurityHeaders(NextResponse.json(
+        { error: 'Erro de configuração do servidor.' },
         { status: 500 }
-      )
+      ))
     }
 
     // ── Stripe client ─────────────────────────────────────────────────────
@@ -183,33 +184,31 @@ export async function POST(request: NextRequest) {
 
       // In production, never leak internal Stripe details (key names, modes, raw errors)
       const isProd = process.env.NODE_ENV === 'production'
-      return NextResponse.json(
+      return withSecurityHeaders(NextResponse.json(
         isProd
-          ? { error: friendly }
+          ? { error: 'Erro ao processar pagamento.' }
           : { error: friendly, envKey, keyMode, stripeMessage: msg },
         { status: 502 }
-      )
+      ))
     }
 
     if (!session.url) {
       log('500 session without url')
-      return NextResponse.json(
-        { error: 'Stripe não retornou URL de checkout.' },
+      return withSecurityHeaders(NextResponse.json(
+        { error: 'Erro ao criar sessão de pagamento.' },
         { status: 500 }
-      )
+      ))
     }
 
     log('session created', session.id)
-    return NextResponse.json({
+    return withSecurityHeaders(NextResponse.json({
       checkoutUrl: session.url,
-      sessionId: session.id,
       provider: 'stripe',
-      mode: keyMode,
-    })
+    }))
 
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Erro interno.'
     console.error('[checkout] unexpected error:', message, error)
-    return NextResponse.json({ error: `Erro interno: ${message}` }, { status: 500 })
+    return withSecurityHeaders(NextResponse.json({ error: 'Erro interno ao criar checkout.' }, { status: 500 }))
   }
 }

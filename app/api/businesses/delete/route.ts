@@ -61,8 +61,9 @@ export async function POST(request: NextRequest) {
       .eq('id', businessId)
 
     if (deleteError) {
+      console.error('[businesses/delete] soft-delete error:', deleteError.message)
       return withSecurityHeaders(
-        NextResponse.json({ error: deleteError.message }, { status: 500 })
+        NextResponse.json({ error: 'Erro ao excluir empresa.' }, { status: 500 })
       )
     }
 
@@ -117,9 +118,9 @@ export async function POST(request: NextRequest) {
       })
     )
   } catch (error) {
-    const message = error instanceof Error ? error.message : 'Erro interno.'
+    console.error('[businesses/delete] unexpected error:', error)
     return withSecurityHeaders(
-      NextResponse.json({ error: message }, { status: 500 })
+      NextResponse.json({ error: 'Erro interno.' }, { status: 500 })
     )
   }
 }
