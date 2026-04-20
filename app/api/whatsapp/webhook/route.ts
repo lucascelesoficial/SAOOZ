@@ -58,14 +58,21 @@ export async function POST(req: NextRequest) {
     return new NextResponse('Unauthorized', { status: 401 })
   }
 
-  // Extrai número no formato +5511999999999
-  const phone = from.replace('whatsapp:', '')
+  // Extrai número e gera variantes para buscar no banco
+  // Twilio envia: +5511934139666 — banco pode ter: 11934139666, 5511934139666, +5511934139666
+  const rawPhone = from.replace('whatsapp:', '').replace('+', '')
+  const phoneVariants = [
+    '+' + rawPhone,           // +5511934139666
+    rawPhone,                 // 5511934139666
+    rawPhone.slice(2),        // 11934139666  (remove código BR 55)
+    rawPhone.slice(2, 4) + rawPhone.slice(5), // sem dígito 9 (legado)
+  ]
 
-  // Busca usuário pelo telefone cadastrado no SAOOZ
+  // Busca usuário pelo telefone — tenta todas as variantes
   const { data: profile } = await supabase
     .from('profiles')
     .select('id, name, mode, active_business_id')
-    .eq('phone', phone)
+    .in('phone', phoneVariants)
     .maybeSingle()
 
   if (!profile) {
