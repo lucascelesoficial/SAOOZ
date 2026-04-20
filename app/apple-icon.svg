@@ -1,9 +1,0 @@
-<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
-  <defs>
-    <clipPath id="r">
-      <rect width="512" height="512" rx="96" ry="96"/>
-    </clipPath>
-  </defs>
-  <rect width="512" height="512" rx="96" fill="white"/>
-  <image href="/saooz-logo.svg" x="46" y="46" width="420" height="420" clip-path="url(#r)"/>
-</svg>
