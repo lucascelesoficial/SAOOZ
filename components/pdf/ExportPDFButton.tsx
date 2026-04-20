@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { Download, Loader2 } from 'lucide-react'
+import { toast } from 'sonner'
 import type { FinancialReportData } from './FinancialReportPDF'
 
 interface ExportPDFButtonProps {
@@ -15,6 +16,7 @@ export function ExportPDFButton({ data, fileName, className }: ExportPDFButtonPr
 
   async function handleExport() {
     setLoading(true)
+    const toastId = toast.loading('Gerando PDF…')
     try {
       // Lazy-load @react-pdf/renderer only when needed (heavy bundle)
       const { pdf } = await import('@react-pdf/renderer')
@@ -27,10 +29,20 @@ export function ExportPDFButton({ data, fileName, className }: ExportPDFButtonPr
       const a = document.createElement('a')
       a.href = url
       a.download = fileName ?? `saooz-relatorio-${new Date().toISOString().slice(0, 7)}.pdf`
+      document.body.appendChild(a)
       a.click()
-      URL.revokeObjectURL(url)
+      // Delay revoke so browser can initiate the download
+      setTimeout(() => {
+        document.body.removeChild(a)
+        URL.revokeObjectURL(url)
+      }, 200)
+      toast.success('PDF gerado!', { id: toastId })
     } catch (err) {
       console.error('PDF export error:', err)
+      toast.error(
+        `Erro ao gerar PDF: ${err instanceof Error ? err.message : 'Erro desconhecido'}`,
+        { id: toastId }
+      )
     } finally {
       setLoading(false)
     }

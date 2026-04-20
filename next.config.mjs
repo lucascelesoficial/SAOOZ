@@ -116,6 +116,15 @@ const nextConfig = {
     ]
   },
 
+  // Required for @react-pdf/renderer — avoids "canvas" resolution error during build
+  webpack: (config) => {
+    config.resolve.alias.canvas = false
+    return config
+  },
+
+  // Ensure @react-pdf/renderer is transpiled correctly in Next.js App Router
+  transpilePackages: ['@react-pdf/renderer'],
+
   experimental: {},
 
   // ── Security headers on all routes ────────────────────────────────────

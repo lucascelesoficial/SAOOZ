@@ -36,6 +36,9 @@ export function downloadCsv(content: string, filename: string): void {
   link.setAttribute('download', filename)
   document.body.appendChild(link)
   link.click()
-  document.body.removeChild(link)
-  URL.revokeObjectURL(url)
+  // Delay cleanup so the browser has time to initiate the download
+  setTimeout(() => {
+    document.body.removeChild(link)
+    URL.revokeObjectURL(url)
+  }, 200)
 }
