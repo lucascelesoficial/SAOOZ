@@ -4,13 +4,12 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { ArrowRight, BadgeCheck, Minus, Sparkles } from 'lucide-react'
 
-type Duration = 1 | 3 | 6 | 12
+type Duration = 1 | 3 | 12
 
 const DURATIONS: { value: Duration; label: string; discount: number; badge?: string }[] = [
-  { value: 1,  label: 'Mensal',   discount: 0                    },
-  { value: 3,  label: '3 meses',  discount: 0                    },
-  { value: 6,  label: '6 meses',  discount: 15, badge: 'Popular' },
-  { value: 12, label: 'Anual',    discount: 25, badge: '-25%'    },
+  { value: 1,  label: 'Mensal',   discount: 0                 },
+  { value: 3,  label: '3 meses',  discount: 0                 },
+  { value: 12, label: 'Anual',    discount: 25, badge: '-25%' },
 ]
 
 const PLANS = [
@@ -58,7 +57,7 @@ const PLANS = [
     iaLabel: '60 ações/mês',
     capacidade: (d: Duration) => {
       const map: Record<Duration, string> = {
-        1: '1 empresa', 3: '1 empresa', 6: '2 empresas', 12: '3 empresas',
+        1: '1 empresa', 3: '1 empresa', 12: '3 empresas',
       }
       return map[d]
     },
@@ -85,7 +84,6 @@ const PLANS = [
       const map: Record<Duration, string> = {
         1: 'pessoal + 1 empresa',
         3: 'pessoal + 2 empresas',
-        6: 'pessoal + 3 empresas',
         12: 'pessoal + 5 empresas',
       }
       return map[d]
@@ -163,7 +161,7 @@ export function PricingSection() {
               style={{ background: '#22c55e12', border: '1px solid #22c55e30', color: '#22c55e' }}
             >
               <Sparkles className="h-3.5 w-3.5" />
-              Você economiza {disc}% — cobrado a cada {duration === 3 ? '3 meses' : duration === 6 ? '6 meses' : 'ano'}
+              Você economiza {disc}% — cobrado a cada {duration === 3 ? '3 meses' : 'ano'}
             </span>
           </div>
         )}
@@ -230,7 +228,7 @@ export function PricingSection() {
                       <span className="font-semibold" style={{ color: plan.color }}>
                         R${total.toFixed(0)}
                       </span>{' '}
-                      a cada {duration === 3 ? '3 meses' : duration === 6 ? '6 meses' : 'ano'}
+                      a cada {duration === 3 ? '3 meses' : 'ano'}
                     </p>
                   )}
                   <p className="mt-2 text-xs leading-relaxed" style={{ color: 'var(--text-soft)' }}>

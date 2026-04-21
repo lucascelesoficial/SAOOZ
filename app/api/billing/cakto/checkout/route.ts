@@ -50,16 +50,15 @@ export const runtime = 'nodejs'
 
 const checkoutSchema = z.object({
   planType: z.enum(['pf', 'pj', 'pro']),
-  duration: z.union([z.literal(1), z.literal(3), z.literal(6), z.literal(12)]),
+  duration: z.union([z.literal(1), z.literal(3), z.literal(12)]),
   paymentMethod: z.enum(['pix', 'card']).default('pix'),
 })
 
-// Prices in cents, matching getPlanPriceForDuration() from lib/billing/plans.ts
-// PF R$47/mo | PJ R$67/mo | PRO R$97/mo — discounts: 6M=15% 12M=25%
+// Prices in cents — Clareza R$37 | Gestão R$97 | Comando R$147 — anual -25%
 const PLAN_PRICES_CENTS: Record<SubscriptionPlanType, Record<number, number>> = {
-  pf:  { 1: 4700, 3: 14100, 6: 23970, 12: 42300 },
-  pj:  { 1: 6700, 3: 20100, 6: 34170, 12: 60300 },
-  pro: { 1: 9700, 3: 29100, 6: 49470, 12: 87300 },
+  pf:  { 1: 3700,  3: 11100,  12: 33300  },
+  pj:  { 1: 9700,  3: 29100,  12: 87300  },
+  pro: { 1: 14700, 3: 44100,  12: 132300 },
 }
 
 export async function POST(request: NextRequest) {

@@ -1,6 +1,6 @@
 import type { SubscriptionPlanType } from '@/types/database.types'
 
-export type BillingDuration = 1 | 3 | 6 | 12
+export type BillingDuration = 1 | 3 | 12
 
 export interface PlanDefinition {
   code: SubscriptionPlanType
@@ -16,12 +16,11 @@ export interface PlanDefinition {
 }
 
 export const TRIAL_DAYS = 7
-export const BILLING_DURATIONS: BillingDuration[] = [1, 3, 6, 12]
+export const BILLING_DURATIONS: BillingDuration[] = [1, 3, 12]
 
 export const DURATION_DISCOUNTS: Record<BillingDuration, number> = {
   1: 0,
   3: 0,
-  6: 0.15,
   12: 0.25,
 }
 
@@ -31,9 +30,9 @@ export const FREE_LIMITS = {
 } as const
 
 const BUSINESS_ACCOUNT_LIMITS: Record<SubscriptionPlanType, Record<BillingDuration, number>> = {
-  pf: { 1: 0, 3: 0, 6: 0, 12: 0 },
-  pj: { 1: 1, 3: 1, 6: 2, 12: 3 },
-  pro: { 1: 1, 3: 2, 6: 3, 12: 5 },
+  pf:  { 1: 0, 3: 0, 12: 0 },
+  pj:  { 1: 1, 3: 1, 12: 3 },
+  pro: { 1: 1, 3: 2, 12: 5 },
 }
 
 export const PLAN_CATALOG: Record<SubscriptionPlanType, PlanDefinition> = {
@@ -129,7 +128,6 @@ export function getPlanPriceForDuration(plan: SubscriptionPlanType, duration: Bi
 export function getDurationLabel(duration: BillingDuration) {
   if (duration === 1) return 'Mensal'
   if (duration === 3) return 'Trimestral'
-  if (duration === 6) return 'Semestral'
   return 'Anual'
 }
 

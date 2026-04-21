@@ -25,7 +25,7 @@ interface PlanoClientProps {
   currentPlanType: SubscriptionPlanType | null
   /** true when there is an active paid subscription */
   isPaid: boolean
-  /** The exact billing duration of the current subscription (1/3/6/12) */
+  /** The exact billing duration of the current subscription (1/3/12) */
   currentDuration: BillingDuration
   /** Context hint — e.g. "business" when coming from the business CTA */
   feature?: string | null
@@ -240,7 +240,6 @@ export function PlanoClient({
                     }
                   >
                     {getDurationLabel(item)}
-                    {item === 6 && <span className="ml-1.5 text-[10px] font-bold text-green-400">-15%</span>}
                     {item === 12 && <span className="ml-1.5 text-[10px] font-bold text-green-400">-25%</span>}
                   </button>
                 ))}

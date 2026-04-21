@@ -2,7 +2,7 @@ import type { BillingSnapshot } from './server'
 import { getBusinessAccountLimit, getPlanDefinition } from './plans'
 import { getSubscriptionLifecycleState } from './lifecycle'
 
-type BillingDurationMonths = 1 | 3 | 6 | 12
+type BillingDurationMonths = 1 | 3 | 12
 
 export interface BillingAccess {
   personalModule: boolean
@@ -14,7 +14,7 @@ export interface BillingAccess {
 }
 
 function normalizeDuration(value: number | null | undefined): BillingDurationMonths {
-  if (value === 3 || value === 6 || value === 12) {
+  if (value === 3 || value === 12) {
     return value
   }
   return 1
@@ -40,7 +40,6 @@ function inferDurationFromPeriod(snapshot: BillingSnapshot): BillingDurationMont
   )
 
   if (diffDays >= 330) return 12
-  if (diffDays >= 170) return 6
   if (diffDays >= 80) return 3
   return normalizeDuration(snapshot.subscription.billing_duration_months)
 }

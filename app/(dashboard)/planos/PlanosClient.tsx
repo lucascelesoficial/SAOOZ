@@ -99,7 +99,7 @@ function formatDate(dateStr: string | null) {
 export function PlanosClient({ snapshot }: PlanosClientProps) {
   // Default to the user's current billing duration so the active plan card is visible immediately
   const [duration, setDuration] = useState<BillingDuration>(
-    (snapshot.subscription.billing_duration_months ?? 6) as BillingDuration
+    (snapshot.subscription.billing_duration_months ?? 1) as BillingDuration
   )
   const [checkingOut, setCheckingOut] = useState<string | null>(null)
   const [canceling, setCanceling] = useState(false)
