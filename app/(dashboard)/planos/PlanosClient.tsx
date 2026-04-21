@@ -77,14 +77,14 @@ function businessCapacityLabel(plan: SubscriptionPlanType, duration: BillingDura
   const limit = getBusinessAccountLimit(plan, duration)
 
   if (plan === 'pf') {
-    return 'Sem acesso a contas empresariais'
+    return 'Sem módulo empresarial'
   }
 
   if (plan === 'pro') {
-    return `PF + até ${limit} conta(s) empresarial(is)`
+    return `Pessoal + até ${limit} empresa(s)`
   }
 
-  return `Até ${limit} conta(s) empresarial(is)`
+  return `Até ${limit} empresa(s)`
 }
 
 function formatDate(dateStr: string | null) {
@@ -259,7 +259,7 @@ export function PlanosClient({ snapshot }: PlanosClientProps) {
     }
 
     if (feature === 'advanced') {
-      return 'Os recursos avançados de inteligência ficam liberados no plano PRO.'
+      return 'Os recursos avançados de inteligência ficam liberados no plano Comando.'
     }
 
     if (feature === 'business_limit') {
@@ -374,7 +374,7 @@ export function PlanosClient({ snapshot }: PlanosClientProps) {
           <div>
             <h1 className="text-2xl font-bold text-app">Planos</h1>
             <p className="mt-2 max-w-2xl text-sm text-app-soft">
-              Escolha o plano ideal para sua operacao financeira: PF, PJ ou estrutura completa no PRO.
+              Escolha o plano ideal para o seu momento: Clareza para vida pessoal, Gestão para o negócio, Comando para operação completa.
             </p>
 
             <div className="mt-5 flex flex-wrap gap-2">
@@ -407,7 +407,7 @@ export function PlanosClient({ snapshot }: PlanosClientProps) {
               <p className="text-xs uppercase tracking-wider text-app-soft">Status atual</p>
               <p className="mt-2 text-lg font-bold text-app">{formatStatus(snapshot.subscription.status)}</p>
               <p className="mt-1 text-xs text-app-soft">
-                Plano: {snapshot.subscription.plan_type.toUpperCase()}
+                Plano: {PLAN_CATALOG[snapshot.subscription.plan_type]?.name ?? snapshot.subscription.plan_type.toUpperCase()}
               </p>
               {snapshot.subscription.current_period_end && (
                 <p className="mt-1 text-xs text-app-soft">
@@ -641,9 +641,9 @@ export function PlanosClient({ snapshot }: PlanosClientProps) {
             <thead>
               <tr className="border-b" style={{ borderColor: 'var(--panel-border)' }}>
                 <th className="px-2 py-2 font-semibold text-app-soft">Ciclo</th>
-                <th className="px-2 py-2 font-semibold text-app-soft">PF</th>
-                <th className="px-2 py-2 font-semibold text-app-soft">PJ</th>
-                <th className="px-2 py-2 font-semibold text-app-soft">PRO</th>
+                <th className="px-2 py-2 font-semibold text-app-soft">Clareza</th>
+                <th className="px-2 py-2 font-semibold text-app-soft">Gestão</th>
+                <th className="px-2 py-2 font-semibold text-app-soft">Comando</th>
               </tr>
             </thead>
             <tbody>
@@ -654,12 +654,12 @@ export function PlanosClient({ snapshot }: PlanosClientProps) {
                   style={{ borderColor: 'var(--panel-border)' }}
                 >
                   <td className="px-2 py-2 text-app">{getDurationLabel(item)}</td>
-                  <td className="px-2 py-2 text-app-soft">Sem PJ</td>
+                  <td className="px-2 py-2 text-app-soft">Sem módulo empresarial</td>
                   <td className="px-2 py-2 text-app">
-                    {getBusinessAccountLimit('pj', item)} conta(s) empresariais
+                    {getBusinessAccountLimit('pj', item)} empresa(s)
                   </td>
                   <td className="px-2 py-2 text-app">
-                    PF + {getBusinessAccountLimit('pro', item)} conta(s) empresariais
+                    Pessoal + {getBusinessAccountLimit('pro', item)} empresa(s)
                   </td>
                 </tr>
               ))}
