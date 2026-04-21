@@ -148,7 +148,7 @@ function DashboardMockup() {
           <div style={{ padding: '14px 16px', minHeight: 300 }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
               <div>
-                <div style={{ fontSize: 10, color: '#334155', marginBottom: 2 }}>Central financeira</div>
+                <div style={{ fontSize: 10, color: '#475569', marginBottom: 2 }}>Central financeira</div>
                 <div style={{ fontSize: 14, fontWeight: 700, color: '#e2e8f0' }}>Abril 2026</div>
               </div>
               <div style={{ display: 'flex', gap: 6 }}>
@@ -175,7 +175,7 @@ function DashboardMockup() {
                   background: 'linear-gradient(180deg, #0d1f3c, #091628)',
                   border: '1px solid rgba(59,130,246,0.1)', borderRadius: 10, padding: '9px 11px',
                 }}>
-                  <div style={{ fontSize: 9, color: '#334155', marginBottom: 3, textTransform: 'uppercase', letterSpacing: '0.05em' }}>{m.label}</div>
+                  <div style={{ fontSize: 9, color: '#475569', marginBottom: 3, textTransform: 'uppercase', letterSpacing: '0.05em' }}>{m.label}</div>
                   <div style={{ fontSize: 14, fontWeight: 800, color: m.color, textShadow: `0 0 12px ${m.color}60` }}>{m.value}</div>
                 </div>
               ))}
@@ -183,7 +183,7 @@ function DashboardMockup() {
 
             <div style={{ display: 'grid', gridTemplateColumns: '1.6fr 1fr', gap: 8, marginBottom: 10 }}>
               <div style={{ background: 'linear-gradient(180deg, #0d1f3c, #091628)', border: '1px solid rgba(59,130,246,0.1)', borderRadius: 10, padding: '10px 12px' }}>
-                <div style={{ fontSize: 9, color: '#334155', marginBottom: 7, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Fluxo de caixa — 2026</div>
+                <div style={{ fontSize: 9, color: '#475569', marginBottom: 7, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Fluxo de caixa — 2026</div>
                 <div style={{ display: 'flex', alignItems: 'flex-end', gap: 3, height: 52 }}>
                   {bars.map((h, i) => (
                     <div key={i} style={{
@@ -194,12 +194,12 @@ function DashboardMockup() {
                   ))}
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 4 }}>
-                  {['Jan','Fev','Mar','Abr'].map(m => <span key={m} style={{ fontSize: 8, color: '#1e3a5f' }}>{m}</span>)}
+                  {['Jan','Fev','Mar','Abr'].map(m => <span key={m} style={{ fontSize: 8, color: '#475569' }}>{m}</span>)}
                 </div>
               </div>
 
               <div style={{ background: 'linear-gradient(180deg, #0d1f3c, #091628)', border: '1px solid rgba(59,130,246,0.1)', borderRadius: 10, padding: '10px 12px' }}>
-                <div style={{ fontSize: 9, color: '#334155', marginBottom: 7, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Categorias</div>
+                <div style={{ fontSize: 9, color: '#475569', marginBottom: 7, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Categorias</div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                   {cats.map((c) => (
                     <div key={c.name}>
@@ -217,7 +217,7 @@ function DashboardMockup() {
             </div>
 
             <div style={{ background: 'linear-gradient(180deg, #0d1f3c, #091628)', border: '1px solid rgba(59,130,246,0.1)', borderRadius: 10, padding: '10px 12px' }}>
-              <div style={{ fontSize: 9, color: '#334155', marginBottom: 7, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Assistente IA · SAOOZ</div>
+              <div style={{ fontSize: 9, color: '#475569', marginBottom: 7, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Assistente IA · SAOOZ</div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
                 <div style={{ alignSelf: 'flex-start', maxWidth: '75%', background: 'rgba(37,99,235,0.12)', border: '1px solid rgba(59,130,246,0.22)', borderRadius: '0 8px 8px 8px', padding: '6px 10px', fontSize: 10, color: '#94a3b8', lineHeight: 1.5 }}>
                   Alimentação subiu 18% em abril. Quer revisar a meta?
@@ -265,7 +265,7 @@ function FeatureVisualPanels() {
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
             {panel.items.map((item) => (
               <div key={item.k} style={{ background: 'rgba(0,0,0,0.3)', borderRadius: 10, padding: '10px 12px', border: '1px solid rgba(255,255,255,0.05)' }}>
-                <div style={{ fontSize: 9, color: '#334155', marginBottom: 4 }}>{item.k}</div>
+                <div style={{ fontSize: 9, color: '#475569', marginBottom: 4 }}>{item.k}</div>
                 <div style={{ fontSize: 18, fontWeight: 800, color: item.c, textShadow: `0 0 12px ${item.c}50` }}>{item.v}</div>
               </div>
             ))}
@@ -277,7 +277,7 @@ function FeatureVisualPanels() {
           <span key={t} style={{
             fontSize: 11, padding: '4px 14px', borderRadius: 20, fontWeight: 600,
             background: i === 0 ? 'rgba(37,99,235,0.2)' : 'rgba(255,255,255,0.04)',
-            color: i === 0 ? '#60a5fa' : '#334155',
+            color: i === 0 ? '#60a5fa' : '#475569',
             border: `1px solid ${i === 0 ? 'rgba(59,130,246,0.4)' : 'rgba(255,255,255,0.06)'}`,
           }}>{t}</span>
         ))}
@@ -467,7 +467,7 @@ export function SalesLanding() {
           backdropFilter: 'blur(20px)',
         }}>
           <div className="mx-auto flex w-full max-w-6xl items-center justify-between px-4 py-4 md:px-6">
-            <SaoozWordmark size="sm" />
+            <SaoozWordmark size="sm" onDark={true} />
             <nav className="md-hidden hidden items-center gap-7 md:flex">
               {[
                 ['#como-funciona', 'Como funciona'],
@@ -587,7 +587,7 @@ export function SalesLanding() {
                 </div>
 
                 {/* Garantia mini */}
-                <div style={{ display: 'flex', justifyContent: 'center', gap: 24, fontSize: 13, color: '#334155' }}>
+                <div style={{ display: 'flex', justifyContent: 'center', gap: 24, fontSize: 13, color: '#64748b' }}>
                   {['7 dias de garantia', 'Cancele quando quiser', 'Sem fidelidade'].map((t) => (
                     <span key={t} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                       <CheckCircle2 style={{ width: 13, height: 13, color: '#2563eb', flexShrink: 0 }} />
@@ -966,7 +966,7 @@ export function SalesLanding() {
                       background: 'linear-gradient(135deg, #60a5fa, #3b82f6)',
                       WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
                     }}>{s.n}</span>
-                    <span style={{ fontSize: 13, color: '#334155', lineHeight: 1.5 }}>{s.label}</span>
+                    <span style={{ fontSize: 13, color: '#64748b', lineHeight: 1.5 }}>{s.label}</span>
                   </div>
                 ))}
               </div>
@@ -1119,17 +1119,6 @@ export function SalesLanding() {
               PREÇOS — dark
           ══════════════════════════════════════════════════════════ */}
           <section id="precos" style={{ background: 'linear-gradient(180deg, #030C1E, #050F26)' }}>
-            <div className="mx-auto w-full max-w-6xl px-4 pt-20 pb-4 md:px-6 text-center">
-              <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: '#3b82f6', marginBottom: 16 }}>
-                Planos
-              </p>
-              <h2 style={{ fontSize: 'clamp(1.8rem, 4vw, 2.8rem)', fontWeight: 900, color: '#f1f5f9', margin: '0 0 16px', letterSpacing: '-0.02em' }}>
-                Sem enrolação. Escolha e assina.
-              </h2>
-              <p style={{ fontSize: 15, color: '#475569', margin: 0 }}>
-                Cada plano com 7 dias de garantia — reembolso total se não for o que esperava.
-              </p>
-            </div>
             <PricingSection />
           </section>
 
@@ -1272,10 +1261,10 @@ export function SalesLanding() {
               }}>
                 Assumir o controle agora <ArrowRight className="h-5 w-5" />
               </Link>
-              <div style={{ display: 'flex', justifyContent: 'center', gap: 24, fontSize: 13, color: '#334155' }}>
+              <div style={{ display: 'flex', justifyContent: 'center', gap: 24, fontSize: 13, color: '#64748b' }}>
                 {['7 dias de garantia', 'Cancele quando quiser', 'Sem fidelidade'].map((t) => (
                   <span key={t} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                    <CheckCircle2 style={{ width: 13, height: 13, color: '#2563eb', flexShrink: 0 }} />
+                    <CheckCircle2 style={{ width: 13, height: 13, color: '#60a5fa', flexShrink: 0 }} />
                     {t}
                   </span>
                 ))}
@@ -1292,27 +1281,27 @@ export function SalesLanding() {
           <div className="mx-auto w-full max-w-6xl px-4 py-14 md:px-6">
             <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr', gap: 48 }} className="sm-grid-1">
               <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-                <SaoozWordmark size="sm" />
-                <p style={{ fontSize: 13, lineHeight: 1.65, color: '#334155', maxWidth: 260, margin: 0 }}>
+                <SaoozWordmark size="sm" onDark={true} />
+                <p style={{ fontSize: 13, lineHeight: 1.65, color: '#64748b', maxWidth: 260, margin: 0 }}>
                   Sistema de gestão financeira pessoal e empresarial com inteligência artificial.
                 </p>
-                <a href="mailto:suporte@saooz.com" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, fontSize: 13, color: '#475569', textDecoration: 'none' }}>
+                <a href="mailto:suporte@saooz.com" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, fontSize: 13, color: '#64748b', textDecoration: 'none' }}>
                   <Mail className="h-4 w-4" style={{ color: '#3b82f6' }} /> suporte@saooz.com
                 </a>
               </div>
               <div>
-                <p style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#1e3a5f', marginBottom: 16 }}>Legal</p>
+                <p style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#3b82f6', marginBottom: 16 }}>Legal</p>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                   {[['/termos','Termos de uso'],['/privacidade','Privacidade'],['/suporte','Suporte'],['/contato','Contato']].map(([href, label]) => (
-                    <Link key={href} href={href} style={{ fontSize: 13, color: '#334155', textDecoration: 'none' }}>{label}</Link>
+                    <Link key={href} href={href} style={{ fontSize: 13, color: '#64748b', textDecoration: 'none' }}>{label}</Link>
                   ))}
                 </div>
               </div>
               <div>
-                <p style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#1e3a5f', marginBottom: 16 }}>Produto</p>
+                <p style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#3b82f6', marginBottom: 16 }}>Produto</p>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                   {[['#como-funciona','Como funciona'],['#recursos','Recursos'],['#precos','Preços'],['#faq','FAQ']].map(([href, label]) => (
-                    <a key={href} href={href} style={{ fontSize: 13, color: '#334155', textDecoration: 'none' }}>{label}</a>
+                    <a key={href} href={href} style={{ fontSize: 13, color: '#64748b', textDecoration: 'none' }}>{label}</a>
                   ))}
                 </div>
               </div>
@@ -1320,7 +1309,7 @@ export function SalesLanding() {
             <div style={{
               marginTop: 48, paddingTop: 24,
               borderTop: '1px solid rgba(59,130,246,0.08)',
-              textAlign: 'center', fontSize: 12, color: '#1e293b',
+              textAlign: 'center', fontSize: 12, color: '#475569',
             }}>
               © 2025 SAOOZ · Todos os direitos reservados
             </div>
