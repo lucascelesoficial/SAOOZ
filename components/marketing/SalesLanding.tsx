@@ -2,7 +2,7 @@ import Link from 'next/link'
 import {
   ArrowRight, BadgeCheck, Brain, Building2,
   CheckCircle2, ChevronRight, Layers, Lock,
-  Mail, Shield, Star, TrendingUp, User, Zap,
+  Mail, Shield, Star, User, Zap,
 } from 'lucide-react'
 import { SaoozWordmark } from '@/components/ui/SaoozLogo'
 import { PricingSection } from '@/components/marketing/PricingSection'
