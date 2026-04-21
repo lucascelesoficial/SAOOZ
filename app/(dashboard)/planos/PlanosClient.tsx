@@ -251,11 +251,11 @@ export function PlanosClient({ snapshot }: PlanosClientProps) {
     const feature = searchParams.get('feature')
 
     if (feature === 'business') {
-      return 'Seu plano atual não libera o módulo empresarial. Escolha um plano com acesso PJ para continuar.'
+      return 'Seu plano atual não libera o módulo empresarial. Escolha o plano Gestão ou Comando para continuar.'
     }
 
     if (feature === 'personal') {
-      return 'Seu plano atual não libera o módulo pessoal. Escolha um plano com acesso PF para continuar.'
+      return 'Seu plano atual não libera o módulo pessoal. Escolha o plano Clareza ou Comando para continuar.'
     }
 
     if (feature === 'advanced') {
@@ -562,8 +562,8 @@ export function PlanosClient({ snapshot }: PlanosClientProps) {
                   {plan.aiActionsLimit === null ? 'Uso ilimitado' : `${plan.aiActionsLimit} ações/mês`}
                 </p>
                 <p className="mt-2 text-xs text-app-soft">
-                  {plan.supportsPersonal ? 'Módulo PF incluso' : 'Módulo PF não incluso'} -{' '}
-                  {plan.supportsBusiness ? 'Módulo PJ incluso' : 'Módulo PJ não incluso'}
+                  {plan.supportsPersonal ? 'Módulo pessoal incluso' : 'Módulo pessoal não incluso'} ·{' '}
+                  {plan.supportsBusiness ? 'Módulo empresarial incluso' : 'Módulo empresarial não incluso'}
                 </p>
                 <p className="mt-1 text-xs text-app-soft">{businessCapacityLabel(planCode, duration)}</p>
               </div>

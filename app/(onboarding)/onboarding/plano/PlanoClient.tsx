@@ -140,7 +140,7 @@ export function PlanoClient({
   }
 
   const featurePrompt = feature === 'business'
-    ? 'Para criar uma conta empresarial você precisa de um plano PJ ou PRO. Escolha abaixo e faça o upgrade.'
+    ? 'Para criar uma conta empresarial você precisa de um plano Gestão ou Comando. Escolha abaixo e faça o upgrade.'
     : feature === 'business_limit'
       ? 'Você atingiu o limite de contas empresariais. Faça upgrade para ampliar a operação.'
       : null
@@ -357,8 +357,8 @@ export function PlanoClient({
                     {plan.aiActionsLimit === null ? 'Uso ilimitado' : `${plan.aiActionsLimit} ações/mês`}
                   </p>
                   <p className="mt-1 text-xs text-app-soft">
-                    {plan.supportsPersonal ? 'Módulo PF incluso' : 'Módulo PF não incluso'}{' · '}
-                    {plan.supportsBusiness ? 'Módulo PJ incluso' : 'Módulo PJ não incluso'}
+                    {plan.supportsPersonal ? 'Módulo pessoal incluso' : 'Módulo pessoal não incluso'}{' · '}
+                    {plan.supportsBusiness ? 'Módulo empresarial incluso' : 'Módulo empresarial não incluso'}
                   </p>
                   <p className="mt-1 text-xs text-app-soft">{businessCapacityLabel(planCode, duration)}</p>
                 </div>
@@ -422,25 +422,25 @@ export function PlanoClient({
         <div className="panel-card p-5 mb-6">
           <h2 className="text-base font-semibold text-app">Capacidade operacional por ciclo</h2>
           <p className="mt-1 text-sm text-app-soft">
-            Diferença real dos planos para contas empresariais e operação PF/PJ.
+            Diferença real entre os planos para operação pessoal e empresarial.
           </p>
           <div className="mt-4 overflow-x-auto">
             <table className="w-full min-w-[560px] text-left text-sm">
               <thead>
                 <tr className="border-b" style={{ borderColor: 'var(--panel-border)' }}>
                   <th className="px-2 py-2 font-semibold text-app-soft">Ciclo</th>
-                  <th className="px-2 py-2 font-semibold text-app-soft">PF</th>
-                  <th className="px-2 py-2 font-semibold text-app-soft">PJ</th>
-                  <th className="px-2 py-2 font-semibold text-app-soft">PRO</th>
+                  <th className="px-2 py-2 font-semibold text-app-soft">Clareza</th>
+                  <th className="px-2 py-2 font-semibold text-app-soft">Gestão</th>
+                  <th className="px-2 py-2 font-semibold text-app-soft">Comando</th>
                 </tr>
               </thead>
               <tbody>
                 {BILLING_DURATIONS.map((item) => (
                   <tr key={item} className="border-b last:border-b-0" style={{ borderColor: 'var(--panel-border)' }}>
                     <td className="px-2 py-2 text-app">{getDurationLabel(item)}</td>
-                    <td className="px-2 py-2 text-app-soft">Sem PJ</td>
-                    <td className="px-2 py-2 text-app">{getBusinessAccountLimit('pj', item)} conta(s) empresariais</td>
-                    <td className="px-2 py-2 text-app">PF + {getBusinessAccountLimit('pro', item)} conta(s) empresariais</td>
+                    <td className="px-2 py-2 text-app-soft">Sem módulo empresarial</td>
+                    <td className="px-2 py-2 text-app">{getBusinessAccountLimit('pj', item)} empresa(s)</td>
+                    <td className="px-2 py-2 text-app">Pessoal + {getBusinessAccountLimit('pro', item)} empresa(s)</td>
                   </tr>
                 ))}
               </tbody>
@@ -482,7 +482,7 @@ export function PlanoClient({
                 <p className="mt-2 flex items-center gap-2 text-sm font-semibold text-app">
                   <CalendarClock className="h-4 w-4" />
                   {isPaid
-                    ? `${currentPlanType?.toUpperCase()} ativo`
+                    ? `${currentPlanType ? (PLAN_CATALOG[currentPlanType]?.name ?? currentPlanType.toUpperCase()) : ''} ativo`
                     : '7 dias de garantia'}
                 </p>
                 <p className="mt-1 text-sm text-app-soft">
@@ -502,7 +502,7 @@ export function PlanoClient({
 
 function businessCapacityLabel(plan: SubscriptionPlanType, duration: BillingDuration) {
   const limit = getBusinessAccountLimit(plan, duration)
-  if (plan === 'pf') return 'Sem acesso a contas empresariais'
-  if (plan === 'pro') return `PF + até ${limit} conta(s) empresarial(is)`
-  return `Até ${limit} conta(s) empresarial(is)`
+  if (plan === 'pf') return 'Sem módulo empresarial'
+  if (plan === 'pro') return `Pessoal + até ${limit} empresa(s)`
+  return `Até ${limit} empresa(s)`
 }
