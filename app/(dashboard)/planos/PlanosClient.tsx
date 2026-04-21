@@ -675,7 +675,7 @@ export function PlanosClient({ snapshot }: PlanosClientProps) {
             Como funciona
           </h2>
           <div className="mt-4 space-y-3 text-sm text-app-soft">
-            <p>Pagamento seguro via cartão de crédito, processado pelo Stripe.</p>
+            <p>Pagamento seguro via cartão de crédito, processado pela Cakto.</p>
             <p>Seus dados são criptografados e nunca armazenados em nossos servidores.</p>
             <p>Plano ativado automaticamente após confirmação do pagamento.</p>
           </div>
@@ -693,7 +693,7 @@ export function PlanosClient({ snapshot }: PlanosClientProps) {
                 <CreditCard className="h-4 w-4" />
                 Cartão de crédito
               </p>
-              <p className="mt-1 text-xs text-app-soft">Processado com segurança via Stripe</p>
+              <p className="mt-1 text-xs text-app-soft">Processado com segurança via Cakto</p>
             </div>
             <div className="rounded-[12px] border p-4" style={{ borderColor: 'var(--panel-border)' }}>
               <p className="text-xs uppercase tracking-wider text-app-soft">Garantia</p>
