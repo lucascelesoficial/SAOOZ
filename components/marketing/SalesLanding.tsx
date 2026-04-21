@@ -491,7 +491,7 @@ export function SalesLanding() {
                 className="inline-flex h-9 items-center gap-1.5 rounded-[9px] px-4 text-sm font-semibold text-white saooz-cta-pulse"
                 style={{ background: 'linear-gradient(135deg, #1e3a8a, #2563eb)' }}
               >
-                Assinar agora <ChevronRight className="h-3.5 w-3.5" />
+                Assine com 7 dias de garantia <ChevronRight className="h-3.5 w-3.5" />
               </Link>
             </div>
           </div>
@@ -557,7 +557,7 @@ export function SalesLanding() {
                       background: 'linear-gradient(135deg, #1e3a8a, #2563eb, #3b82f6)',
                     }}
                   >
-                    Quero o controle agora <ArrowRight className="h-5 w-5" />
+                    Assine com 7 dias de garantia <ArrowRight className="h-5 w-5" />
                   </Link>
                   <a href="#como-funciona" style={{
                     display: 'inline-flex', alignItems: 'center', gap: 8,
@@ -781,7 +781,7 @@ export function SalesLanding() {
                       background: 'linear-gradient(135deg, #1e3a8a, #2563eb)',
                       width: 'fit-content', boxShadow: '0 4px 20px rgba(37,99,235,0.3)',
                     }}>
-                      Criar minha conta <ArrowRight className="h-4 w-4" />
+                      Assine com 7 dias de garantia <ArrowRight className="h-4 w-4" />
                     </Link>
                   </div>
                   <div style={{ display: 'flex', justifyContent: 'flex-end' }} className="md-order-1">
@@ -830,7 +830,7 @@ export function SalesLanding() {
                       background: 'linear-gradient(135deg, #1e3a8a, #2563eb)',
                       width: 'fit-content',
                     }}>
-                      Gerenciar minha empresa <ArrowRight className="h-4 w-4" />
+                      Assine com 7 dias de garantia <ArrowRight className="h-4 w-4" />
                     </Link>
                   </div>
                 </div>
@@ -873,7 +873,7 @@ export function SalesLanding() {
                       background: 'linear-gradient(135deg, #1e3a8a, #2563eb)',
                       width: 'fit-content', boxShadow: '0 4px 20px rgba(37,99,235,0.3)',
                     }}>
-                      Ver meus gastos <ArrowRight className="h-4 w-4" />
+                      Assine com 7 dias de garantia <ArrowRight className="h-4 w-4" />
                     </Link>
                   </div>
                   <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
@@ -922,7 +922,7 @@ export function SalesLanding() {
                       background: 'linear-gradient(135deg, #1e3a8a, #2563eb)',
                       width: 'fit-content',
                     }}>
-                      Conversar com a IA <ArrowRight className="h-4 w-4" />
+                      Assine com 7 dias de garantia <ArrowRight className="h-4 w-4" />
                     </Link>
                   </div>
                 </div>
@@ -1160,7 +1160,7 @@ export function SalesLanding() {
                 background: '#fff', color: '#1d4ed8',
                 boxShadow: '0 8px 40px rgba(0,0,0,0.2)',
               }}>
-                Assinar com garantia <ArrowRight className="h-5 w-5" />
+                Assine com 7 dias de garantia <ArrowRight className="h-5 w-5" />
               </Link>
             </div>
           </section>
@@ -1248,7 +1248,7 @@ export function SalesLanding() {
                 height: 60, padding: '0 48px', borderRadius: 16, fontSize: 17,
                 background: 'linear-gradient(135deg, #1e3a8a, #2563eb, #3b82f6)',
               }}>
-                Assumir o controle agora <ArrowRight className="h-5 w-5" />
+                Assine com 7 dias de garantia <ArrowRight className="h-5 w-5" />
               </Link>
               <div style={{ display: 'flex', justifyContent: 'center', gap: 24, fontSize: 13, color: '#64748b' }}>
                 {['7 dias de garantia', 'Cancele quando quiser', 'Sem fidelidade'].map((t) => (
