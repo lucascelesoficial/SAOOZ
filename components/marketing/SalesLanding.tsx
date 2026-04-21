@@ -519,24 +519,6 @@ export function SalesLanding() {
             <div className="relative mx-auto w-full max-w-6xl px-4 pt-24 pb-0 md:px-6 md:pt-32" style={{ zIndex: 1 }}>
               <div className="mx-auto max-w-4xl text-center" style={{ display: 'flex', flexDirection: 'column', gap: 28 }}>
 
-                {/* Badge */}
-                <div style={{ display: 'flex', justifyContent: 'center' }}>
-                  <span style={{
-                    display: 'inline-flex', alignItems: 'center', gap: 8,
-                    padding: '6px 18px', borderRadius: 100,
-                    background: 'rgba(37,99,235,0.12)',
-                    border: '1px solid rgba(59,130,246,0.25)',
-                    fontSize: 11, fontWeight: 700, letterSpacing: '0.1em',
-                    textTransform: 'uppercase', color: '#60a5fa',
-                  }}>
-                    <span style={{
-                      width: 6, height: 6, borderRadius: '50%', background: '#3b82f6',
-                      boxShadow: '0 0 8px 3px rgba(59,130,246,0.6)', display: 'inline-block',
-                    }} />
-                    Gestão financeira com inteligência real
-                  </span>
-                </div>
-
                 {/* H1 — headline agressiva */}
                 <h1 style={{
                   fontSize: 'clamp(2.2rem, 6vw, 4rem)',
@@ -1118,7 +1100,13 @@ export function SalesLanding() {
           {/* ══════════════════════════════════════════════════════════
               PREÇOS — dark
           ══════════════════════════════════════════════════════════ */}
-          <section id="precos" style={{ background: 'linear-gradient(180deg, #030C1E, #050F26)' }}>
+          <section id="precos" style={{
+            background: 'linear-gradient(180deg, #030C1E, #050F26)',
+            '--text-strong': '#F1F5F9',
+            '--text-soft': '#64748B',
+            '--panel-bg': 'rgba(255,255,255,0.04)',
+            '--panel-border': 'rgba(59,130,246,0.15)',
+          } as React.CSSProperties}>
             <PricingSection />
           </section>
 

@@ -186,13 +186,14 @@ export function SaoozWordmark({ size = 'md', onDark = false }: Props) {
       style={{ gap }}
       aria-label="SAOOZ"
     >
-      {/* Ícone com estilo adaptado ao fundo */}
+      {/* Ícone com fundo branco sempre — garante visibilidade em qualquer fundo */}
       <span style={{
         display: 'inline-flex',
         borderRadius: Math.round(iconPx * 0.22),
+        background: '#FFFFFF',
         boxShadow: onDark
-          ? '0 4px 20px rgba(0,0,0,0.25), 0 0 0 1px rgba(255,255,255,0.15)'
-          : '0 1px 3px rgba(0,0,0,0.10), 0 0 0 1px rgba(0,0,0,0.05)',
+          ? '0 4px 20px rgba(0,0,0,0.3), 0 0 0 1px rgba(255,255,255,0.12)'
+          : '0 1px 4px rgba(0,0,0,0.10), 0 0 0 1px rgba(0,0,0,0.05)',
         flexShrink: 0,
         overflow: 'hidden',
       }}>
