@@ -44,12 +44,12 @@ const FAQ_ITEMS = [
     a: 'Imediatamente após a confirmação do pagamento. Se decidir cancelar nos primeiros 7 dias, reembolsamos o valor integral. Sem fidelidade, sem multa de saída.',
   },
   {
-    q: 'Posso usar PF e PJ no mesmo plano?',
-    a: 'Sim. Com o plano PRO você acessa os dois módulos em uma única conta. Se precisar só de um, os planos PF ou PJ são mais indicados e mais acessíveis.',
+    q: 'Posso usar pessoal e empresarial no mesmo plano?',
+    a: 'Sim. Com o plano Comando você acessa os dois módulos em uma única conta. Se precisar só de um, os planos Clareza (pessoal) ou Gestão (empresarial) são mais indicados e acessíveis.',
   },
   {
     q: 'Consigo ter mais de uma empresa cadastrada?',
-    a: 'Sim. O plano PJ suporta até 3 empresas e o PRO até 5. Ideal para quem opera mais de um CNPJ ou tem diferentes frentes de negócio.',
+    a: 'Sim. O plano Gestão suporta até 3 empresas no anual e o Comando até 5. Ideal para quem opera mais de um CNPJ ou tem diferentes frentes de negócio.',
   },
   {
     q: 'Em quanto tempo configuro o SAOOZ?',
@@ -57,7 +57,7 @@ const FAQ_ITEMS = [
   },
   {
     q: 'O assistente IA usa meus dados financeiros reais?',
-    a: 'Sim. O assistente conhece seu contexto real — renda, gastos, categorias e operação PF/PJ — e entrega análises orientadas ao seu momento, não respostas genéricas de internet.',
+    a: 'Sim. O assistente conhece seu contexto real — renda, gastos, categorias e operação pessoal ou empresarial — e entrega análises orientadas ao seu momento, não respostas genéricas de internet.',
   },
   {
     q: 'Posso migrar de plano depois?',
@@ -695,7 +695,7 @@ export function SalesLanding() {
                 {[
                   {
                     num: '01', title: 'Centraliza', color: '#1d4ed8', bgAccent: '#EFF6FF',
-                    body: 'PF e PJ no mesmo sistema. Uma plataforma, tudo visível. Sem ferramentas paralelas, sem retrabalho, sem dado espalhado.',
+                    body: 'Pessoal e empresarial no mesmo sistema. Uma plataforma, tudo visível. Sem ferramentas paralelas, sem retrabalho, sem dado espalhado.',
                   },
                   {
                     num: '02', title: 'Separa', color: '#2563eb', bgAccent: '#EFF6FF',
@@ -909,7 +909,7 @@ export function SalesLanding() {
                         'Acessa seu histórico real — não exemplos da internet',
                         'Registra lançamentos por linguagem natural ou voz',
                         'Compara meses, detecta desvios, sugere metas',
-                        'PRO: IA ilimitada · PF/PJ: 60 ações/mês',
+                        'Comando: IA ilimitada · Clareza/Gestão: 60 ações/mês',
                       ].map((b) => (
                         <li key={b} style={{ display: 'flex', alignItems: 'flex-start', gap: 12, fontSize: 14, color: '#475569' }}>
                           <BadgeCheck className="h-5 w-5 shrink-0 mt-0.5" style={{ color: '#7c3aed' }} />
@@ -938,7 +938,7 @@ export function SalesLanding() {
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 24, textAlign: 'center' }} className="sm-grid-2">
                 {[
                   { n: '< 5 min', label: 'para configurar e começar' },
-                  { n: '3 + 5',   label: 'empresas PJ e PRO' },
+                  { n: '3 + 5',   label: 'empresas Gestão e Comando' },
                   { n: '16',      label: 'categorias de despesa' },
                   { n: '7 dias',  label: 'de garantia total' },
                 ].map((s) => (

@@ -253,13 +253,13 @@ export async function POST(request: NextRequest) {
 
     if (action.scope === 'business' && !canAccessScope(policy, 'business')) {
       return withSecurityHeaders(NextResponse.json({
-        text: 'Seu plano atual não inclui o módulo empresarial. Acesse Planos para ativar o módulo PJ.',
+        text: 'Seu plano atual não inclui o módulo empresarial. Acesse Planos e faça upgrade para Gestão ou Comando.',
       }))
     }
 
     if (action.scope === 'personal' && !canAccessScope(policy, 'personal')) {
       return withSecurityHeaders(NextResponse.json({
-        text: 'Seu plano atual não inclui o módulo pessoal. Acesse Planos para ativar o módulo PF.',
+        text: 'Seu plano atual não inclui o módulo pessoal. Acesse Planos e faça upgrade para Clareza ou Comando.',
       }))
     }
 
