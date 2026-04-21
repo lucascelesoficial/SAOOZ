@@ -364,7 +364,8 @@ export function overdueAlertEmail(name: string, items: DueItem[], scope: 'pf' | 
   )
 }
 
-export function overdueAlertEmailText(name: string, items: DueItem[], _scope: 'pf' | 'pj') {
+export function overdueAlertEmailText(name: string, items: DueItem[], scope: 'pf' | 'pj') {
+  const dashUrl = scope === 'pj' ? 'https://saooz.com/empresa/fluxo-de-caixa' : 'https://saooz.com/financas'
   const total = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(
     items.reduce((s, i) => s + i.amount, 0)
   )
@@ -372,7 +373,7 @@ export function overdueAlertEmailText(name: string, items: DueItem[], _scope: 'p
 
 Você tem ${items.length} lançamento${items.length !== 1 ? 's' : ''} em atraso totalizando ${total}.
 
-Acesse o SAOOZ para regularizar: https://saooz.com/financas
+Acesse o SAOOZ para regularizar: ${dashUrl}
 
 — Equipe SAOOZ
 saooz.com`
