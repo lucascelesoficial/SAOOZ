@@ -14,7 +14,7 @@ const FEATURES = [
   { icon: TrendingUp, text: 'Acompanhe renda e gastos em tempo real' },
   { icon: BarChart2,  text: 'Visualize seu ritmo financeiro com gráficos' },
   { icon: Shield,     text: 'Dados protegidos com criptografia de ponta' },
-  { icon: Zap,        text: 'Insights automáticos sobre seus hábitos' },
+  { icon: Zap,        text: 'IA que analisa seus dados e detecta desvios' },
 ]
 
 export default function AuthLayout({ children }: { children: React.ReactNode }) {
