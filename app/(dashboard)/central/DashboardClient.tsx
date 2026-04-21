@@ -12,7 +12,6 @@ import { InsightsPanel } from '@/components/dashboard/InsightsPanel'
 import { MetricCard } from '@/components/dashboard/MetricCard'
 import { OnboardingChecklist } from '@/components/dashboard/OnboardingChecklist'
 import { SaoozAI } from '@/components/dashboard/SaoozAI'
-import { WaveCashflowChart } from '@/components/dashboard/WaveCashflowChart'
 import { ExportPDFButton } from '@/components/pdf/ExportPDFButton'
 import { useFinancialData } from '@/lib/hooks/useFinancialData'
 import { generateInsights } from '@/lib/utils/calculations'
@@ -160,10 +159,6 @@ export function DashboardClient({
             <InsightsPanel insights={insights} loading={isLoading} />
           </div>
         </div>
-      </div>
-
-      <div className="mb-6">
-        <WaveCashflowChart incomes={incomes} expenses={expenses} />
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

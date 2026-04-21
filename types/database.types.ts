@@ -114,6 +114,7 @@ export type InvestmentMovementType =
 export type CounterpartyType = 'fornecedor' | 'cliente' | 'ambos'
 export type BusinessRevenueStatus = 'pending' | 'received' | 'overdue' | 'canceled'
 export type BusinessExpenseStatus = 'pending' | 'paid' | 'overdue' | 'canceled'
+export type PfExpenseStatus = 'pending' | 'paid' | 'overdue'
 export type EmployeeStatus = 'active' | 'on_leave' | 'terminated'
 
 export interface Database {
@@ -213,6 +214,9 @@ export interface Database {
           description: string | null
           amount: number
           month: string
+          status: PfExpenseStatus
+          due_date: string | null
+          paid_at: string | null
           is_recurring: boolean
           created_at: string
         }
@@ -223,6 +227,9 @@ export interface Database {
           description?: string | null
           amount: number
           month: string
+          status?: PfExpenseStatus
+          due_date?: string | null
+          paid_at?: string | null
           is_recurring?: boolean
           created_at?: string
         }
@@ -233,6 +240,9 @@ export interface Database {
           description?: string | null
           amount?: number
           month?: string
+          status?: PfExpenseStatus
+          due_date?: string | null
+          paid_at?: string | null
           is_recurring?: boolean
           created_at?: string
         }
