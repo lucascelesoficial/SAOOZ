@@ -33,7 +33,7 @@ const PLANS = [
     ],
     missing: ['Módulo empresarial'],
     iaLabel: '60 ações/mês',
-    capacidade: (_d: Duration) => 'Sem módulo empresarial',
+    capacidade: () => 'Sem módulo empresarial',
   },
   {
     code: 'gestao',
