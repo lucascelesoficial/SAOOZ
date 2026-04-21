@@ -147,14 +147,14 @@ export function PlanoClient({
 
   return (
     <div
-      className="fixed inset-0 overflow-y-auto"
-      style={{ zIndex: 100, background: 'var(--bg, #06080f)' }}
+      className="force-light fixed inset-0 overflow-y-auto"
+      style={{ zIndex: 100, background: 'var(--app-bg)' }}
     >
       {/* Dot grid */}
       <div
-        className="pointer-events-none fixed inset-0 opacity-[0.025]"
+        className="pointer-events-none fixed inset-0"
         style={{
-          backgroundImage: 'radial-gradient(circle, #3b82f6 1px, transparent 1px)',
+          backgroundImage: 'radial-gradient(circle, #2563EB18 1px, transparent 1px)',
           backgroundSize: '32px 32px',
         }}
       />

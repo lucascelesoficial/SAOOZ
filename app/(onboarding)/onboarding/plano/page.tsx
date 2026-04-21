@@ -51,7 +51,7 @@ async function PlanoPageContent({ searchParams }: PageProps) {
 
 export default function OnboardingPlanoPage(props: PageProps) {
   return (
-    <Suspense fallback={<div className="fixed inset-0" style={{ background: '#06080f' }} />}>
+    <Suspense fallback={<div className="force-light fixed inset-0" style={{ background: 'var(--app-bg, #FFFFFF)' }} />}>
       <PlanoPageContent {...props} />
     </Suspense>
   )
