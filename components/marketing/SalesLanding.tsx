@@ -537,9 +537,10 @@ export function SalesLanding() {
                 </h1>
 
                 {/* Sub */}
-                <p className="mx-auto max-w-2xl" style={{
+                <p style={{
                   fontSize: 'clamp(1rem, 2.2vw, 1.15rem)',
-                  lineHeight: 1.75, color: '#64748b', margin: 0,
+                  lineHeight: 1.75, color: '#64748b', margin: '0 auto',
+                  maxWidth: 620, textAlign: 'center',
                 }}>
                   Você trabalha, fatura, paga contas — e no fim do mês o número nunca fecha onde devia.
                   Não é falta de esforço. É falta de visão. O SAOOZ entrega o comando financeiro que
