@@ -1,20 +1,19 @@
 'use client'
 
-import { useMemo, useState, useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 import { Building2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { AddExpenseModal } from '@/components/dashboard/AddExpenseModal'
+import { CashflowAreaChart } from '@/components/dashboard/CashflowAreaChart'
 import { CategoryList } from '@/components/dashboard/CategoryList'
-import { GaugeChart } from '@/components/dashboard/GaugeChart'
-import { InsightsPanel } from '@/components/dashboard/InsightsPanel'
+import { ExpenseDonutChart } from '@/components/dashboard/ExpenseDonutChart'
 import { MetricCard } from '@/components/dashboard/MetricCard'
 import { OnboardingChecklist } from '@/components/dashboard/OnboardingChecklist'
 import { SaoozAI } from '@/components/dashboard/SaoozAI'
 import { ExportPDFButton } from '@/components/pdf/ExportPDFButton'
 import { useFinancialData } from '@/lib/hooks/useFinancialData'
-import { generateInsights } from '@/lib/utils/calculations'
 import { formatMonth } from '@/lib/utils/formatters'
 import { CATEGORY_LABELS, INCOME_TYPE_LABELS } from '@/types/financial.types'
 
@@ -22,9 +21,7 @@ interface DashboardClientProps {
   userId: string
   canCreateBusiness: boolean
   businessLimitReached: boolean
-  /** true when the user is on a free trial (no paid subscription yet) */
   isTrial: boolean
-  /** current plan type — used to decide if business CTA should upsell or create */
   planType: 'pf' | 'pj' | 'pro'
 }
 
@@ -39,24 +36,19 @@ export function DashboardClient({
   const { totals, categoryData, incomes, expenses, isLoading, currentMonth } = useFinancialData()
   const searchParams = useSearchParams()
 
-  // Show welcome toast after successful checkout redirect
   useEffect(() => {
     if (searchParams.get('checkout') === 'success') {
       toast.success('Plano ativado com sucesso!', {
-        description: 'Bem-vindo ao SAOOZ. Seu acesso completo está liberado.',
+        description: 'Bem-vindo ao Pear Finance. Seu acesso completo está liberado.',
         duration: 6000,
       })
-      // Clean the URL without reloading
       const url = new URL(window.location.href)
       url.searchParams.delete('checkout')
       url.searchParams.delete('session_id')
       window.history.replaceState({}, '', url.toString())
     }
   }, [searchParams])
-  const insights = useMemo(() => generateInsights(totals, categoryData), [categoryData, totals])
 
-  // PF trial: show upsell CTA → plans page (user needs to upgrade to PJ/PRO first)
-  // PJ/PRO trial or paid: show create/limit CTA → onboarding or limit upgrade
   const isUpsell = isTrial && planType === 'pf'
   const showHeaderCta = isUpsell || canCreateBusiness || businessLimitReached
   const businessCtaHref = isUpsell
@@ -70,16 +62,20 @@ export function DashboardClient({
       ? 'Adicionar empresa'
       : 'Aumentar limite'
 
+  // Consumption subtitle
+  const consumptionSubtitle = `${totals.consumptionRate.toFixed(0)}% da renda comprometida`
+
   return (
     <>
-      {/* Onboarding checklist — shown until all steps done or dismissed */}
       <OnboardingChecklist scope="pf" userId={userId} />
 
-      <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+      {/* ── Header ── */}
+      <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-xl font-bold text-app">Central</h1>
-          <p className="mt-1 text-sm text-app-soft">
-            Seu cockpit financeiro PF com visão rápida, execução e expansão para PJ.
+          <h1 className="text-2xl font-bold text-app">Visão geral</h1>
+          <p className="mt-0.5 text-sm text-app-soft">
+            Bem-vindo de volta 👋 &nbsp;
+            <span className="text-app-base font-medium">{formatMonth(currentMonth)}</span>
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -104,16 +100,13 @@ export function DashboardClient({
                 date: e.created_at ? new Date(e.created_at).toLocaleDateString('pt-BR') : undefined,
               })),
             }}
-            fileName={`saooz-central-${currentMonth.toISOString().slice(0, 7)}.pdf`}
+            fileName={`pear-finance-central-${currentMonth.toISOString().slice(0, 7)}.pdf`}
           />
           {showHeaderCta && (
             <Link
               href={businessCtaHref}
               className="inline-flex h-10 items-center justify-center gap-2 rounded-[10px] border px-4 text-sm font-medium text-app transition-colors hover:opacity-90"
-              style={{
-                background: 'var(--panel-bg-soft)',
-                borderColor: 'var(--panel-border)',
-              }}
+              style={{ background: 'var(--panel-bg-soft)', borderColor: 'var(--panel-border)' }}
             >
               <Building2 className="h-4 w-4" />
               {businessCtaLabel}
@@ -122,84 +115,91 @@ export function DashboardClient({
         </div>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+      {/* ── 4 Metric cards ── */}
+      <div className="mb-6 grid grid-cols-2 gap-4 lg:grid-cols-4">
         <MetricCard
-          title="Renda Total"
+          title="Saldo total"
+          value={totals.balance}
+          color={totals.balance >= 0 ? 'green' : 'red'}
+          trend={totals.balance >= 0 ? 'up' : 'down'}
+          subtitle={totals.balance >= 0 ? 'Positivo este mês' : 'Saldo negativo'}
+          loading={isLoading}
+        />
+        <MetricCard
+          title="Receitas do mês"
           value={totals.totalIncome}
           color="green"
           trend="up"
+          subtitle={incomes.length > 0 ? `${incomes.length} lançamento${incomes.length > 1 ? 's' : ''}` : 'Sem receitas'}
           loading={isLoading}
         />
         <MetricCard
-          title="Gastos Totais"
+          title="Despesas do mês"
           value={totals.totalExpenses}
           color="red"
           trend="down"
+          subtitle={expenses.length > 0 ? `${expenses.length} lançamento${expenses.length > 1 ? 's' : ''}` : 'Sem despesas'}
           loading={isLoading}
         />
         <MetricCard
-          title="Saldo Atual"
-          value={totals.balance}
-          color="blue"
-          trend={totals.balance >= 0 ? 'up' : 'down'}
+          title="Taxa de consumo"
+          value={totals.totalExpenses}
+          color={totals.consumptionRate > 90 ? 'red' : totals.consumptionRate > 70 ? 'amber' : 'blue'}
+          trend={totals.consumptionRate > 80 ? 'down' : 'neutral'}
+          subtitle={consumptionSubtitle}
           loading={isLoading}
         />
       </div>
 
-      <div className="panel-card p-5 mb-6">
-        <h2 className="text-sm font-semibold text-app-base uppercase tracking-wider mb-4 flex items-center gap-2">
-          Ritmo Financeiro
-          <span style={{ color: 'var(--accent-blue)', opacity: 0.6 }}>›</span>
-        </h2>
-        <div className="flex flex-col md:flex-row gap-6 items-center">
-          <div className="w-full md:w-[240px] shrink-0">
-            <GaugeChart percentage={totals.consumptionRate} loading={isLoading} />
-          </div>
-          <div className="flex-1 w-full">
-            <InsightsPanel insights={insights} loading={isLoading} />
-          </div>
+      {/* ── Charts row ── */}
+      <div className="mb-6 grid grid-cols-1 gap-4 lg:grid-cols-5">
+        {/* Cashflow area chart — 3 cols */}
+        <div className="lg:col-span-3">
+          <CashflowAreaChart incomes={incomes} expenses={expenses} loading={isLoading} />
+        </div>
+        {/* Donut chart — 2 cols */}
+        <div className="lg:col-span-2">
+          <ExpenseDonutChart data={categoryData} total={totals.totalExpenses} loading={isLoading} />
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      {/* ── Bottom row: categories + AI ── */}
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
         <div className="panel-card p-5">
-          <h2 className="text-sm font-semibold text-app-base uppercase tracking-wider mb-4">
+          <h2 className="mb-4 text-sm font-semibold uppercase tracking-wider text-app-base">
             Gastos por Categoria
           </h2>
-          <CategoryList
-            data={categoryData}
-            loading={isLoading}
-            onAddExpense={() => setModalOpen(true)}
-          />
+          <CategoryList data={categoryData} loading={isLoading} onAddExpense={() => setModalOpen(true)} />
         </div>
-
         <div>
           <SaoozAI userId={userId} totals={totals} categoryData={categoryData} />
         </div>
       </div>
 
-      {/* Passive PJ upgrade banner — only for users without any PJ access */}
+      {/* ── Business module CTA ── */}
       {!canCreateBusiness && !businessLimitReached && (
         <div
-          className="mt-6 rounded-[14px] p-5 flex flex-col sm:flex-row items-start sm:items-center gap-4"
-          style={{
-            background: 'var(--panel-bg)',
-            border: '1px solid var(--panel-border)',
-          }}
+          className="mt-6 flex flex-col items-start gap-4 rounded-[14px] p-5 sm:flex-row sm:items-center"
+          style={{ background: 'var(--panel-bg)', border: '1px solid var(--panel-border)' }}
         >
           <div
-            className="h-10 w-10 rounded-[10px] flex items-center justify-center shrink-0"
-            style={{ background: 'color-mix(in oklab, var(--accent-blue) 12%, transparent)', border: '1px solid color-mix(in oklab, var(--accent-blue) 25%, transparent)' }}
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[10px]"
+            style={{
+              background: 'color-mix(in oklab, var(--accent-blue) 12%, transparent)',
+              border: '1px solid color-mix(in oklab, var(--accent-blue) 25%, transparent)',
+            }}
           >
             <Building2 className="h-5 w-5" style={{ color: 'var(--accent-blue)' }} />
           </div>
-          <div className="flex-1 min-w-0">
+          <div className="min-w-0 flex-1">
             <p className="text-sm font-semibold text-app">Módulo Empresarial</p>
-            <p className="text-xs text-app-soft mt-0.5">Gerencie sua empresa, impostos, faturamento e DRE no mesmo lugar.</p>
+            <p className="mt-0.5 text-xs text-app-soft">
+              Gerencie sua empresa, impostos, faturamento e DRE no mesmo lugar.
+            </p>
           </div>
           <Link
             href="/planos"
-            className="shrink-0 inline-flex h-9 items-center justify-center gap-2 rounded-[9px] px-4 text-sm font-semibold text-white transition-all hover:opacity-90"
+            className="inline-flex h-9 shrink-0 items-center justify-center gap-2 rounded-[9px] px-4 text-sm font-semibold text-white transition-all hover:opacity-90"
             style={{ background: 'linear-gradient(135deg, var(--accent-blue), var(--accent-cyan))' }}
           >
             Ver planos
@@ -207,11 +207,7 @@ export function DashboardClient({
         </div>
       )}
 
-      <AddExpenseModal
-        open={modalOpen}
-        onClose={() => setModalOpen(false)}
-        userId={userId}
-      />
+      <AddExpenseModal open={modalOpen} onClose={() => setModalOpen(false)} userId={userId} />
     </>
   )
 }
