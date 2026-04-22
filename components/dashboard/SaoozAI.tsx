@@ -306,7 +306,7 @@ export function SaoozAI({ totals, categoryData }: SaoozAIProps) {
         className="flex items-center gap-3 border-b px-4 py-3"
         style={{
           borderColor: 'transparent',
-          background: 'linear-gradient(135deg, #1E3A8A, #1D4ED8)',
+          background: 'linear-gradient(135deg, #0A1D13, #163424)',
         }}
       >
         <div className="shrink-0">
@@ -315,14 +315,14 @@ export function SaoozAI({ totals, categoryData }: SaoozAIProps) {
 
         <div className="min-w-0 flex-1">
           <p className="text-sm font-bold leading-none" style={{ color: '#ffffff' }}>
-            SAOOZ <span style={{ color: 'rgba(255,255,255,0.75)' }}>AI</span>
+            Pear Finance <span style={{ color: 'rgba(232,246,212,0.85)' }}>IA</span>
           </p>
           <p
             className="mt-0.5 text-[10px] transition-all duration-300"
             style={{
               color:
                 orbState === 'listening'
-                  ? '#93c5fd'
+                  ? '#B7D98A'
                   : orbState === 'speaking'
                     ? '#86efac'
                     : orbState === 'thinking'
@@ -365,7 +365,7 @@ export function SaoozAI({ totals, categoryData }: SaoozAIProps) {
                 style={
                   message.role === 'user'
                     ? {
-                        background: 'linear-gradient(135deg, #3b82f6, #1d4ed8)',
+                        background: 'linear-gradient(135deg, #5B9637, #74A93D)',
                         color: '#fff',
                         borderBottomRightRadius: 3,
                       }
@@ -407,7 +407,7 @@ export function SaoozAI({ totals, categoryData }: SaoozAIProps) {
                       onClick={() => void confirmProposal(index, message.proposal!)}
                       disabled={confirmingIndex === index}
                       className="inline-flex h-8 items-center justify-center gap-2 rounded-[8px] px-3 text-xs font-semibold text-white transition-opacity disabled:opacity-60"
-                      style={{ background: 'linear-gradient(135deg, #3b82f6, #1d4ed8)' }}
+                      style={{ background: 'linear-gradient(135deg, #5B9637, #74A93D)' }}
                     >
                       {confirmingIndex === index ? (
                         <Loader2 className="h-3.5 w-3.5 animate-spin" />
@@ -503,7 +503,7 @@ export function SaoozAI({ totals, categoryData }: SaoozAIProps) {
               className="flex h-7 w-7 items-center justify-center rounded-[6px] transition-all disabled:opacity-30"
               style={{
                 background: input.trim()
-                  ? 'linear-gradient(135deg, #3b82f6, #1d4ed8)'
+                  ? 'linear-gradient(135deg, #5B9637, #74A93D)'
                   : 'var(--panel-border)',
               }}
             >

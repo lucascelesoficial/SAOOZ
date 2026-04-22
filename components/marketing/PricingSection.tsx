@@ -19,7 +19,7 @@ const PLANS = [
     monthlyPrice: 37,
     subtitle: 'Sua vida financeira com visão clara, rotina organizada e IA assistida.',
     highlight: false,
-    color: '#2563EB',
+    color: '#74A93D',
     features: [
       'Dashboard financeiro pessoal',
       'Receitas, despesas e saldo mensal',
@@ -40,7 +40,7 @@ const PLANS = [
     monthlyPrice: 97,
     subtitle: 'Controle financeiro empresarial com leitura operacional, estrutura e clareza do negócio.',
     highlight: false,
-    color: '#60A5FA',
+    color: '#2E5C2D',
     features: [
       'Dashboard empresarial',
       'DRE em tempo real',
@@ -66,9 +66,9 @@ const PLANS = [
     code: 'comando',
     name: 'Comando',
     monthlyPrice: 147,
-    subtitle: 'Acesso total ao ecossistema SAOOZ — visão completa, inteligência sem limite, operação com poder.',
+    subtitle: 'Acesso total ao ecossistema Pear Finance — visão completa, inteligência sem limite, operação com poder.',
     highlight: true,
-    color: '#1D4ED8',
+    color: '#5B9637',
     features: [
       'Tudo do Clareza + tudo do Gestão',
       'Visão unificada PF + PJ',
@@ -132,9 +132,9 @@ export function PricingSection() {
                 style={
                   duration === d.value
                     ? {
-                        background: 'linear-gradient(135deg, var(--accent-blue), var(--accent-cyan))',
+                        background: 'linear-gradient(135deg, var(--accent-main), var(--accent-alt))',
                         color: '#fff',
-                        boxShadow: '0 4px 16px color-mix(in oklab, var(--accent-blue) 30%, transparent)',
+                        boxShadow: '0 4px 16px color-mix(in oklab, var(--accent-main) 30%, transparent)',
                       }
                     : { color: 'var(--text-soft)' }
                 }
@@ -178,8 +178,8 @@ export function PricingSection() {
                 style={
                   plan.highlight
                     ? {
-                        borderColor: 'color-mix(in oklab, var(--accent-blue) 50%, transparent)',
-                        boxShadow: '0 16px 48px color-mix(in oklab, var(--accent-blue) 15%, transparent)',
+                        borderColor: 'color-mix(in oklab, var(--accent-main) 50%, transparent)',
+                        boxShadow: '0 16px 48px color-mix(in oklab, var(--accent-main) 15%, transparent)',
                       }
                     : {}
                 }
@@ -193,9 +193,9 @@ export function PricingSection() {
                     <span
                       className="absolute right-5 top-5 rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider"
                       style={{
-                        background: 'color-mix(in oklab, var(--accent-blue) 18%, transparent)',
-                        color: 'var(--accent-blue)',
-                        border: '1px solid color-mix(in oklab, var(--accent-blue) 30%, transparent)',
+                        background: 'color-mix(in oklab, var(--accent-main) 18%, transparent)',
+                        color: 'var(--accent-main)',
+                        border: '1px solid color-mix(in oklab, var(--accent-main) 30%, transparent)',
                       }}
                     >
                       Mais escolhido
@@ -275,10 +275,10 @@ export function PricingSection() {
                     className="flex h-11 w-full items-center justify-center gap-2 rounded-[10px] text-sm font-bold text-white transition-all hover:opacity-90"
                     style={{
                       background: plan.highlight
-                        ? 'linear-gradient(135deg, var(--accent-blue), var(--accent-cyan))'
+                        ? 'linear-gradient(135deg, var(--accent-main), var(--accent-alt))'
                         : `linear-gradient(135deg, color-mix(in oklab, ${plan.color} 80%, #000), color-mix(in oklab, ${plan.color} 60%, #000))`,
                       boxShadow: plan.highlight
-                        ? '0 4px 20px color-mix(in oklab, var(--accent-blue) 30%, transparent)'
+                        ? '0 4px 20px color-mix(in oklab, var(--accent-main) 30%, transparent)'
                         : `0 4px 16px color-mix(in oklab, ${plan.color} 20%, transparent)`,
                     }}
                   >

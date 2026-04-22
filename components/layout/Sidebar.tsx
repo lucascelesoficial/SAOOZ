@@ -97,7 +97,7 @@ export function Sidebar({
   const canToggleMode      = hasBusinessContext && canAccessPersonalModule && canAccessBusinessModule
   const navItems           = hasBusinessContext && isBusinessScope ? PJ_NAV : PF_NAV
 
-  const sidebarWidth = collapsed ? 64 : 240
+  const sidebarWidth = collapsed ? 64 : 252
 
   return (
     <aside
@@ -119,17 +119,17 @@ export function Sidebar({
           transition:   'padding 300ms ease',
         }}
       >
-        <SaoozIcon size={48} />
+        <SaoozIcon size={42} />
         <span
-          className="ml-3 text-lg font-extrabold tracking-tight text-app whitespace-nowrap"
+          className="ml-2.5 text-[15px] font-extrabold tracking-tight text-app whitespace-nowrap"
           style={{
             opacity:    collapsed ? 0 : 1,
-            maxWidth:   collapsed ? 0 : 120,
+            maxWidth:   collapsed ? 0 : 160,
             overflow:   'hidden',
             transition: 'opacity 200ms ease, max-width 300ms ease',
           }}
         >
-          SAOOZ
+          Pear Finance
         </span>
       </div>
 

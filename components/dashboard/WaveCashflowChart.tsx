@@ -89,8 +89,8 @@ export function WaveCashflowChart({ incomes, expenses }: WaveCashflowChartProps)
                 <stop offset="95%" stopColor="#f87171" stopOpacity={0} />
               </linearGradient>
               <linearGradient id="waveBalance" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3} />
-                <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
+                <stop offset="5%" stopColor="#74A93D" stopOpacity={0.3} />
+                <stop offset="95%" stopColor="#74A93D" stopOpacity={0} />
               </linearGradient>
             </defs>
             <CartesianGrid stroke="var(--chart-grid)" vertical={false} strokeDasharray="3 3" />
@@ -121,7 +121,7 @@ export function WaveCashflowChart({ incomes, expenses }: WaveCashflowChartProps)
             />
             <Area type="monotone" dataKey="cashIn" stroke="#22c55e" fill="url(#waveIncome)" strokeWidth={2} />
             <Area type="monotone" dataKey="cashOut" stroke="#f87171" fill="url(#waveExpense)" strokeWidth={2} />
-            <Area type="monotone" dataKey="balance" stroke="#3b82f6" fill="url(#waveBalance)" strokeWidth={2} strokeDasharray="5 4" />
+            <Area type="monotone" dataKey="balance" stroke="#74A93D" fill="url(#waveBalance)" strokeWidth={2} strokeDasharray="5 4" />
           </AreaChart>
         </ResponsiveContainer>
       )}

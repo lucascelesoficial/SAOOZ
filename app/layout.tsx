@@ -14,29 +14,29 @@ export const viewport: Viewport = {
   initialScale: 1,
   maximumScale: 1,
   userScalable: false,
-  themeColor: '#ffffff',
+  themeColor: '#74A93D',
 }
 
 export const metadata: Metadata = {
   title: {
-    default: 'SAOOZ',
-    template: 'SAOOZ | %s',
+    default: 'Pear Finance',
+    template: 'Pear Finance | %s',
   },
-  description: 'Entenda para onde vai seu dinheiro em menos de 5 segundos.',
+  description: 'Finanças inteligentes para um futuro mais brilhante.',
   manifest: '/manifest.webmanifest',
   appleWebApp: {
     capable: true,
     statusBarStyle: 'default',
-    title: 'SAOOZ',
+    title: 'Pear Finance',
   },
   icons: {
     icon: [
-      { url: '/icon-192.png', sizes: '192x192', type: 'image/png' },
-      { url: '/icon-512.png', sizes: '512x512', type: 'image/png' },
+      { url: '/icon.svg', type: 'image/svg+xml' },
+      { url: '/pear-finance-logo.svg', type: 'image/svg+xml' },
     ],
-    shortcut: '/icon-192.png',
+    shortcut: '/icon.svg',
     apple: [
-      { url: '/apple-touch-icon.png', sizes: '180x180', type: 'image/png' },
+      { url: '/pear-finance-logo.svg', type: 'image/svg+xml' },
     ],
   },
 }

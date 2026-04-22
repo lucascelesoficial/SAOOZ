@@ -88,7 +88,7 @@ export function OnboardingChecklist({
               </p>
               <p className="text-xs text-app-soft">
                 {allDone
-                  ? 'Você configurou tudo. O SAOOZ está trabalhando para você.'
+                  ? 'Você configurou tudo. O Pear Finance está trabalhando para você.'
                   : `${completed} de ${total} etapas concluídas`}
               </p>
             </div>
@@ -169,7 +169,7 @@ export function OnboardingChecklist({
                 />
               ) : (
                 <Circle
-                  className="h-5 w-5 shrink-0 transition-colors group-hover:text-blue-400"
+                  className="h-5 w-5 shrink-0 transition-colors group-hover:text-[#74A93D]"
                   style={{ color: 'var(--text-muted, #4a6080)' }}
                 />
               )}
