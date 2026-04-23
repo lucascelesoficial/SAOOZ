@@ -7,7 +7,9 @@ import { createClient } from '@/lib/supabase/client'
 import { trackEvent, identifyUser, EVENTS } from '@/lib/posthog/client'
 import { TurnstileWidget } from '@/components/security/TurnstileWidget'
 
-const G = '#16a34a'
+const G = '#249833'
+const G_DARK = '#1b7726'
+const G_RGB = '36,152,51'
 
 export default function LoginPage() {
   const [mode, setMode]           = useState<'magic' | 'password'>('magic')
@@ -117,7 +119,7 @@ export default function LoginPage() {
         .lp-inp:hover:not(:focus) { border-color: #d0dae4; background: #f4f7fa; }
         .lp-inp:focus {
           border-color: ${G} !important;
-          box-shadow: 0 0 0 3px rgba(22,163,74,0.10) !important;
+          box-shadow: 0 0 0 3px rgba(${G_RGB},0.12) !important;
           background: #fff !important;
         }
         .lp-inp.err {
@@ -154,7 +156,7 @@ export default function LoginPage() {
           justify-content: center;
           gap: 10px;
           transition: background .15s, transform .12s, box-shadow .15s;
-          box-shadow: 0 4px 20px rgba(22,163,74,0.30);
+          box-shadow: 0 4px 20px rgba(${G_RGB},0.32);
           position: relative;
           overflow: hidden;
         }
@@ -166,13 +168,13 @@ export default function LoginPage() {
           pointer-events: none;
         }
         .lp-btn:hover:not(:disabled) {
-          background: #15803d;
+          background: ${G_DARK};
           transform: translateY(-1px);
-          box-shadow: 0 8px 28px rgba(22,163,74,0.36);
+          box-shadow: 0 8px 28px rgba(${G_RGB},0.38);
         }
         .lp-btn:active:not(:disabled) {
           transform: translateY(0);
-          box-shadow: 0 3px 12px rgba(22,163,74,0.22);
+          box-shadow: 0 3px 12px rgba(${G_RGB},0.24);
         }
         .lp-btn:disabled { opacity: 0.55; cursor: not-allowed; transform: none !important; }
         @keyframes lp-spin { to { transform: rotate(360deg); } }
@@ -188,7 +190,7 @@ export default function LoginPage() {
         .lp-link { font-size: 13px; color: #64748b; font-weight: 500; text-decoration: none; transition: color .15s; }
         .lp-link:hover { color: ${G}; }
         .lp-link-g { color: ${G}; font-weight: 700; text-decoration: none; transition: color .15s; }
-        .lp-link-g:hover { color: #15803d; }
+        .lp-link-g:hover { color: ${G_DARK}; }
 
         /* Tab switcher */
         .lp-tabs {
@@ -308,13 +310,13 @@ export default function LoginPage() {
         <div style={{
           padding: '24px 20px',
           borderRadius: 14,
-          background: 'rgba(22,163,74,0.06)',
-          border: '1px solid rgba(22,163,74,0.18)',
+          background: `rgba(${G_RGB},0.06)`,
+          border: `1px solid rgba(${G_RGB},0.18)`,
           textAlign: 'center',
         }}>
           <div style={{
             width: 48, height: 48, borderRadius: 999,
-            background: 'rgba(22,163,74,0.12)',
+            background: `rgba(${G_RGB},0.12)`,
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             margin: '0 auto 14px',
           }}>
@@ -444,25 +446,6 @@ export default function LoginPage() {
               : 'Acessar minha conta'}
           </button>
         </form>
-      )}
-
-      {/* Trust badge */}
-      {!sent && (
-        <div style={{
-          marginTop: 16,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          gap: 5,
-        }}>
-          <svg width="11" height="12" viewBox="0 0 12 14" fill="none">
-            <path d="M6 1L1 3.2V7C1 10.2 3.6 13 6 13.8C8.4 13 11 10.2 11 7V3.2L6 1Z" stroke="#94a3b8" strokeWidth="1.3" strokeLinejoin="round"/>
-            <path d="M4 7L5.5 8.5L8.5 5.5" stroke="#94a3b8" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/>
-          </svg>
-          <span style={{ fontSize: 11.5, color: '#94a3b8', fontWeight: 500 }}>
-            Criptografia SSL 256-bit
-          </span>
-        </div>
       )}
 
       {/* Footer link */}
