@@ -249,7 +249,7 @@ export function SaoozWordmark({ size = 'md', onDark = false }: Props) {
         style={{
           fontSize: fSize,
           fontWeight: 800,
-          fontFamily: "'Inter', system-ui, sans-serif",
+          fontFamily: "var(--font-inter), system-ui, sans-serif",
           letterSpacing: '0.01em',
           lineHeight: 1,
           color: onDark ? '#FFFFFF' : '#102317',

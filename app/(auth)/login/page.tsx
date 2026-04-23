@@ -102,7 +102,7 @@ export default function LoginPage() {
           border-radius: 12px;
           padding: 0 16px;
           font-size: 15px;
-          font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+          font-family: var(--font-inter), -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
           font-weight: 400;
           outline: none;
           background: #f8fafc;
@@ -135,7 +135,7 @@ export default function LoginPage() {
           color: #1e293b;
           margin-bottom: 7px;
           letter-spacing: -0.01em;
-          font-family: 'Inter', -apple-system, sans-serif;
+          font-family: var(--font-inter), -apple-system, sans-serif;
         }
         .lp-btn {
           height: 52px;
@@ -146,7 +146,7 @@ export default function LoginPage() {
           color: #fff;
           font-size: 15px;
           font-weight: 700;
-          font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+          font-family: var(--font-inter), -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
           letter-spacing: -0.01em;
           cursor: pointer;
           display: flex;
@@ -206,7 +206,7 @@ export default function LoginPage() {
           border-radius: 10px;
           font-size: 13.5px;
           font-weight: 600;
-          font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+          font-family: var(--font-inter), -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
           cursor: pointer;
           transition: background .15s, color .15s, box-shadow .15s;
         }

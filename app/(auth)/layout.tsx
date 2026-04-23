@@ -15,7 +15,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
         .al-root {
           display: flex;
           min-height: 100svh;
-          font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+          font-family: var(--font-inter), -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
           background: #000;
         }
 
@@ -228,12 +228,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
           </div>
 
           <div className="al-left-foot">
-            <p style={{
-              fontSize: 12,
-              color: '#94a3b8',
-              textAlign: 'center',
-              fontFamily: "'Inter', -apple-system, sans-serif",
-            }}>
+            <p style={{ fontSize: 12, color: '#94a3b8', textAlign: 'center' }}>
               © 2026 PearFy · Todos os direitos reservados
             </p>
           </div>
@@ -275,7 +270,6 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
 
             {/* Headline */}
             <h2 style={{
-              fontFamily: "'Inter', -apple-system, sans-serif",
               fontSize: 'clamp(30px, 2.8vw, 46px)',
               fontWeight: 900,
               lineHeight: 1.05,
@@ -287,7 +281,6 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
             </h2>
 
             <p style={{
-              fontFamily: "'Inter', -apple-system, sans-serif",
               fontSize: 'clamp(13px, 1.0vw, 15px)',
               color: 'rgba(255,255,255,0.50)',
               lineHeight: 1.65,
@@ -314,8 +307,8 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
                 </svg>
               </div>
               <div>
-                <p style={{ fontFamily: "'Inter', sans-serif", fontSize: 11.5, fontWeight: 700, color: '#ffffff', marginBottom: 2 }}>Controle Total</p>
-                <p style={{ fontFamily: "'Inter', sans-serif", fontSize: 10, color: 'rgba(255,255,255,0.38)', lineHeight: 1.35 }}>Visão completa PF e PJ</p>
+                <p style={{ fontSize: 11.5, fontWeight: 700, color: '#ffffff', marginBottom: 2 }}>Controle Total</p>
+                <p style={{ fontSize: 10, color: 'rgba(255,255,255,0.38)', lineHeight: 1.35 }}>Visão completa PF e PJ</p>
               </div>
             </div>
 
@@ -327,8 +320,8 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
                 </svg>
               </div>
               <div>
-                <p style={{ fontFamily: "'Inter', sans-serif", fontSize: 11.5, fontWeight: 700, color: '#ffffff', marginBottom: 2 }}>Segurança</p>
-                <p style={{ fontFamily: "'Inter', sans-serif", fontSize: 10, color: 'rgba(255,255,255,0.38)', lineHeight: 1.35 }}>Criptografia ponta a ponta</p>
+                <p style={{ fontSize: 11.5, fontWeight: 700, color: '#ffffff', marginBottom: 2 }}>Segurança</p>
+                <p style={{ fontSize: 10, color: 'rgba(255,255,255,0.38)', lineHeight: 1.35 }}>Criptografia ponta a ponta</p>
               </div>
             </div>
 
@@ -341,8 +334,8 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
                 </svg>
               </div>
               <div>
-                <p style={{ fontFamily: "'Inter', sans-serif", fontSize: 11.5, fontWeight: 700, color: '#ffffff', marginBottom: 2 }}>Inteligência IA</p>
-                <p style={{ fontFamily: "'Inter', sans-serif", fontSize: 10, color: 'rgba(255,255,255,0.38)', lineHeight: 1.35 }}>Insights financeiros em tempo real</p>
+                <p style={{ fontSize: 11.5, fontWeight: 700, color: '#ffffff', marginBottom: 2 }}>Inteligência IA</p>
+                <p style={{ fontSize: 10, color: 'rgba(255,255,255,0.38)', lineHeight: 1.35 }}>Insights financeiros em tempo real</p>
               </div>
             </div>
 
