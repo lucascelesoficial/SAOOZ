@@ -3,9 +3,9 @@ import { SalesLanding } from '@/components/marketing/SalesLanding'
 import { createClient } from '@/lib/supabase/server'
 
 export const metadata = {
-  title: 'Pear Finance | Sistema Financeiro Premium com IA',
+  title: 'PearFy — Gestão Financeira PF e PJ',
   description:
-    'Pear Finance organiza PF e PJ em um único sistema. Controle financeiro com clareza, previsibilidade e inteligência.',
+    'PearFy organiza sua vida financeira pessoal e empresarial em um único sistema com inteligência artificial.',
 }
 
 export default async function RootPage() {
