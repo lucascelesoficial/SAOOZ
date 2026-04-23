@@ -12,107 +12,124 @@ export function ThemeToggle({ onDark = false }: { onDark?: boolean }) {
 
   const isDark = mounted ? resolvedTheme !== 'light' : false
 
+  /* Track */
   const trackBg = onDark
-    ? isDark
-      ? 'rgba(255,255,255,0.18)'
-      : 'rgba(255,255,255,0.12)'
-    : isDark
-      ? 'rgba(2,102,72,0.18)'
-      : 'rgba(0,0,0,0.08)'
+    ? isDark ? 'rgba(255,255,255,0.15)' : 'rgba(255,255,255,0.10)'
+    : isDark ? 'rgba(2,102,72,0.15)'   : 'rgba(0,0,0,0.07)'
 
-  const thumbBg = onDark
-    ? '#ffffff'
-    : isDark
-      ? '#026648'
-      : '#ffffff'
+  const trackBorder = onDark
+    ? 'rgba(255,255,255,0.20)'
+    : isDark ? 'rgba(2,102,72,0.25)' : 'rgba(0,0,0,0.10)'
+
+  /* Thumb */
+  const thumbBg = isDark
+    ? 'linear-gradient(135deg, #1e293b 0%, #0f172a 100%)'
+    : 'linear-gradient(135deg, #ffffff 0%, #f1f5f9 100%)'
 
   const thumbShadow = onDark
-    ? '0 1px 4px rgba(0,0,0,0.35)'
+    ? '0 2px 8px rgba(0,0,0,0.40), 0 1px 2px rgba(0,0,0,0.25)'
     : isDark
-      ? '0 1px 4px rgba(2,102,72,0.4)'
-      : '0 1px 4px rgba(0,0,0,0.18)'
+      ? '0 2px 8px rgba(0,0,0,0.50), 0 1px 2px rgba(0,0,0,0.30)'
+      : '0 2px 8px rgba(0,0,0,0.15), 0 1px 2px rgba(0,0,0,0.10)'
 
-  const iconColor = onDark
-    ? isDark ? 'rgba(255,255,255,0.55)' : 'rgba(255,255,255,0.45)'
-    : isDark ? '#026648' : '#94a3b8'
+  /* Icon inside thumb */
+  const iconColor = isDark ? '#facc15' : '#f59e0b'   /* Sun: amber */
+  const moonColor = '#a5b4fc'                          /* Moon: soft indigo */
 
   return (
     <>
       <style>{`
-        .theme-track {
+        .tt-track {
           position: relative;
           display: inline-flex;
           align-items: center;
-          width: 52px;
-          height: 28px;
+          width: 50px;
+          height: 26px;
           border-radius: 999px;
           cursor: pointer;
-          transition: background 0.25s ease;
           flex-shrink: 0;
           border: none;
           padding: 0;
+          transition: background 0.3s ease;
         }
-        .theme-track:focus-visible {
-          outline: 2px solid rgba(255,255,255,0.5);
+        .tt-track:focus-visible {
+          outline: 2px solid rgba(255,255,255,0.55);
           outline-offset: 2px;
         }
-        .theme-icons {
+        .tt-track:disabled { opacity: 0.4; cursor: not-allowed; }
+
+        /* Small dots inside track (opposite side of thumb) */
+        .tt-dot {
           position: absolute;
-          inset: 0;
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          padding: 0 6px;
-          pointer-events: none;
+          border-radius: 50%;
+          transition: opacity 0.3s ease, transform 0.3s ease;
         }
-        .theme-thumb {
+
+        /* Thumb */
+        .tt-thumb {
           position: absolute;
           top: 3px;
-          width: 22px;
-          height: 22px;
+          left: 3px;
+          width: 20px;
+          height: 20px;
           border-radius: 50%;
-          transition: transform 0.28s cubic-bezier(0.34,1.56,0.64,1), background 0.25s ease, box-shadow 0.25s ease;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          transition: transform 0.32s cubic-bezier(0.34,1.56,0.64,1),
+                      background 0.25s ease,
+                      box-shadow 0.25s ease;
+          pointer-events: none;
+        }
+        .tt-icon {
+          transition: opacity 0.2s ease, transform 0.25s ease;
+          display: flex;
+          align-items: center;
+          justify-content: center;
         }
       `}</style>
+
       <button
         onClick={() => setTheme(isDark ? 'light' : 'dark')}
-        className="theme-track"
-        style={{ background: trackBg }}
+        className="tt-track"
+        style={{
+          background: trackBg,
+          boxShadow: `inset 0 0 0 1px ${trackBorder}`,
+        }}
         aria-label={isDark ? 'Ativar modo claro' : 'Ativar modo escuro'}
         title={isDark ? 'Modo claro' : 'Modo escuro'}
         disabled={!mounted}
       >
-        {/* Icons: Sun left, Moon right */}
-        <span className="theme-icons">
-          <Sun
-            style={{
-              width: 10,
-              height: 10,
-              color: iconColor,
-              opacity: isDark ? 0.5 : 1,
-              transition: 'opacity 0.25s',
-            }}
-          />
-          <Moon
-            style={{
-              width: 10,
-              height: 10,
-              color: iconColor,
-              opacity: isDark ? 1 : 0.5,
-              transition: 'opacity 0.25s',
-            }}
-          />
-        </span>
-
-        {/* Sliding thumb */}
+        {/* Hint dot on the opposite end */}
         <span
-          className="theme-thumb"
+          className="tt-dot"
           style={{
-            transform: isDark ? 'translateX(27px)' : 'translateX(3px)',
+            width: 4,
+            height: 4,
+            background: isDark ? '#a5b4fc' : '#f59e0b',
+            opacity: 0.55,
+            right: isDark ? 'auto' : 6,
+            left:  isDark ? 6 : 'auto',
+            transform: 'scale(1)',
+          }}
+        />
+
+        {/* Sliding thumb with icon inside */}
+        <span
+          className="tt-thumb"
+          style={{
+            transform: isDark ? 'translateX(24px)' : 'translateX(0px)',
             background: thumbBg,
             boxShadow: thumbShadow,
           }}
-        />
+        >
+          <span className="tt-icon">
+            {isDark
+              ? <Moon  style={{ width: 11, height: 11, color: moonColor, strokeWidth: 2 }} />
+              : <Sun   style={{ width: 12, height: 12, color: iconColor, strokeWidth: 2.2 }} />
+            }
+          </span>
+        </span>
       </button>
     </>
   )
