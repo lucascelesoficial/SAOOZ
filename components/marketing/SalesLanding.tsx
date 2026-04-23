@@ -593,13 +593,43 @@ export function SalesLanding() {
                 </div>
               </div>
 
+              {/* Nº 1 badge */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 32 }}>
+                <div style={{
+                  display: 'inline-flex', alignItems: 'center', gap: 10,
+                  background: 'linear-gradient(135deg, rgba(2,102,72,0.18), rgba(4,163,114,0.10))',
+                  border: '1px solid rgba(2,102,72,0.45)',
+                  borderRadius: 14, padding: '8px 18px 8px 12px',
+                  boxShadow: `0 0 28px rgba(2,102,72,0.22), inset 0 1px 0 rgba(255,255,255,0.07)`,
+                }}>
+                  {/* Flag */}
+                  <span style={{ fontSize: 22, lineHeight: 1, display: 'flex', alignItems: 'center' }}>🇧🇷</span>
+                  {/* N°1 */}
+                  <span style={{
+                    fontSize: 'clamp(1.4rem, 2.8vw, 2rem)', fontWeight: 900,
+                    background: `linear-gradient(135deg, #fff 0%, ${GLit} 60%, ${G} 100%)`,
+                    WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
+                    letterSpacing: '-0.04em', lineHeight: 1,
+                    filter: `drop-shadow(0 0 12px ${GLit}70)`,
+                  }}>Nº 1</span>
+                  <span style={{
+                    width: 1, height: 22, background: 'rgba(255,255,255,0.12)',
+                    display: 'inline-block', flexShrink: 0,
+                  }} />
+                  <span style={{ fontSize: 12, fontWeight: 500, color: '#9ca3af', letterSpacing: '0.10em', textTransform: 'uppercase' }}>do Brasil</span>
+                </div>
+              </div>
+
               {/* Headline */}
-              <h1 style={{ margin: '0 0 30px', maxWidth: 920 }}>
-                <span style={{ display: 'block', fontSize: 'clamp(3.6rem, 7.8vw, 6.8rem)', fontWeight: 800, lineHeight: 0.9, color: '#fff', letterSpacing: '-0.048em' }}>
-                  Clareza total.
+              <h1 style={{ margin: '0 0 30px', maxWidth: 1020 }}>
+                <span style={{ display: 'block', fontSize: 'clamp(3.2rem, 7.2vw, 6.4rem)', fontWeight: 800, lineHeight: 0.93, color: '#fff', letterSpacing: '-0.048em' }}>
+                  A primeira plataforma
                 </span>
-                <span style={{ display: 'block', fontSize: 'clamp(2.4rem, 5.2vw, 4.6rem)', fontWeight: 300, lineHeight: 1.18, color: '#9ca3af', letterSpacing: '-0.028em', fontStyle: 'italic', marginTop: 12 }}>
-                  Pessoal e empresa no mesmo lugar.
+                <span style={{ display: 'block', fontSize: 'clamp(3.2rem, 7.2vw, 6.4rem)', fontWeight: 800, lineHeight: 0.93, color: '#fff', letterSpacing: '-0.048em', marginTop: 6 }}>
+                  a tirar PF e PJ do caos
+                </span>
+                <span style={{ display: 'block', fontSize: 'clamp(2rem, 4.6vw, 4rem)', fontWeight: 300, lineHeight: 1.22, color: '#9ca3af', letterSpacing: '-0.028em', fontStyle: 'italic', marginTop: 16 }}>
+                  e colocar tudo sob o mesmo comando.
                 </span>
               </h1>
 
