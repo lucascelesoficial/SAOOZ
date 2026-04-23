@@ -9,95 +9,55 @@ import { createClient } from '@/lib/supabase/client'
 import { trackEvent, identifyUser, EVENTS } from '@/lib/posthog/client'
 import { TurnstileWidget } from '@/components/security/TurnstileWidget'
 
-const inputBase = { background: '#F8FAFC', border: '1px solid #DDE3ED', color: '#0F172A' }
-const inputError = { background: '#FFF5F5', border: '1px solid #FCA5A5', boxShadow: '0 0 0 3px #FEE2E220', color: '#0F172A' }
-const inputFocusOk = { border: '1px solid #6CA33A', boxShadow: '0 0 0 3px #84CC1624' }
-const inputFocusErr = { border: '1px solid #F87171', boxShadow: '0 0 0 3px #FEE2E220' }
+const G     = '#025b4d'
+const G_DARK = '#014840'
+const G_RGB  = '2,91,77'
 
-function Req({ met, label }: { met: boolean; label: string }) {
+function ReqItem({ met, label }: { met: boolean; label: string }) {
   return (
-    <span className="flex items-center gap-1 text-xs">
-      {met ? <Check className="h-3 w-3 text-emerald-500" /> : <X className="h-3 w-3 text-slate-300" />}
-      <span className={met ? 'text-emerald-600' : 'text-slate-400'}>{label}</span>
-    </span>
-  )
-}
-
-function Field({
-  id,
-  label,
-  type = 'text',
-  placeholder,
-  value,
-  onChange,
-  error,
-  children,
-}: {
-  id: string
-  label: string
-  type?: string
-  placeholder: string
-  value: string
-  onChange: (v: string) => void
-  error?: string
-  children?: React.ReactNode
-}) {
-  return (
-    <div className="space-y-1.5">
-      <label htmlFor={id} className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+    <span style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+      {met
+        ? <Check style={{ width: 12, height: 12, color: G, flexShrink: 0 }} />
+        : <X     style={{ width: 12, height: 12, color: '#cbd5e1', flexShrink: 0 }} />}
+      <span style={{ fontSize: 12.5, color: met ? G : '#94a3b8', fontWeight: met ? 600 : 400 }}>
         {label}
-      </label>
-      <div className="relative">
-        <input
-          id={id}
-          type={type}
-          placeholder={placeholder}
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-          className="h-11 w-full rounded-[10px] px-4 pr-11 text-sm outline-none transition-all placeholder:text-slate-400"
-          style={error ? inputError : inputBase}
-          onFocus={(e) => Object.assign(e.currentTarget.style, error ? inputFocusErr : inputFocusOk)}
-          onBlur={(e) => Object.assign(e.currentTarget.style, error ? inputError : inputBase)}
-        />
-        {children}
-      </div>
-      {error && <p className="text-xs text-red-500">{error}</p>}
-    </div>
+      </span>
+    </span>
   )
 }
 
 export default function CadastroPage() {
   const router = useRouter()
-  const [loading, setLoading] = useState(false)
-  const [name, setName] = useState('')
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
+  const [loading, setLoading]         = useState(false)
+  const [name, setName]               = useState('')
+  const [email, setEmail]             = useState('')
+  const [password, setPassword]       = useState('')
   const [confirmPassword, setConfirm] = useState('')
-  const [showPass, setShowPass] = useState(false)
+  const [showPass, setShowPass]       = useState(false)
   const [showConfirm, setShowConfirm] = useState(false)
-  const [errors, setErrors] = useState<Record<string, string>>({})
-  const [cfToken, setCfToken] = useState('')
+  const [errors, setErrors]           = useState<Record<string, string>>({})
+  const [cfToken, setCfToken]         = useState('')
 
   const hasLength = password.length >= 8
   const hasNumber = /[0-9]/.test(password)
-  const hasUpper = /[A-Z]/.test(password)
+  const hasUpper  = /[A-Z]/.test(password)
+
+  function clearErr(field: string) {
+    setErrors(p => ({ ...p, [field]: '', auth: '' }))
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     const errs: Record<string, string> = {}
 
-    if (!name || name.trim().length < 2) errs.name = 'Nome deve ter ao menos 2 caracteres'
+    if (!name || name.trim().length < 2)  errs.name    = 'Nome deve ter ao menos 2 caracteres'
     if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) errs.email = 'E-mail inválido'
-    if (!hasLength) errs.password = 'Mínimo 8 caracteres'
-    else if (!hasNumber) errs.password = 'Inclua ao menos 1 número'
-    else if (!hasUpper) errs.password = 'Inclua ao menos 1 letra maiúscula'
-    if (password !== confirmPassword) errs.confirm = 'As senhas não coincidem'
+    if (!hasLength)                        errs.password = 'Mínimo 8 caracteres'
+    else if (!hasNumber)                   errs.password = 'Inclua ao menos 1 número'
+    else if (!hasUpper)                    errs.password = 'Inclua ao menos 1 letra maiúscula'
+    if (password !== confirmPassword)      errs.confirm  = 'As senhas não coincidem'
 
-    if (Object.keys(errs).length) {
-      setErrors(errs)
-      return
-    }
-
+    if (Object.keys(errs).length) { setErrors(errs); return }
     setErrors({})
     setLoading(true)
 
@@ -107,12 +67,9 @@ export default function CadastroPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ token: cfToken }),
       }).catch(() => null)
-
       if (cfRes && !cfRes.ok) {
         setLoading(false)
-        toast.error('Verificação de segurança falhou', {
-          description: 'Recarregue a página e tente novamente.',
-        })
+        toast.error('Verificação de segurança falhou', { description: 'Recarregue a página e tente novamente.' })
         return
       }
     }
@@ -130,29 +87,17 @@ export default function CadastroPage() {
     setLoading(false)
 
     if (error) {
-      console.error('[cadastro] signUp error:', error.message, 'status:', error.status)
       const msg = error.message?.toLowerCase() ?? ''
-
       if (msg.includes('rate limit') || msg.includes('too many') || error.status === 429) {
-        toast.error('Muitas tentativas', {
-          description: 'Limite de cadastros atingido. Aguarde alguns minutos e tente novamente.',
-        })
+        toast.error('Muitas tentativas', { description: 'Aguarde alguns minutos e tente novamente.' })
       } else if (msg.includes('already registered') || msg.includes('already exists') || msg.includes('user already')) {
-        toast.error('E-mail já cadastrado', {
-          description: 'Este e-mail já possui uma conta. Faça login ou use outro e-mail.',
-        })
+        toast.error('E-mail já cadastrado', { description: 'Este e-mail já possui uma conta. Faça login ou use outro e-mail.' })
       } else if (msg.includes('invalid email') || msg.includes('unable to validate')) {
-        toast.error('E-mail inválido', {
-          description: 'Verifique o endereço de e-mail e tente novamente.',
-        })
+        toast.error('E-mail inválido', { description: 'Verifique o endereço de e-mail e tente novamente.' })
       } else if (msg.includes('signup') && msg.includes('disabled')) {
-        toast.error('Cadastro indisponível', {
-          description: 'O cadastro está temporariamente desativado. Tente novamente mais tarde.',
-        })
+        toast.error('Cadastro indisponível', { description: 'Temporariamente desativado. Tente novamente mais tarde.' })
       } else {
-        toast.error('Erro ao criar conta', {
-          description: 'Verifique os dados e tente novamente.',
-        })
+        toast.error('Erro ao criar conta', { description: 'Verifique os dados e tente novamente.' })
       }
       return
     }
@@ -180,87 +125,237 @@ export default function CadastroPage() {
       }).catch(() => undefined)
     }
 
-    toast.success('Conta criada!', { description: 'Bem-vindo à Pear Finance.' })
+    toast.success('Conta criada!', { description: 'Bem-vindo à Pearfy.' })
     router.refresh()
     router.push('/onboarding/plano')
   }
 
-  const EyeBtn = ({ show, toggle }: { show: boolean; toggle: () => void }) => (
-    <button
-      type="button"
-      onClick={toggle}
-      tabIndex={-1}
-      className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 transition-colors hover:text-slate-600"
-    >
-      {show ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-    </button>
-  )
-
   return (
-    <div className="space-y-7">
-      <div>
-        <h1 className="text-2xl font-extrabold text-slate-900">Criar conta na Pear Finance</h1>
-        <p className="mt-1.5 text-sm text-slate-500">Comece em minutos e organize sua vida financeira com clareza.</p>
+    <>
+      <style>{`
+        .cp-inp {
+          height: 54px;
+          width: 100%;
+          border-radius: 13px;
+          padding: 0 18px;
+          font-size: 15.5px;
+          font-family: var(--font-inter), -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+          font-weight: 400;
+          outline: none;
+          background: #f8fafc;
+          border: 1.5px solid #e8eef4;
+          color: #0f172a;
+          display: block;
+          box-sizing: border-box;
+          -webkit-appearance: none;
+          transition: border-color .15s, background .15s, box-shadow .15s;
+        }
+        .cp-inp::placeholder { color: #b8c4ce; }
+        .cp-inp:hover:not(:focus) { border-color: #d0dae4; background: #f4f7fa; }
+        .cp-inp:focus {
+          border-color: ${G} !important;
+          box-shadow: 0 0 0 3px rgba(${G_RGB},0.11) !important;
+          background: #fff !important;
+        }
+        .cp-inp.err {
+          border-color: #fca5a5 !important;
+          background: #fff8f8 !important;
+        }
+        .cp-inp.err:focus {
+          border-color: #ef4444 !important;
+          box-shadow: 0 0 0 3px rgba(239,68,68,0.10) !important;
+        }
+        .cp-lbl {
+          display: block;
+          font-size: 13.5px;
+          font-weight: 600;
+          color: #1e293b;
+          margin-bottom: 8px;
+          letter-spacing: -0.01em;
+          font-family: var(--font-inter), -apple-system, sans-serif;
+        }
+        .cp-btn {
+          height: 56px;
+          width: 100%;
+          border: none;
+          border-radius: 14px;
+          background: ${G};
+          color: #fff;
+          font-size: 15.5px;
+          font-weight: 700;
+          font-family: var(--font-inter), -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+          letter-spacing: -0.01em;
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 10px;
+          transition: background .15s, transform .12s, box-shadow .15s;
+          box-shadow: 0 4px 20px rgba(${G_RGB},0.30);
+          position: relative;
+          overflow: hidden;
+        }
+        .cp-btn::before {
+          content: '';
+          position: absolute;
+          inset: 0;
+          background: linear-gradient(135deg, rgba(255,255,255,0.11) 0%, transparent 60%);
+          pointer-events: none;
+        }
+        .cp-btn:hover:not(:disabled) {
+          background: ${G_DARK};
+          transform: translateY(-1px);
+          box-shadow: 0 8px 28px rgba(${G_RGB},0.36);
+        }
+        .cp-btn:active:not(:disabled) {
+          transform: translateY(0);
+          box-shadow: 0 3px 12px rgba(${G_RGB},0.22);
+        }
+        .cp-btn:disabled { opacity: 0.55; cursor: not-allowed; transform: none !important; }
+        @keyframes cp-spin { to { transform: rotate(360deg); } }
+        .cp-spin { animation: cp-spin 0.8s linear infinite; }
+        .cp-eye {
+          position: absolute; right: 14px; top: 50%; transform: translateY(-50%);
+          background: none; border: none; cursor: pointer; padding: 6px;
+          color: #94a3b8; display: flex; align-items: center;
+          border-radius: 8px; transition: color .15s, background .15s;
+        }
+        .cp-eye:hover { color: #475569; background: rgba(0,0,0,0.04); }
+        .cp-ferr { font-size: 12.5px; color: #ef4444; font-weight: 500; margin-top: 6px; }
+        .cp-link-g { color: ${G}; font-weight: 700; text-decoration: none; transition: color .15s; }
+        .cp-link-g:hover { color: ${G_DARK}; }
+      `}</style>
+
+      {/* Heading */}
+      <div style={{ marginBottom: 30 }}>
+        <h1 style={{
+          fontSize: 'clamp(24px, 2.8vw, 28px)',
+          fontWeight: 800,
+          color: '#0a1628',
+          letterSpacing: '-0.04em',
+          lineHeight: 1.2,
+          marginBottom: 10,
+        }}>
+          Criar sua conta
+        </h1>
+        <p style={{ fontSize: 15, color: '#64748b', lineHeight: 1.55, fontWeight: 400 }}>
+          Comece em minutos e organize sua vida financeira com clareza.
+        </p>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <Field id="name" label="Nome completo" placeholder="Seu nome completo" value={name} onChange={setName} error={errors.name} />
+      {/* Form */}
+      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
 
-        <Field id="email" label="E-mail" type="email" placeholder="seu@email.com" value={email} onChange={setEmail} error={errors.email} />
+        {/* Nome */}
+        <div>
+          <label className="cp-lbl" htmlFor="cp-name">Nome completo</label>
+          <input
+            id="cp-name"
+            className={`cp-inp${errors.name ? ' err' : ''}`}
+            type="text"
+            autoComplete="name"
+            placeholder="Seu nome completo"
+            value={name}
+            onChange={e => { setName(e.target.value); clearErr('name') }}
+          />
+          {errors.name && <p className="cp-ferr">{errors.name}</p>}
+        </div>
 
-        <Field
-          id="password"
-          label="Senha"
-          type={showPass ? 'text' : 'password'}
-          placeholder="••••••••"
-          value={password}
-          onChange={setPassword}
-          error={errors.password}
-        >
-          <EyeBtn show={showPass} toggle={() => setShowPass(!showPass)} />
-        </Field>
+        {/* E-mail */}
+        <div>
+          <label className="cp-lbl" htmlFor="cp-email">E-mail</label>
+          <input
+            id="cp-email"
+            className={`cp-inp${errors.email ? ' err' : ''}`}
+            type="email"
+            autoComplete="email"
+            placeholder="seu@email.com"
+            value={email}
+            onChange={e => { setEmail(e.target.value); clearErr('email') }}
+          />
+          {errors.email && <p className="cp-ferr">{errors.email}</p>}
+        </div>
 
-        {password && (
-          <div className="flex flex-wrap gap-4 px-1">
-            <Req met={hasLength} label="8 caracteres" />
-            <Req met={hasNumber} label="1 número" />
-            <Req met={hasUpper} label="1 maiúscula" />
+        {/* Senha */}
+        <div>
+          <label className="cp-lbl" htmlFor="cp-pass">Senha</label>
+          <div style={{ position: 'relative' }}>
+            <input
+              id="cp-pass"
+              className={`cp-inp${errors.password ? ' err' : ''}`}
+              style={{ paddingRight: 50 }}
+              type={showPass ? 'text' : 'password'}
+              autoComplete="new-password"
+              placeholder="••••••••"
+              value={password}
+              onChange={e => { setPassword(e.target.value); clearErr('password') }}
+            />
+            <button type="button" tabIndex={-1} className="cp-eye" onClick={() => setShowPass(v => !v)} aria-label={showPass ? 'Ocultar' : 'Mostrar'}>
+              {showPass ? <EyeOff style={{ width: 16, height: 16 }} /> : <Eye style={{ width: 16, height: 16 }} />}
+            </button>
           </div>
-        )}
+          {errors.password && <p className="cp-ferr">{errors.password}</p>}
 
-        <Field
-          id="confirm"
-          label="Confirmar senha"
-          type={showConfirm ? 'text' : 'password'}
-          placeholder="••••••••"
-          value={confirmPassword}
-          onChange={setConfirm}
-          error={errors.confirm}
-        >
-          <EyeBtn show={showConfirm} toggle={() => setShowConfirm(!showConfirm)} />
-        </Field>
+          {/* Password strength */}
+          {password && (
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px 20px', marginTop: 10, padding: '10px 14px', background: '#f8fafc', borderRadius: 10, border: '1px solid #e8eef4' }}>
+              <ReqItem met={hasLength} label="8 caracteres" />
+              <ReqItem met={hasNumber} label="1 número" />
+              <ReqItem met={hasUpper}  label="1 maiúscula" />
+            </div>
+          )}
+        </div>
 
+        {/* Confirmar senha */}
+        <div>
+          <label className="cp-lbl" htmlFor="cp-confirm">Confirmar senha</label>
+          <div style={{ position: 'relative' }}>
+            <input
+              id="cp-confirm"
+              className={`cp-inp${errors.confirm ? ' err' : ''}`}
+              style={{ paddingRight: 50 }}
+              type={showConfirm ? 'text' : 'password'}
+              autoComplete="new-password"
+              placeholder="••••••••"
+              value={confirmPassword}
+              onChange={e => { setConfirm(e.target.value); clearErr('confirm') }}
+            />
+            <button type="button" tabIndex={-1} className="cp-eye" onClick={() => setShowConfirm(v => !v)} aria-label={showConfirm ? 'Ocultar' : 'Mostrar'}>
+              {showConfirm ? <EyeOff style={{ width: 16, height: 16 }} /> : <Eye style={{ width: 16, height: 16 }} />}
+            </button>
+          </div>
+          {errors.confirm && <p className="cp-ferr">{errors.confirm}</p>}
+        </div>
+
+        {/* Turnstile */}
         <TurnstileWidget onVerify={setCfToken} onError={() => setCfToken('')} onExpire={() => setCfToken('')} />
 
-        <button
-          type="submit"
-          disabled={loading}
-          className="mt-2 flex h-11 w-full items-center justify-center gap-2 rounded-[10px] text-sm font-bold text-white transition-all disabled:cursor-not-allowed disabled:opacity-60"
-          style={{
-            background: 'linear-gradient(135deg, #7AAE3A 0%, #5B9637 38%, #1F4E8C 100%)',
-            boxShadow: '0 6px 18px rgba(22, 101, 52, 0.24)',
-          }}
-        >
-          {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Criar conta'}
+        {/* Submit */}
+        <button className="cp-btn" type="submit" disabled={loading} style={{ marginTop: 4 }}>
+          {loading
+            ? <Loader2 className="cp-spin" style={{ width: 18, height: 18 }} />
+            : 'Criar minha conta'}
         </button>
       </form>
 
-      <p className="text-center text-sm text-slate-500">
-        Já tem uma conta?{' '}
-        <Link href="/login" className="font-semibold text-[#5A9638] transition-colors hover:text-[#45772C]">
-          Entrar
-        </Link>
-      </p>
-    </div>
+      {/* Trust */}
+      <div style={{ marginTop: 14, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
+        <svg width="11" height="12" viewBox="0 0 12 14" fill="none">
+          <path d="M6 1L1 3.2V7C1 10.2 3.6 13 6 13.8C8.4 13 11 10.2 11 7V3.2L6 1Z" stroke="#94a3b8" strokeWidth="1.3" strokeLinejoin="round"/>
+          <path d="M4 7L5.5 8.5L8.5 5.5" stroke="#94a3b8" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/>
+        </svg>
+        <span style={{ fontSize: 11.5, color: '#94a3b8', fontWeight: 500, letterSpacing: '0.01em' }}>
+          Criptografia SSL 256-bit
+        </span>
+      </div>
+
+      {/* Footer */}
+      <div style={{ marginTop: 28, paddingTop: 22, borderTop: '1px solid #f0f4f8', textAlign: 'center' }}>
+        <p style={{ fontSize: 15, color: '#64748b' }}>
+          Já tem uma conta?{' '}
+          <Link href="/login" className="cp-link-g">Entrar</Link>
+        </p>
+      </div>
+    </>
   )
 }
