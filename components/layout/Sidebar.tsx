@@ -115,10 +115,10 @@ export function Sidebar({
         style={{
           borderColor:     'var(--panel-border)',
           height:          68,
-          padding:         '0',
-          justifyContent:  'center',
-          gap:             collapsed ? 0 : 11,
-          transition:      'gap 300ms ease',
+          padding:         collapsed ? '0' : '0 0 0 20px',
+          justifyContent:  collapsed ? 'center' : 'flex-start',
+          gap:             11,
+          transition:      'padding 300ms ease',
         }}
       >
         <SaoozIcon size={40} />
