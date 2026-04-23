@@ -526,17 +526,6 @@ export default function EmpresaPage() {
           </div>
         )}
 
-        {/* AI Chat */}
-        <div className="p-4 pt-3">
-          {userId ? (
-            <SaoozAIPJ userId={userId} />
-          ) : (
-            <div className="h-20 flex items-center justify-center">
-              <div className="h-5 w-5 rounded-full border-2 animate-spin"
-                style={{ borderColor: 'var(--accent-blue)', borderTopColor: 'transparent' }} />
-            </div>
-          )}
-        </div>
       </div>
 
       {/* ── LINHA 1: Contas pendentes + Imposto estimado ────────────────────── */}
@@ -822,6 +811,9 @@ export default function EmpresaPage() {
           )
         })()}
       </div>
+
+      {/* Floating AI assistant */}
+      {userId && <SaoozAIPJ userId={userId} />}
 
     </div>
   )
