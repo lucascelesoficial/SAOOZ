@@ -119,14 +119,21 @@ export function Sidebar({
           transition:   'padding 300ms ease',
         }}
       >
-        <SaoozIcon size={42} />
+        <SaoozIcon size={44} />
         <span
-          className="ml-2.5 text-[15px] font-extrabold tracking-tight text-app whitespace-nowrap"
           style={{
-            opacity:    collapsed ? 0 : 1,
-            maxWidth:   collapsed ? 0 : 160,
-            overflow:   'hidden',
-            transition: 'opacity 200ms ease, max-width 300ms ease',
+            marginLeft:    10,
+            fontSize:      17,
+            fontWeight:    800,
+            letterSpacing: '-0.03em',
+            lineHeight:    1,
+            color:         '#026648',
+            whiteSpace:    'nowrap',
+            fontFamily:    'var(--font-inter), system-ui, sans-serif',
+            opacity:       collapsed ? 0 : 1,
+            maxWidth:      collapsed ? 0 : 160,
+            overflow:      'hidden',
+            transition:    'opacity 200ms ease, max-width 300ms ease',
           }}
         >
           Pearfy

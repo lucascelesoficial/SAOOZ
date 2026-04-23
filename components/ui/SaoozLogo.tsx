@@ -23,10 +23,7 @@ export function SaoozIcon({ size = 40 }: { size?: number }) {
       style={{
         width: size,
         height: size,
-        objectFit: 'contain',
-        borderRadius: Math.round(size * 0.22),
-        background: '#ffffff',
-        boxShadow: '0 1px 3px rgba(0,0,0,0.12), 0 0 0 1px rgba(0,0,0,0.06)',
+        display: 'block',
         flexShrink: 0,
       }}
     />
@@ -223,39 +220,26 @@ export function SaoozWordmark({ size = 'md', onDark = false }: Props) {
 
   return (
     <span className="inline-flex items-center select-none" style={{ gap }} aria-label="Pearfy">
-      <span
-        style={{
-          display: 'inline-flex',
-          borderRadius: Math.round(iconPx * 0.22),
-          background: '#FFFFFF',
-          boxShadow: onDark
-            ? '0 4px 20px rgba(0,0,0,0.3), 0 0 0 1px rgba(255,255,255,0.12)'
-            : '0 1px 4px rgba(0,0,0,0.10), 0 0 0 1px rgba(0,0,0,0.05)',
-          flexShrink: 0,
-          overflow: 'hidden',
-        }}
-      >
-        <Image
-          src="/favicon.svg"
-          alt="Pearfy"
-          width={iconPx}
-          height={iconPx}
-          priority
-          style={{ width: iconPx, height: iconPx, objectFit: 'contain', display: 'block' }}
-        />
-      </span>
+      <Image
+        src="/favicon.svg"
+        alt="Pearfy"
+        width={iconPx}
+        height={iconPx}
+        priority
+        style={{ width: iconPx, height: iconPx, display: 'block', flexShrink: 0 }}
+      />
 
       <span
         style={{
           fontSize: fSize,
           fontWeight: 800,
           fontFamily: "var(--font-inter), system-ui, sans-serif",
-          letterSpacing: '0.01em',
+          letterSpacing: '-0.02em',
           lineHeight: 1,
-          color: onDark ? '#FFFFFF' : '#102317',
+          color: onDark ? '#FFFFFF' : '#026648',
         }}
       >
-        <span style={{ color: '#026648' }}>Pearfy</span>
+        Pearfy
       </span>
     </span>
   )
