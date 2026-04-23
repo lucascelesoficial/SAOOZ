@@ -191,14 +191,18 @@ export function Topbar({ profile, businesses, canAccessPersonalModule, canAccess
 
   return (
     <header
-      className="sticky top-0 z-20 flex h-12 items-center justify-between gap-4 border-b px-4 md:px-6"
+      className="sticky top-0 z-20 flex h-12 items-center border-b px-4 md:px-6"
       style={{
         background: 'var(--surface-bg)',
         borderColor: 'var(--panel-border)',
+        position: 'relative',
       }}
     >
-      {/* Left: month navigation */}
-      <div className="relative flex items-center gap-0.5">
+      {/* Left: empty spacer to balance right side */}
+      <div className="flex-1" />
+
+      {/* Center: month navigation — absolutely centered */}
+      <div className="absolute left-1/2 -translate-x-1/2 relative flex items-center gap-0.5">
         <button
           onClick={prevMonth}
           className="rounded-[6px] p-1.5 text-app-soft transition-colors hover:text-app hover:bg-[var(--panel-bg)]"
@@ -244,7 +248,7 @@ export function Topbar({ profile, businesses, canAccessPersonalModule, canAccess
       </div>
 
       {/* Right: notifications + theme + user */}
-      <div className="flex items-center gap-1.5">
+      <div className="flex-1 flex items-center justify-end gap-1.5">
         {/* Notification bell (decorative for now) */}
         <button
           className="flex h-8 w-8 items-center justify-center rounded-[8px] text-app-soft transition-colors hover:bg-[var(--panel-bg)] hover:text-app"
