@@ -25,6 +25,8 @@ export function SaoozIcon({ size = 40 }: { size?: number }) {
         height: size,
         display: 'block',
         flexShrink: 0,
+        borderRadius: Math.round(size * 0.22),
+        overflow: 'hidden',
       }}
     />
   )
@@ -226,7 +228,7 @@ export function SaoozWordmark({ size = 'md', onDark = false }: Props) {
         width={iconPx}
         height={iconPx}
         priority
-        style={{ width: iconPx, height: iconPx, display: 'block', flexShrink: 0 }}
+        style={{ width: iconPx, height: iconPx, display: 'block', flexShrink: 0, borderRadius: Math.round(iconPx * 0.22), overflow: 'hidden' }}
       />
 
       <span
