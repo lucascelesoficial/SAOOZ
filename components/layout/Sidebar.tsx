@@ -113,10 +113,11 @@ export function Sidebar({
       <div
         className="flex items-center border-b overflow-hidden shrink-0"
         style={{
-          borderColor: 'var(--panel-border)',
-          height:       64,
-          padding:      collapsed ? '0 0 0 20px' : '0 20px',
-          transition:   'padding 300ms ease',
+          borderColor:     'var(--panel-border)',
+          height:          64,
+          padding:         collapsed ? '0' : '0 20px',
+          justifyContent:  collapsed ? 'center' : 'flex-start',
+          transition:      'padding 300ms ease, justify-content 300ms ease',
         }}
       >
         <SaoozIcon size={44} />
