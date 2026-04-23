@@ -73,10 +73,7 @@ export function DashboardClient({
       <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-bold text-app">Visão geral</h1>
-          <p className="mt-0.5 text-sm text-app-soft">
-            Bem-vindo de volta 👋 &nbsp;
-            <span className="text-app-base font-medium">{formatMonth(currentMonth)}</span>
-          </p>
+          <p className="mt-0.5 text-sm text-app-soft">{formatMonth(currentMonth)}</p>
         </div>
         <div className="flex items-center gap-2">
           <ExportPDFButton
