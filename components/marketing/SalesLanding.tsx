@@ -575,93 +575,52 @@ export function SalesLanding() {
             <div className="orb1" aria-hidden style={{ position: 'absolute', top: '-10%', right: '5%', width: 600, height: 600, background: `radial-gradient(ellipse, ${G}14, transparent 65%)`, pointerEvents: 'none', filter: 'blur(24px)' }} />
             <div className="orb2" aria-hidden style={{ position: 'absolute', top: '35%', left: '-8%', width: 480, height: 480, background: 'radial-gradient(ellipse, rgba(255,255,255,0.015), transparent 65%)', pointerEvents: 'none', filter: 'blur(32px)' }} />
 
-            {/* Solar system — behind dashboard */}
-            <div style={{ maxWidth: 1200, margin: '0 auto', position: 'relative' }}>
+            {/* Solar system — absolute behind content */}
+            <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', pointerEvents: 'none', zIndex: 0 }}>
               <SolarSystem />
             </div>
 
-            <div style={{ maxWidth: 1200, margin: '0 auto', position: 'relative', zIndex: 1 }}>
-
-              {/* Eyebrow */}
-              <div style={{ marginBottom: 38 }}>
-                <div className="pl-badge" style={{ width: 'fit-content' }}>
-                  <span className="pl-dot" />
-                  <span style={{ fontSize: 14, fontWeight: 600, color: GLit, letterSpacing: '0.03em' }}>
-                    Gestão financeira — PF &amp; PJ com IA
-                  </span>
-                  <span style={{ fontSize: 12, color: '#9ca3af', fontWeight: 400, background: 'rgba(255,255,255,0.06)', padding: '2px 10px', borderRadius: 20, border: '1px solid rgba(255,255,255,0.10)' }}>Novo</span>
-                </div>
-              </div>
+            {/* ── Headline block — centered ── */}
+            <div style={{ maxWidth: 1100, margin: '0 auto', position: 'relative', zIndex: 1, textAlign: 'center' }}>
 
               {/* Nº 1 badge */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 32 }}>
+              <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 36 }}>
                 <div style={{
-                  display: 'inline-flex', alignItems: 'center', gap: 10,
+                  display: 'inline-flex', alignItems: 'center', gap: 12,
                   background: 'linear-gradient(135deg, rgba(2,102,72,0.18), rgba(4,163,114,0.10))',
                   border: '1px solid rgba(2,102,72,0.45)',
-                  borderRadius: 14, padding: '8px 18px 8px 12px',
-                  boxShadow: `0 0 28px rgba(2,102,72,0.22), inset 0 1px 0 rgba(255,255,255,0.07)`,
+                  borderRadius: 16, padding: '10px 22px 10px 14px',
+                  boxShadow: `0 0 32px rgba(2,102,72,0.25), inset 0 1px 0 rgba(255,255,255,0.07)`,
                 }}>
-                  {/* Flag */}
-                  <span style={{ fontSize: 22, lineHeight: 1, display: 'flex', alignItems: 'center' }}>🇧🇷</span>
-                  {/* N°1 */}
+                  <span style={{ fontSize: 24, lineHeight: 1 }}>🇧🇷</span>
                   <span style={{
-                    fontSize: 'clamp(1.4rem, 2.8vw, 2rem)', fontWeight: 900,
-                    background: `linear-gradient(135deg, #fff 0%, ${GLit} 60%, ${G} 100%)`,
+                    fontSize: 'clamp(1.5rem, 3vw, 2.2rem)', fontWeight: 900,
+                    background: `linear-gradient(135deg, #fff 0%, ${GLit} 55%, ${G} 100%)`,
                     WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
                     letterSpacing: '-0.04em', lineHeight: 1,
-                    filter: `drop-shadow(0 0 12px ${GLit}70)`,
+                    filter: `drop-shadow(0 0 14px ${GLit}80)`,
                   }}>Nº 1</span>
-                  <span style={{
-                    width: 1, height: 22, background: 'rgba(255,255,255,0.12)',
-                    display: 'inline-block', flexShrink: 0,
-                  }} />
-                  <span style={{ fontSize: 12, fontWeight: 500, color: '#9ca3af', letterSpacing: '0.10em', textTransform: 'uppercase' }}>do Brasil</span>
                 </div>
               </div>
 
               {/* Headline */}
-              <h1 style={{ margin: '0 0 30px', maxWidth: 1020 }}>
-                <span style={{ display: 'block', fontSize: 'clamp(3.2rem, 7.2vw, 6.4rem)', fontWeight: 800, lineHeight: 0.93, color: '#fff', letterSpacing: '-0.048em' }}>
+              <h1 style={{ margin: '0 0 56px' }}>
+                <span style={{ display: 'block', fontSize: 'clamp(3rem, 7vw, 6.2rem)', fontWeight: 800, lineHeight: 0.93, color: '#fff', letterSpacing: '-0.048em' }}>
                   A primeira plataforma
                 </span>
-                <span style={{ display: 'block', fontSize: 'clamp(3.2rem, 7.2vw, 6.4rem)', fontWeight: 800, lineHeight: 0.93, color: '#fff', letterSpacing: '-0.048em', marginTop: 6 }}>
+                <span style={{ display: 'block', fontSize: 'clamp(3rem, 7vw, 6.2rem)', fontWeight: 800, lineHeight: 0.93, color: '#fff', letterSpacing: '-0.048em', marginTop: 8 }}>
                   a tirar PF e PJ do caos
                 </span>
-                <span style={{ display: 'block', fontSize: 'clamp(2rem, 4.6vw, 4rem)', fontWeight: 300, lineHeight: 1.22, color: '#9ca3af', letterSpacing: '-0.028em', fontStyle: 'italic', marginTop: 16 }}>
+                <span style={{ display: 'block', fontSize: 'clamp(1.8rem, 4.2vw, 3.6rem)', fontWeight: 300, lineHeight: 1.22, color: '#9ca3af', letterSpacing: '-0.026em', fontStyle: 'italic', marginTop: 18 }}>
                   e colocar tudo sob o mesmo comando.
                 </span>
               </h1>
-
-              <p style={{ fontSize: 19, lineHeight: 1.75, color: '#d1d5db', fontWeight: 400, margin: '0 0 46px', maxWidth: 560 }}>
-                O PearFy organiza seu dinheiro pessoal e empresarial com IA — sem planilha, sem improviso.
-              </p>
-
-              <div className="pl-hbtns" style={{ display: 'flex', gap: 14, flexWrap: 'wrap', marginBottom: 34 }}>
-                <Link href="/cadastro" className="pl-btn cta-pulse" style={{ height: 58, padding: '0 42px', fontSize: 17, borderRadius: 13 }}>
-                  Assinar com 7 dias de garantia <ArrowRight style={{ width: 19, height: 19 }} />
-                </Link>
-                <a href="#como-funciona" style={{
-                  display: 'inline-flex', alignItems: 'center', gap: 8,
-                  height: 58, padding: '0 32px', borderRadius: 13,
-                  fontSize: 16, fontWeight: 400, color: '#d1d5db',
-                  border: '1px solid rgba(255,255,255,0.12)',
-                }}>Ver como funciona</a>
-              </div>
-
-              <div style={{ display: 'flex', gap: 28, flexWrap: 'wrap', fontSize: 14, color: '#9ca3af', fontWeight: 400, marginBottom: 80 }}>
-                {['7 dias de garantia', 'Cancele quando quiser', 'Sem fidelidade'].map(t => (
-                  <span key={t} style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
-                    <CheckCircle2 style={{ width: 15, height: 15, color: G, flexShrink: 0 }} />{t}
-                  </span>
-                ))}
-              </div>
             </div>
 
-            {/* 3D Dashboard — full width within max container */}
-            <div style={{ maxWidth: 1200, margin: '0 auto', position: 'relative', paddingBottom: 0 }}>
+            {/* ── 3D Dashboard ── */}
+            <div style={{ maxWidth: 1200, margin: '0 auto', position: 'relative', zIndex: 1 }}>
               <div aria-hidden style={{
-                position: 'absolute', bottom: -80, left: '5%', right: '5%', height: 260,
+                position: 'absolute', bottom: -60, left: '5%', right: '5%', height: 260,
                 background: `radial-gradient(ellipse, ${G}40, transparent 70%)`,
                 filter: 'blur(70px)', pointerEvents: 'none', zIndex: 0,
               }} />
@@ -673,10 +632,37 @@ export function SalesLanding() {
               </div>
               {/* Fade out bottom */}
               <div aria-hidden style={{
-                position: 'absolute', bottom: 0, left: 0, right: 0, height: 180,
-                background: 'linear-gradient(to top, #000 20%, transparent 100%)',
+                position: 'absolute', bottom: 0, left: 0, right: 0, height: 160,
+                background: 'linear-gradient(to top, #000 15%, transparent 100%)',
                 pointerEvents: 'none', zIndex: 2,
               }} />
+            </div>
+
+            {/* ── CTA block — centered ── */}
+            <div style={{ maxWidth: 1100, margin: '0 auto', position: 'relative', zIndex: 1, textAlign: 'center', padding: '64px 0 80px' }}>
+              <p style={{ fontSize: 19, lineHeight: 1.75, color: '#d1d5db', fontWeight: 400, margin: '0 auto 44px', maxWidth: 580 }}>
+                O PearFy organiza seu dinheiro pessoal e empresarial com IA — sem planilha, sem improviso.
+              </p>
+
+              <div className="pl-hbtns" style={{ display: 'flex', gap: 14, flexWrap: 'wrap', marginBottom: 32, justifyContent: 'center' }}>
+                <Link href="/cadastro" className="pl-btn cta-pulse" style={{ height: 58, padding: '0 42px', fontSize: 17, borderRadius: 13 }}>
+                  Assinar com 7 dias de garantia <ArrowRight style={{ width: 19, height: 19 }} />
+                </Link>
+                <a href="#como-funciona" style={{
+                  display: 'inline-flex', alignItems: 'center', gap: 8,
+                  height: 58, padding: '0 32px', borderRadius: 13,
+                  fontSize: 16, fontWeight: 400, color: '#d1d5db',
+                  border: '1px solid rgba(255,255,255,0.12)',
+                }}>Ver como funciona</a>
+              </div>
+
+              <div style={{ display: 'flex', gap: 28, flexWrap: 'wrap', fontSize: 14, color: '#9ca3af', fontWeight: 400, justifyContent: 'center' }}>
+                {['7 dias de garantia', 'Cancele quando quiser', 'Sem fidelidade'].map(t => (
+                  <span key={t} style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
+                    <CheckCircle2 style={{ width: 15, height: 15, color: G, flexShrink: 0 }} />{t}
+                  </span>
+                ))}
+              </div>
             </div>
           </section>
 
