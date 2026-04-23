@@ -437,9 +437,9 @@ export function SaoozAI({ totals, categoryData }: SaoozAIProps) {
                   style={
                     message.action.success
                       ? {
-                          background: '#22c55e10',
-                          border: '1px solid #22c55e20',
-                          color: '#22c55e',
+                          background: '#02664812',
+                          border: '1px solid #02664820',
+                          color: '#026648',
                         }
                       : {
                           background: '#f8717110',

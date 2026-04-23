@@ -81,8 +81,8 @@ export function WaveCashflowChart({ incomes, expenses }: WaveCashflowChartProps)
           <AreaChart data={data} margin={{ top: 8, right: 12, left: 0, bottom: 0 }}>
             <defs>
               <linearGradient id="waveIncome" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#22c55e" stopOpacity={0.35} />
-                <stop offset="95%" stopColor="#22c55e" stopOpacity={0} />
+                <stop offset="5%" stopColor="#026648" stopOpacity={0.35} />
+                <stop offset="95%" stopColor="#026648" stopOpacity={0} />
               </linearGradient>
               <linearGradient id="waveExpense" x1="0" y1="0" x2="0" y2="1">
                 <stop offset="5%" stopColor="#f87171" stopOpacity={0.28} />
@@ -119,7 +119,7 @@ export function WaveCashflowChart({ incomes, expenses }: WaveCashflowChartProps)
               }}
               labelFormatter={(label) => `Dia ${label}`}
             />
-            <Area type="monotone" dataKey="cashIn" stroke="#22c55e" fill="url(#waveIncome)" strokeWidth={2} />
+            <Area type="monotone" dataKey="cashIn" stroke="#026648" fill="url(#waveIncome)" strokeWidth={2} />
             <Area type="monotone" dataKey="cashOut" stroke="#f87171" fill="url(#waveExpense)" strokeWidth={2} />
             <Area type="monotone" dataKey="balance" stroke="#026648" fill="url(#waveBalance)" strokeWidth={2} strokeDasharray="5 4" />
           </AreaChart>

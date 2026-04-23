@@ -303,7 +303,7 @@ export default function FinancasPage() {
 
       <div className="panel-card mb-6 p-5">
         <p className="text-sm text-app-base">Renda total em {formatMonth(currentMonth)}</p>
-        <p className="mt-1 text-3xl font-bold tabular-nums" style={{ color: '#22c55e' }}>
+        <p className="mt-1 text-3xl font-bold tabular-nums" style={{ color: '#026648' }}>
           {formatCurrency(total)}
         </p>
       </div>
@@ -373,13 +373,13 @@ export default function FinancasPage() {
                   </div>
                 </div>
                 <div className="mb-1.5 flex items-center justify-between">
-                  <span className="font-semibold tabular-nums" style={{ color: '#22c55e' }}>
+                  <span className="font-semibold tabular-nums" style={{ color: '#026648' }}>
                     {formatCurrency(income.amount)}
                   </span>
                   <span className="text-xs text-app-soft">{pct}% da renda</span>
                 </div>
                 <div className="h-1.5 overflow-hidden rounded-full" style={{ background: 'var(--panel-border)' }}>
-                  <div className="h-full rounded-full transition-all" style={{ width: `${pct}%`, background: '#22c55e' }} />
+                  <div className="h-full rounded-full transition-all" style={{ width: `${pct}%`, background: '#026648' }} />
                 </div>
               </div>
             )

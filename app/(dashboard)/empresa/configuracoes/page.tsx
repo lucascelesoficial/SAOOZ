@@ -103,8 +103,8 @@ const ACTIVITIES: Array<{ id: BusinessActivity; label: string }> = [
 function Req({ met, label }: { met: boolean; label: string }) {
   return (
     <div className="flex items-center gap-1.5 text-xs">
-      {met ? <Check className="h-3 w-3 text-[#22c55e]" /> : <X className="h-3 w-3 text-app-soft" />}
-      <span className={met ? 'text-[#22c55e]' : 'text-app-soft'}>{label}</span>
+      {met ? <Check className="h-3 w-3 text-[#026648]" /> : <X className="h-3 w-3 text-app-soft" />}
+      <span className={met ? 'text-[#026648]' : 'text-app-soft'}>{label}</span>
     </div>
   )
 }
@@ -367,7 +367,7 @@ export default function EmpresaConfiguracoesPage() {
       <h1 className="text-xl font-bold text-app">Configurações</h1>
 
       {/* Empresa */}
-      <SectionCard title="Empresa" icon={Building2} color="#0ea5e9">
+      <SectionCard title="Empresa" icon={Building2} color="#026648">
         <form onSubmit={saveBusiness} className="space-y-4">
           <Field label="Nome da empresa">
             <input
@@ -392,7 +392,7 @@ export default function EmpresaConfiguracoesPage() {
               <p className="text-[#f87171] text-xs">CNPJ inválido. Verifique os dígitos.</p>
             )}
             {bizCnpj && validateCNPJ(bizCnpj) && (
-              <p className="text-[#22c55e] text-xs flex items-center gap-1"><Check className="h-3 w-3" /> CNPJ válido</p>
+              <p className="text-[#026648] text-xs flex items-center gap-1"><Check className="h-3 w-3" /> CNPJ válido</p>
             )}
           </Field>
 
@@ -406,11 +406,11 @@ export default function EmpresaConfiguracoesPage() {
                   onClick={() => setBizRegime(r.id)}
                   className="text-left rounded-[9px] px-3 py-2.5 transition-all"
                   style={{
-                    background: bizRegime === r.id ? '#0ea5e912' : 'var(--panel-bg-soft)',
-                    border: bizRegime === r.id ? '1px solid #0ea5e9' : '1px solid var(--panel-border)',
+                    background: bizRegime === r.id ? '#02664812' : 'var(--panel-bg-soft)',
+                    border: bizRegime === r.id ? '1px solid #026648' : '1px solid var(--panel-border)',
                   }}
                 >
-                  <p className="text-xs font-semibold" style={{ color: bizRegime === r.id ? '#0ea5e9' : 'var(--text-base)' }}>{r.label}</p>
+                  <p className="text-xs font-semibold" style={{ color: bizRegime === r.id ? '#026648' : 'var(--text-base)' }}>{r.label}</p>
                   <p className="text-[10px] text-app-soft mt-0.5">{r.desc}</p>
                 </button>
               ))}
@@ -427,9 +427,9 @@ export default function EmpresaConfiguracoesPage() {
                   onClick={() => setBizActivity(a.id)}
                   className="rounded-[9px] py-2 text-xs font-semibold transition-all"
                   style={{
-                    background: bizActivity === a.id ? '#0ea5e912' : 'var(--panel-bg-soft)',
-                    border: bizActivity === a.id ? '1px solid #0ea5e9' : '1px solid var(--panel-border)',
-                    color: bizActivity === a.id ? '#0ea5e9' : 'var(--text-soft)',
+                    background: bizActivity === a.id ? '#02664812' : 'var(--panel-bg-soft)',
+                    border: bizActivity === a.id ? '1px solid #026648' : '1px solid var(--panel-border)',
+                    color: bizActivity === a.id ? '#026648' : 'var(--text-soft)',
                   }}
                 >
                   {a.label}
@@ -442,7 +442,7 @@ export default function EmpresaConfiguracoesPage() {
             type="submit"
             disabled={savingBiz}
             className="w-full h-10 rounded-[9px] text-sm font-bold text-white flex items-center justify-center gap-2 transition-all disabled:opacity-60"
-            style={{ background: 'linear-gradient(135deg, #0ea5e9, #0284c7)', boxShadow: '0 4px 16px #0ea5e925' }}
+            style={{ background: 'linear-gradient(135deg, #026648, #014840)', boxShadow: '0 4px 16px #02664820' }}
           >
             {savingBiz ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Salvar empresa'}
           </button>
@@ -450,18 +450,18 @@ export default function EmpresaConfiguracoesPage() {
       </SectionCard>
 
       {/* Dados pessoais */}
-      <SectionCard title="Dados pessoais" icon={User} color="#3b82f6">
+      <SectionCard title="Dados pessoais" icon={User} color="#026648">
         <div className="flex items-center gap-4 pb-2" style={{ borderBottom: '1px solid var(--panel-border)' }}>
           <div className="relative">
             {displayAvatar ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img src={displayAvatar} alt="Avatar" className="h-16 w-16 rounded-full object-cover" />
             ) : (
-              <div className="h-16 w-16 rounded-full flex items-center justify-center text-white text-2xl font-bold" style={{ background: 'linear-gradient(135deg, #3b82f6, #1d4ed8)' }}>
+              <div className="h-16 w-16 rounded-full flex items-center justify-center text-white text-2xl font-bold" style={{ background: 'linear-gradient(135deg, #026648, #014840)' }}>
                 {userName?.charAt(0).toUpperCase() ?? 'U'}
               </div>
             )}
-            <button onClick={() => fileInputRef.current?.click()} className="absolute bottom-0 right-0 h-6 w-6 rounded-full flex items-center justify-center text-white transition-colors" style={{ background: '#3b82f6' }} aria-label="Alterar foto">
+            <button onClick={() => fileInputRef.current?.click()} className="absolute bottom-0 right-0 h-6 w-6 rounded-full flex items-center justify-center text-white transition-colors" style={{ background: '#026648' }} aria-label="Alterar foto">
               <Camera className="h-3 w-3" />
             </button>
           </div>
@@ -487,7 +487,7 @@ export default function EmpresaConfiguracoesPage() {
               className="theme-input w-full h-10 px-3 rounded-[9px] text-sm font-mono tracking-wide"
             />
             {userCpf && !validateCPF(userCpf) && <p className="text-[#f87171] text-xs">CPF inválido</p>}
-            {userCpf && validateCPF(userCpf) && <p className="text-[#22c55e] text-xs flex items-center gap-1"><Check className="h-3 w-3" /> CPF válido</p>}
+            {userCpf && validateCPF(userCpf) && <p className="text-[#026648] text-xs flex items-center gap-1"><Check className="h-3 w-3" /> CPF válido</p>}
           </Field>
           <Field label="Telefone">
             <input
@@ -530,7 +530,7 @@ export default function EmpresaConfiguracoesPage() {
             type="submit"
             disabled={savingProfile}
             className="w-full h-10 rounded-[9px] text-sm font-bold text-white flex items-center justify-center gap-2 transition-all disabled:opacity-60"
-            style={{ background: 'linear-gradient(135deg, #3b82f6, #1d4ed8)', boxShadow: '0 4px 16px #3b82f625' }}
+            style={{ background: 'linear-gradient(135deg, #026648, #014840)', boxShadow: '0 4px 16px #02664820' }}
           >
             {savingProfile ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Salvar dados'}
           </button>
@@ -538,7 +538,7 @@ export default function EmpresaConfiguracoesPage() {
       </SectionCard>
 
       {/* Segurança */}
-      <SectionCard title="Segurança" icon={Shield} color="#22c55e">
+      <SectionCard title="Segurança" icon={Shield} color="#026648">
         <form onSubmit={changePassword} className="space-y-3">
           {passError && (
             <div className="rounded-[8px] px-3 py-2 text-xs text-[#f87171]" style={{ background: '#f8717110', border: '1px solid #f8717130' }}>
@@ -581,7 +581,7 @@ export default function EmpresaConfiguracoesPage() {
             type="submit"
             disabled={savingPass}
             className="w-full h-10 rounded-[9px] text-sm font-bold text-white flex items-center justify-center gap-2 transition-all disabled:opacity-60"
-            style={{ background: 'linear-gradient(135deg, #22c55e, #16a34a)', boxShadow: '0 4px 16px #22c55e20' }}
+            style={{ background: 'linear-gradient(135deg, #026648, #014840)', boxShadow: '0 4px 16px #02664820' }}
           >
             {savingPass ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Alterar senha'}
           </button>

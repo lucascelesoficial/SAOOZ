@@ -19,11 +19,11 @@ const VARIANT_CONFIG: Record<Variant, {
 }> = {
   positive: {
     icon: CheckCircle2,
-    color: '#22c55e',
-    glow: '0 0 16px #22c55e55',
+    color: '#026648',
+    glow: '0 0 16px #02664845',
     bg: 'linear-gradient(135deg, #0d2318 0%, #07091a 100%)',
-    border: '#22c55e22',
-    badge: 'text-[#22c55e]',
+    border: '#02664822',
+    badge: 'text-[#026648]',
   },
   warning: {
     icon: AlertTriangle,

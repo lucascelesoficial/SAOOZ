@@ -59,11 +59,11 @@ const GROUP_COLORS: Record<string, string> = {
   Fixos: '#f87171',
   Variaveis: '#f59e0b',
   Operacional: '#3b82f6',
-  Investimento: '#0ea5e9',
+  Investimento: '#026648',
 }
 
 const STATUS_OPTIONS: Array<{ id: BusinessExpenseStatus; label: string; color: string }> = [
-  { id: 'paid', label: 'Pago', color: '#22c55e' },
+  { id: 'paid', label: 'Pago', color: '#026648' },
   { id: 'pending', label: 'A pagar', color: '#f59e0b' },
   { id: 'overdue', label: 'Atrasado', color: '#f87171' },
   { id: 'canceled', label: 'Cancelado', color: '#6B7280' },

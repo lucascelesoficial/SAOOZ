@@ -153,11 +153,11 @@ export function OnboardingChecklist({
               className="group flex items-center gap-3 rounded-[10px] p-3 transition-all"
               style={{
                 background: step.completed
-                  ? 'color-mix(in oklab, var(--accent-green, #22c55e) 6%, transparent)'
+                  ? 'color-mix(in oklab, var(--accent-green, #026648) 6%, transparent)'
                   : 'color-mix(in oklab, var(--accent-blue) 5%, transparent)',
                 border: `1px solid ${
                   step.completed
-                    ? 'color-mix(in oklab, var(--accent-green, #22c55e) 20%, transparent)'
+                    ? 'color-mix(in oklab, var(--accent-green, #026648) 20%, transparent)'
                     : 'var(--panel-border)'
                 }`,
               }}
@@ -165,7 +165,7 @@ export function OnboardingChecklist({
               {step.completed ? (
                 <CheckCircle2
                   className="h-5 w-5 shrink-0"
-                  style={{ color: 'var(--accent-green, #22c55e)' }}
+                  style={{ color: 'var(--accent-green, #026648)' }}
                 />
               ) : (
                 <Circle
@@ -178,7 +178,7 @@ export function OnboardingChecklist({
                   className="text-xs font-semibold truncate"
                   style={{
                     color: step.completed
-                      ? 'var(--accent-green, #22c55e)'
+                      ? 'var(--accent-green, #026648)'
                       : 'var(--text-strong)',
                     textDecoration: step.completed ? 'line-through' : 'none',
                     opacity: step.completed ? 0.7 : 1,

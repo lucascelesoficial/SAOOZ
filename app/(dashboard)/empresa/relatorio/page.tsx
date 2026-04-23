@@ -53,7 +53,7 @@ function DeltaBadge({ current, previous }: { current: number; previous: number }
   if (previous === 0 || current === 0) return <span className="text-[#6B6B6B] text-xs">—</span>
   const delta = ((current - previous) / Math.abs(previous)) * 100
   const isUp = delta >= 0
-  const color = isUp ? '#22c55e' : '#f87171'
+  const color = isUp ? '#026648' : '#f87171'
   const Icon = isUp ? ChevronUp : ChevronDown
   return (
     <span className="flex items-center gap-0.5 text-xs font-semibold" style={{ color }}>
@@ -65,7 +65,7 @@ function DeltaBadge({ current, previous }: { current: number; previous: number }
 
 function MarginBadge({ margin }: { margin: number }) {
   const color =
-    margin >= 20 ? '#22c55e' :
+    margin >= 20 ? '#026648' :
     margin >= 10 ? '#f59e0b' :
     margin >= 0  ? '#f87171' : '#ef4444'
   return (
@@ -291,7 +291,7 @@ export default function RelatorioPage() {
             label: 'Receita Total',
             value: totals.revenue,
             icon: TrendingUp,
-            color: '#22c55e',
+            color: '#026648',
           },
           {
             label: 'Despesas + Impostos',
@@ -303,7 +303,7 @@ export default function RelatorioPage() {
             label: 'Lucro Líquido',
             value: totals.netProfit,
             icon: DollarSign,
-            color: totals.netProfit >= 0 ? '#22c55e' : '#f87171',
+            color: totals.netProfit >= 0 ? '#026648' : '#f87171',
           },
           {
             label: 'Margem Média',
@@ -312,7 +312,7 @@ export default function RelatorioPage() {
             icon: Percent,
             color:
               totals.avgMargin >= 20
-                ? '#22c55e'
+                ? '#026648'
                 : totals.avgMargin >= 10
                   ? '#f59e0b'
                   : '#f87171',
@@ -380,7 +380,7 @@ export default function RelatorioPage() {
                 <Legend
                   wrapperStyle={{ fontSize: 11, color: '#6B6B6B', paddingTop: 8 }}
                 />
-                <Bar dataKey="Receita" fill="#22c55e" radius={[3, 3, 0, 0]} maxBarSize={40} />
+                <Bar dataKey="Receita" fill="#026648" radius={[3, 3, 0, 0]} maxBarSize={40} />
                 <Bar dataKey="Despesas" fill="#f87171" radius={[3, 3, 0, 0]} maxBarSize={40} />
                 <Bar dataKey="Impostos" fill="#f59e0b" radius={[3, 3, 0, 0]} maxBarSize={40} />
                 <Bar dataKey="Lucro Líquido" fill="#3b82f6" radius={[3, 3, 0, 0]} maxBarSize={40} />
@@ -423,7 +423,7 @@ export default function RelatorioPage() {
                     <td className="py-3 pl-1 text-white font-medium capitalize min-w-[80px]">
                       {row.label}
                     </td>
-                    <td className="py-3 pr-1 text-right tabular-nums text-[#22c55e] font-semibold">
+                    <td className="py-3 pr-1 text-right tabular-nums text-[#026648] font-semibold">
                       {formatCurrencyShort(row.revenue)}
                     </td>
                     <td className="py-3 pr-1 text-right tabular-nums text-[#f87171]">
@@ -438,7 +438,7 @@ export default function RelatorioPage() {
                     <td className="py-3 pr-1 text-right tabular-nums">
                       <span
                         className="font-semibold"
-                        style={{ color: row.netProfit >= 0 ? '#22c55e' : '#f87171' }}
+                        style={{ color: row.netProfit >= 0 ? '#026648' : '#f87171' }}
                       >
                         {formatCurrencyShort(row.netProfit)}
                       </span>
@@ -460,7 +460,7 @@ export default function RelatorioPage() {
             <tfoot>
               <tr className="border-t-2 border-[#2A2A2A]">
                 <td className="py-3 pl-1 text-xs font-bold text-white">Total / Méd.</td>
-                <td className="py-3 pr-1 text-right tabular-nums text-[#22c55e] font-bold text-xs">
+                <td className="py-3 pr-1 text-right tabular-nums text-[#026648] font-bold text-xs">
                   {formatCurrencyShort(totals.revenue)}
                 </td>
                 <td className="py-3 pr-1 text-right tabular-nums text-[#f87171] font-bold text-xs">
@@ -473,7 +473,7 @@ export default function RelatorioPage() {
                   {formatCurrencyShort(totals.revenue - totals.expenses)}
                 </td>
                 <td className="py-3 pr-1 text-right tabular-nums font-bold text-xs">
-                  <span style={{ color: totals.netProfit >= 0 ? '#22c55e' : '#f87171' }}>
+                  <span style={{ color: totals.netProfit >= 0 ? '#026648' : '#f87171' }}>
                     {formatCurrencyShort(totals.netProfit)}
                   </span>
                 </td>
@@ -501,7 +501,7 @@ export default function RelatorioPage() {
       {/* Legend */}
       <div className="flex flex-wrap gap-x-5 gap-y-2 text-xs text-app-soft justify-center pb-2">
         {[
-          { color: '#22c55e', label: 'Receita bruta' },
+          { color: '#026648', label: 'Receita bruta' },
           { color: '#f87171', label: 'Despesas' },
           { color: '#f59e0b', label: 'Impostos estimados' },
           { color: '#3b82f6', label: 'Lucro líquido' },

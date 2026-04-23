@@ -259,8 +259,8 @@ function MovementForm({
   const MOVEMENT_CONFIG: Record<InvestmentMovementType, { color: string; icon: React.ElementType }> = {
     compra: { color: '#3b82f6', icon: TrendingUp },
     venda: { color: '#f87171', icon: ArrowDownLeft },
-    dividendo: { color: '#22c55e', icon: DollarSign },
-    juros: { color: '#22c55e', icon: Activity },
+    dividendo: { color: '#026648', icon: DollarSign },
+    juros: { color: '#026648', icon: Activity },
     aporte: { color: '#3b82f6', icon: ArrowUpRight },
     resgate: { color: '#f87171', icon: ArrowDownLeft },
     taxa: { color: '#f59e0b', icon: SlidersHorizontal },
@@ -313,7 +313,7 @@ function MovementForm({
         <div className="space-y-2">
           <Label className="text-app-base">
             Valor (R$)
-            <span className="ml-1 text-xs" style={{ color: sign > 0 ? '#22c55e' : '#f87171' }}>
+            <span className="ml-1 text-xs" style={{ color: sign > 0 ? '#026648' : '#f87171' }}>
               ({sign > 0 ? 'entrada' : 'saída'})
             </span>
           </Label>
@@ -440,7 +440,7 @@ function RecentMovementsTable({
               </div>
               <div
                 className="text-right font-semibold tabular-nums"
-                style={{ color: isPositive ? '#22c55e' : '#f87171' }}
+                style={{ color: isPositive ? '#026648' : '#f87171' }}
               >
                 {isPositive ? '+' : ''}{formatCurrency(mv.signedAmount)}
               </div>

@@ -44,7 +44,7 @@ const EMERGENCY_CATEGORIES = [
 function getCoverageInfo(months: number) {
   if (months < 1)  return { label: 'Sem proteção',    color: '#f87171', bg: 'color-mix(in oklab, #f87171 12%, transparent)',    border: 'color-mix(in oklab, #f87171 30%, transparent)',    emoji: '🚨' }
   if (months < 3)  return { label: 'Proteção básica', color: '#f59e0b', bg: 'color-mix(in oklab, #f59e0b 12%, transparent)',    border: 'color-mix(in oklab, #f59e0b 30%, transparent)',    emoji: '⚠️' }
-  if (months < 6)  return { label: 'Bem protegido',   color: '#22c55e', bg: 'color-mix(in oklab, #22c55e 12%, transparent)',    border: 'color-mix(in oklab, #22c55e 30%, transparent)',    emoji: '✅' }
+  if (months < 6)  return { label: 'Bem protegido',   color: '#026648', bg: 'color-mix(in oklab, #026648 12%, transparent)',    border: 'color-mix(in oklab, #026648 30%, transparent)',    emoji: '✅' }
   return             { label: 'Muito protegido',  color: 'var(--accent-blue)', bg: 'color-mix(in oklab, var(--accent-blue) 12%, transparent)', border: 'color-mix(in oklab, var(--accent-blue) 30%, transparent)', emoji: '🛡️' }
 }
 
@@ -202,9 +202,9 @@ function MoneyForm({
               onClick={() => setValue('action', opt)}
               className="flex items-center justify-center gap-2 rounded-[8px] py-2.5 text-sm font-semibold transition-all"
               style={{
-                background: isSelected ? (opt === 'guardar' ? 'color-mix(in oklab, #22c55e 15%, transparent)' : 'color-mix(in oklab, #f59e0b 15%, transparent)') : 'transparent',
-                border: isSelected ? `1px solid ${opt === 'guardar' ? 'color-mix(in oklab, #22c55e 40%, transparent)' : 'color-mix(in oklab, #f59e0b 40%, transparent)'}` : '1px solid transparent',
-                color: isSelected ? (opt === 'guardar' ? '#22c55e' : '#f59e0b') : 'var(--text-soft)',
+                background: isSelected ? (opt === 'guardar' ? 'color-mix(in oklab, #026648 15%, transparent)' : 'color-mix(in oklab, #f59e0b 15%, transparent)') : 'transparent',
+                border: isSelected ? `1px solid ${opt === 'guardar' ? 'color-mix(in oklab, #026648 40%, transparent)' : 'color-mix(in oklab, #f59e0b 40%, transparent)'}` : '1px solid transparent',
+                color: isSelected ? (opt === 'guardar' ? '#026648' : '#f59e0b') : 'var(--text-soft)',
               }}
             >
               {opt === 'guardar' ? <PlusCircle className="h-4 w-4" /> : <MinusCircle className="h-4 w-4" />}
@@ -262,7 +262,7 @@ function MoneyForm({
 
       <div className="flex gap-2 pt-1">
         <Button type="button" variant="outline" onClick={onClose} className="flex-1 rounded-[8px]">Cancelar</Button>
-        <Button type="submit" disabled={isSaving} className="flex-1 rounded-[8px] text-white" style={{ background: action === 'guardar' ? 'linear-gradient(135deg, #16a34a, #22c55e)' : 'linear-gradient(135deg, #d97706, #f59e0b)' }}>
+        <Button type="submit" disabled={isSaving} className="flex-1 rounded-[8px] text-white" style={{ background: action === 'guardar' ? 'linear-gradient(135deg, #014840, #026648)' : 'linear-gradient(135deg, #d97706, #f59e0b)' }}>
           {isSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : action === 'guardar' ? 'Registrar depósito' : 'Registrar uso'}
         </Button>
       </div>
@@ -303,7 +303,7 @@ function HistoryList({ movements, onDelete }: {
           <div key={mv.id} className="flex items-center gap-3 rounded-[10px] px-4 py-3" style={{ background: 'var(--panel-bg-soft)', border: '1px solid var(--panel-border)' }}>
             <div
               className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-sm"
-              style={{ background: isIn ? 'color-mix(in oklab, #22c55e 15%, transparent)' : 'color-mix(in oklab, #f59e0b 15%, transparent)' }}
+              style={{ background: isIn ? 'color-mix(in oklab, #026648 15%, transparent)' : 'color-mix(in oklab, #f59e0b 15%, transparent)' }}
             >
               {isIn ? '↑' : '↓'}
             </div>
@@ -315,7 +315,7 @@ function HistoryList({ movements, onDelete }: {
                 {new Date(`${mv.happenedOn}T00:00:00`).toLocaleDateString('pt-BR')}
               </p>
             </div>
-            <p className="font-bold tabular-nums text-sm shrink-0" style={{ color: isIn ? '#22c55e' : '#f59e0b' }}>
+            <p className="font-bold tabular-nums text-sm shrink-0" style={{ color: isIn ? '#026648' : '#f59e0b' }}>
               {isIn ? '+' : ''}{formatCurrency(mv.signedAmount)}
             </p>
             <button
@@ -697,7 +697,7 @@ export default function ReservaEmergenciaPFPage() {
                 )}
 
                 {metrics.remainingToTarget === 0 && (
-                  <div className="rounded-[8px] px-3 py-2 text-center text-sm font-semibold" style={{ background: 'color-mix(in oklab, #22c55e 15%, transparent)', color: '#22c55e' }}>
+                  <div className="rounded-[8px] px-3 py-2 text-center text-sm font-semibold" style={{ background: 'color-mix(in oklab, #026648 15%, transparent)', color: '#026648' }}>
                     🎉 Meta atingida! Você está bem protegido.
                   </div>
                 )}
@@ -746,7 +746,7 @@ export default function ReservaEmergenciaPFPage() {
               {metrics.monthlyContributionUsed > 0 && (
                 <div className="mt-2 flex items-center justify-between border-t pt-2" style={{ borderColor: 'var(--panel-border)' }}>
                   <p className="text-sm text-app">Guardando por mês</p>
-                  <p className="font-bold tabular-nums" style={{ color: '#22c55e' }}>{formatCurrency(metrics.monthlyContributionUsed)}</p>
+                  <p className="font-bold tabular-nums" style={{ color: '#026648' }}>{formatCurrency(metrics.monthlyContributionUsed)}</p>
                 </div>
               )}
             </div>

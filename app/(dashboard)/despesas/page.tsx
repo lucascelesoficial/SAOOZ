@@ -67,7 +67,7 @@ const GROUP_COLORS: Record<string, string> = {
 }
 
 const STATUS_CONFIG: Record<PfExpenseStatus, { label: string; color: string; bg: string; Icon: React.ElementType }> = {
-  paid:    { label: 'Pago',     color: '#22c55e', bg: 'color-mix(in oklab, #22c55e 12%, transparent)', Icon: CheckCircle2 },
+  paid:    { label: 'Pago',     color: '#026648', bg: 'color-mix(in oklab, #026648 12%, transparent)', Icon: CheckCircle2 },
   pending: { label: 'Pendente', color: '#f59e0b', bg: 'color-mix(in oklab, #f59e0b 12%, transparent)', Icon: Clock },
   overdue: { label: 'Vencido',  color: '#f87171', bg: 'color-mix(in oklab, #f87171 12%, transparent)', Icon: XCircle },
 }
@@ -580,7 +580,7 @@ export default function DespesasPFPage() {
         </div>
         <div className="panel-card p-4 col-span-2 sm:col-span-1">
           <p className="text-xs text-app-soft mb-1">Pagas</p>
-          <p className="text-2xl font-bold tabular-nums" style={{ color: '#22c55e' }}>
+          <p className="text-2xl font-bold tabular-nums" style={{ color: '#026648' }}>
             {paid.length} <span className="text-sm font-normal text-app-soft">lançamentos</span>
           </p>
         </div>

@@ -179,7 +179,7 @@ export default function DREPage() {
     dre.receitaBruta > 0 ? (value / dre.receitaBruta) * 100 : 0
 
   function resultColor(v: number) {
-    if (v > 0) return '#22c55e'
+    if (v > 0) return '#026648'
     if (v < 0) return '#f87171'
     return undefined
   }
@@ -263,7 +263,7 @@ export default function DREPage() {
       {/* KPI strip */}
       <div className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
         {[
-          { label: 'Receita Bruta', value: dre.receitaBruta, color: '#22c55e' },
+          { label: 'Receita Bruta', value: dre.receitaBruta, color: '#026648' },
           { label: 'Impostos', value: dre.impostos, color: '#f59e0b' },
           { label: 'Despesas', value: totals.totalExpenses, color: '#f87171' },
           {
@@ -296,7 +296,7 @@ export default function DREPage() {
         </div>
 
         {/* ── RECEITAS ── */}
-        <DRESection title="Receitas" color="#22c55e" />
+        <DRESection title="Receitas" color="#026648" />
         {Object.entries(dre.revByCategory).map(([cat, val]) => (
           <DRELine
             key={cat}
@@ -313,7 +313,7 @@ export default function DREPage() {
           label="(=) RECEITA BRUTA"
           value={dre.receitaBruta}
           bold
-          color="#22c55e"
+          color="#026648"
           separator
           pct={100}
         />
@@ -393,7 +393,7 @@ export default function DREPage() {
         {/* ── DESPESAS OPERACIONAIS ── */}
         {dre.despesasOperacionais > 0 && (
           <>
-            <DRESection title="Despesas Operacionais" color="#3b82f6" />
+            <DRESection title="Despesas Operacionais" color="#026648" />
             {Object.entries(dre.expByCategory)
               .filter(([cat]) => isOperacional(cat))
               .map(([cat, val]) => (
@@ -403,7 +403,7 @@ export default function DREPage() {
                   value={-val}
                   indent={1}
                   pct={pct(val)}
-                  color="#3b82f6"
+                  color="#026648"
                 />
               ))}
             <DRELine
@@ -420,7 +420,7 @@ export default function DREPage() {
         {/* ── INVESTIMENTOS ── */}
         {dre.investimentos > 0 && (
           <>
-            <DRESection title="Investimentos" color="#0ea5e9" />
+            <DRESection title="Investimentos" color="#026648" />
             {Object.entries(dre.expByCategory)
               .filter(([cat]) => isInvestimento(cat))
               .map(([cat, val]) => (
@@ -430,7 +430,7 @@ export default function DREPage() {
                   value={-val}
                   indent={1}
                   pct={pct(val)}
-                  color="#0ea5e9"
+                  color="#026648"
                 />
               ))}
           </>
@@ -442,7 +442,7 @@ export default function DREPage() {
           style={{
             borderTop: '2px solid var(--panel-border)',
             background: dre.resultadoLiquido >= 0
-              ? 'color-mix(in oklab, #22c55e 6%, transparent)'
+              ? 'color-mix(in oklab, #026648 6%, transparent)'
               : 'color-mix(in oklab, #f87171 6%, transparent)',
           }}
         >
@@ -468,7 +468,7 @@ export default function DREPage() {
             {
               label: 'Margem líquida',
               value: `${pct(dre.resultadoLiquido).toFixed(1)}%`,
-              color: dre.resultadoLiquido >= 0 ? '#22c55e' : '#f87171',
+              color: dre.resultadoLiquido >= 0 ? '#026648' : '#f87171',
             },
             {
               label: 'Carga tributária',

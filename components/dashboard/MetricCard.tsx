@@ -16,7 +16,7 @@ interface MetricCardProps {
 const PALETTE = {
   green: {
     base: '#4ade80',
-    strong: '#22c55e',
+    strong: '#026648',
     surface: 'color-mix(in oklab, #4ade80 14%, transparent)',
     text: '#4ade80',
   },

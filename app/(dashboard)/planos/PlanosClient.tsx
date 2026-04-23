@@ -485,8 +485,8 @@ export function PlanosClient({ snapshot }: PlanosClientProps) {
               style={
                 isActiveCurrentPlan
                   ? {
-                      borderColor: 'color-mix(in oklab, #22c55e 50%, transparent)',
-                      boxShadow: '0 8px 32px color-mix(in oklab, #22c55e 10%, transparent)',
+                      borderColor: 'color-mix(in oklab, #026648 50%, transparent)',
+                      boxShadow: '0 8px 32px color-mix(in oklab, #026648 10%, transparent)',
                     }
                   : plan.highlight
                     ? {
@@ -501,8 +501,8 @@ export function PlanosClient({ snapshot }: PlanosClientProps) {
                 <div
                   className="absolute left-4 top-4 inline-flex items-center gap-1 rounded-full px-2 py-1 text-[10px] font-bold uppercase"
                   style={{
-                    background: 'color-mix(in oklab, #22c55e 18%, transparent)',
-                    color: '#22c55e',
+                    background: 'color-mix(in oklab, #026648 18%, transparent)',
+                    color: '#026648',
                   }}
                 >
                   <BadgeCheck className="h-3.5 w-3.5" />
@@ -534,7 +534,7 @@ export function PlanosClient({ snapshot }: PlanosClientProps) {
                   <p className="mt-1 text-xs text-app-soft">
                     <span className="line-through">{formatCurrency(plan.priceMonthly)}/mes</span>
                     {' · '}
-                    <span className="font-medium text-[#22c55e]">
+                    <span className="font-medium text-[#026648]">
                       {Math.round(pricing.discount * 100)}% de economia
                     </span>
                     {' · '}
@@ -574,9 +574,9 @@ export function PlanosClient({ snapshot }: PlanosClientProps) {
                   <div
                     className="flex items-center justify-center gap-2 rounded-[10px] border py-2 text-sm font-semibold"
                     style={{
-                      borderColor: 'color-mix(in oklab, #22c55e 40%, transparent)',
-                      background: 'color-mix(in oklab, #22c55e 10%, transparent)',
-                      color: '#22c55e',
+                      borderColor: 'color-mix(in oklab, #026648 40%, transparent)',
+                      background: 'color-mix(in oklab, #026648 10%, transparent)',
+                      color: '#026648',
                     }}
                   >
                     <BadgeCheck className="h-4 w-4" />

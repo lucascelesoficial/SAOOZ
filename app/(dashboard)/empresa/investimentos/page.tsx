@@ -161,7 +161,7 @@ function MovementForm({ onClose, onSave, isSaving, accounts, defaultAccountId }:
   })
   const movementType = watch('movementType')
   const sign = MOVEMENT_TYPE_SIGNED[movementType as InvestmentMovementType]
-  const COLORS: Record<InvestmentMovementType, string> = { compra: '#3b82f6', venda: '#f87171', dividendo: '#22c55e', juros: '#22c55e', aporte: '#3b82f6', resgate: '#f87171', taxa: '#f59e0b', ajuste: '#94a3b8' }
+  const COLORS: Record<InvestmentMovementType, string> = { compra: '#3b82f6', venda: '#f87171', dividendo: '#026648', juros: '#026648', aporte: '#3b82f6', resgate: '#f87171', taxa: '#f59e0b', ajuste: '#94a3b8' }
   const ICONS: Record<InvestmentMovementType, React.ElementType> = { compra: TrendingUp, venda: ArrowDownLeft, dividendo: DollarSign, juros: Activity, aporte: ArrowUpRight, resgate: ArrowDownLeft, taxa: SlidersHorizontal, ajuste: SlidersHorizontal }
 
   return (
@@ -192,7 +192,7 @@ function MovementForm({ onClose, onSave, isSaving, accounts, defaultAccountId }:
       </div>
       <div className="grid grid-cols-2 gap-3">
         <div className="space-y-2">
-          <Label className="text-app-base">Valor (R$) <span className="ml-1 text-xs" style={{ color: sign > 0 ? '#22c55e' : '#f87171' }}>({sign > 0 ? 'entrada' : 'saída'})</span></Label>
+          <Label className="text-app-base">Valor (R$) <span className="ml-1 text-xs" style={{ color: sign > 0 ? '#026648' : '#f87171' }}>({sign > 0 ? 'entrada' : 'saída'})</span></Label>
           <Input type="text" inputMode="decimal" placeholder="0,00" className="rounded-[8px]" style={{ background: 'var(--panel-bg-soft)', borderColor: errors.amount ? '#f87171' : 'var(--panel-border)', color: 'var(--text-strong)' }} {...register('amount', { required: 'Informe o valor', validate: (v) => { const n = parseFloat(v.replace(',', '.')); return (!isNaN(n) && n >= 0) || 'Valor inválido' } })} />
           {errors.amount && <p className="text-xs text-[#f87171]">{errors.amount.message}</p>}
         </div>
@@ -243,7 +243,7 @@ function CashPositionBanner({
       <div className="grid grid-cols-3 gap-3">
         <div className="rounded-[8px] p-3 text-center" style={{ background: 'var(--panel-bg-soft)', border: '1px solid var(--panel-border)' }}>
           <p className="text-xs text-app-soft">Resultado líquido</p>
-          <p className="mt-1 font-bold tabular-nums" style={{ color: isPositive ? '#22c55e' : '#f87171', fontSize: '0.95rem' }}>
+          <p className="mt-1 font-bold tabular-nums" style={{ color: isPositive ? '#026648' : '#f87171', fontSize: '0.95rem' }}>
             {formatCurrency(netProfit)}
           </p>
         </div>
@@ -255,7 +255,7 @@ function CashPositionBanner({
         </div>
         <div className="rounded-[8px] p-3 text-center" style={{ background: 'var(--panel-bg-soft)', border: '1px solid var(--panel-border)' }}>
           <p className="text-xs text-app-soft">Caixa investível</p>
-          <p className="mt-1 font-bold tabular-nums" style={{ color: investable > 0 ? '#22c55e' : '#94a3b8', fontSize: '0.95rem' }}>
+          <p className="mt-1 font-bold tabular-nums" style={{ color: investable > 0 ? '#026648' : '#94a3b8', fontSize: '0.95rem' }}>
             {formatCurrency(investable)}
           </p>
         </div>
@@ -303,7 +303,7 @@ function RecentMovementsTable({ movements, onDelete }: { movements: Array<{ id: 
                 <p className="mt-0.5 text-xs text-app-soft">{mv.accountName}{mv.assetSymbol ? ` · ${mv.assetSymbol}` : ''}</p>
               </div>
               <div className="text-right text-xs text-app-soft">{new Date(`${mv.occurredOn}T00:00:00`).toLocaleDateString('pt-BR')}</div>
-              <div className="text-right font-semibold tabular-nums" style={{ color: isPositive ? '#22c55e' : '#f87171' }}>
+              <div className="text-right font-semibold tabular-nums" style={{ color: isPositive ? '#026648' : '#f87171' }}>
                 {isPositive ? '+' : ''}{formatCurrency(mv.signedAmount)}
               </div>
               <button onClick={() => handleDelete(mv.id)} disabled={deleting === mv.id} className="rounded-[6px] p-1.5 text-app-soft hover:text-[#f87171] transition-colors">

@@ -21,7 +21,7 @@ export default function ProLaborePage() {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="h-8 w-8 rounded-full border-2 border-[#22c55e] border-t-transparent animate-spin" />
+        <div className="h-8 w-8 rounded-full border-2 border-[#026648] border-t-transparent animate-spin" />
       </div>
     )
   }
@@ -74,19 +74,19 @@ export default function ProLaborePage() {
       {/* Summary card */}
       <div className="card-premium rounded-[14px] p-6 text-center"
         style={hasData && proLabore.balanced > 0
-          ? { background: 'linear-gradient(145deg, #1E1E1E 0%, #1A1A1A 100%)', border: '1px solid #22c55e20' }
+          ? { background: 'linear-gradient(145deg, #1E1E1E 0%, #1A1A1A 100%)', border: '1px solid #02664820' }
           : {}
         }>
         <div className="h-14 w-14 rounded-2xl flex items-center justify-center mx-auto mb-4"
           style={{
-            background: proLabore.balanced > 0 ? '#22c55e15' : '#383838',
-            border: `1px solid ${proLabore.balanced > 0 ? '#22c55e30' : '#2A2A2A'}`,
+            background: proLabore.balanced > 0 ? '#02664812' : '#383838',
+            border: `1px solid ${proLabore.balanced > 0 ? '#02664822' : '#2A2A2A'}`,
           }}>
-          <ArrowUpRight className="h-6 w-6" style={{ color: proLabore.balanced > 0 ? '#22c55e' : '#6B6B6B' }} />
+          <ArrowUpRight className="h-6 w-6" style={{ color: proLabore.balanced > 0 ? '#026648' : '#6B6B6B' }} />
         </div>
         <p className="text-sm text-[#6B6B6B] mb-2">Pró-labore equilibrado sugerido</p>
         <p className="text-4xl font-extrabold tabular-nums"
-          style={{ color: proLabore.balanced > 0 ? '#22c55e' : '#6B6B6B' }}>
+          style={{ color: proLabore.balanced > 0 ? '#026648' : '#6B6B6B' }}>
           {proLabore.balanced > 0 ? formatCurrency(proLabore.balanced) : '—'}
         </p>
         {hasData && (
@@ -111,7 +111,7 @@ export default function ProLaborePage() {
               label: 'Equilibrado',
               value: proLabore.balanced,
               icon: Scale,
-              color: '#22c55e',
+              color: '#026648',
               desc: 'Recomendado pelo SAOOZ',
             },
             {
@@ -147,7 +147,7 @@ export default function ProLaborePage() {
           <h2 className="text-sm font-bold text-white mb-4">Como o SAOOZ calcula</h2>
           <div className="space-y-3">
             {[
-              { label: 'Faturamento bruto',       value: totals.totalRevenue,  color: '#22c55e', sign: '+' },
+              { label: 'Faturamento bruto',       value: totals.totalRevenue,  color: '#026648', sign: '+' },
               { label: 'Despesas operacionais',   value: -totals.totalExpenses, color: '#f87171', sign: '−' },
               { label: 'Imposto estimado',         value: -totals.taxAmount,    color: '#f59e0b', sign: '−' },
             ].map((row) => (

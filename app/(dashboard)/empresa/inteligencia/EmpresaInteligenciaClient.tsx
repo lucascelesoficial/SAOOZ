@@ -66,7 +66,7 @@ const EXP_LABELS: Record<string, string> = {
   investimento_outros: 'Investimento',
 }
 
-const REV_COLORS = ['#0ea5e9', '#38bdf8', '#7dd3fc', '#93c5fd', '#c4b5fd']
+const REV_COLORS = ['#026648', '#38bdf8', '#7dd3fc', '#93c5fd', '#c4b5fd']
 const EXP_COLORS = ['#f87171', '#fb923c', '#f59e0b', '#e879f9', '#8b5cf6']
 
 interface EmpresaInteligenciaClientProps {
@@ -179,7 +179,7 @@ function severityStyles(severity: 'high' | 'medium' | 'low') {
     return { color: '#f59e0b', bg: '#f59e0b10', border: '#f59e0b25' }
   }
 
-  return { color: '#22c55e', bg: '#22c55e10', border: '#22c55e25' }
+  return { color: '#026648', bg: '#02664812', border: '#02664822' }
 }
 
 function AttentionBlock({
@@ -222,9 +222,9 @@ function AttentionBlock({
         ) : (
           <div
             className="rounded-[10px] border px-3 py-3"
-            style={{ background: '#22c55e10', borderColor: '#22c55e25' }}
+            style={{ background: '#02664812', borderColor: '#02664822' }}
           >
-            <p className="text-sm font-semibold text-[#22c55e]">Operação estável</p>
+            <p className="text-sm font-semibold text-[#026648]">Operação estável</p>
             <p className="mt-1 text-xs text-app-soft">Nenhum alerta crítico no momento. Continue monitorando os indicadores.</p>
           </div>
         )}
@@ -479,7 +479,7 @@ export function EmpresaInteligenciaClient({
           </div>
           <p
             className="mt-3 text-2xl font-bold"
-            style={{ color: intelligence.projectedNetProfit >= 0 ? '#22c55e' : '#f87171' }}
+            style={{ color: intelligence.projectedNetProfit >= 0 ? '#026648' : '#f87171' }}
           >
             {formatCurrency(intelligence.projectedNetProfit)}
           </p>
@@ -511,16 +511,16 @@ export function EmpresaInteligenciaClient({
                 <AreaChart data={history} margin={{ left: 0, right: 8, top: 4, bottom: 0 }}>
                   <defs>
                     <linearGradient id="bizRevenue" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#0ea5e9" stopOpacity={0.25} />
-                      <stop offset="95%" stopColor="#0ea5e9" stopOpacity={0} />
+                      <stop offset="5%" stopColor="#026648" stopOpacity={0.25} />
+                      <stop offset="95%" stopColor="#026648" stopOpacity={0} />
                     </linearGradient>
                     <linearGradient id="bizExpense" x1="0" y1="0" x2="0" y2="1">
                       <stop offset="5%" stopColor="#f87171" stopOpacity={0.2} />
                       <stop offset="95%" stopColor="#f87171" stopOpacity={0} />
                     </linearGradient>
                     <linearGradient id="bizProfit" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#22c55e" stopOpacity={0.18} />
-                      <stop offset="95%" stopColor="#22c55e" stopOpacity={0} />
+                      <stop offset="5%" stopColor="#026648" stopOpacity={0.18} />
+                      <stop offset="95%" stopColor="#026648" stopOpacity={0} />
                     </linearGradient>
                   </defs>
                   <CartesianGrid stroke="var(--chart-grid)" strokeDasharray="3 3" vertical={false} />
@@ -549,9 +549,9 @@ export function EmpresaInteligenciaClient({
                       return [formatCurrency(numericValue), labels[label] ?? label]
                     }}
                   />
-                  <Area type="monotone" dataKey="revenue" stroke="#0ea5e9" strokeWidth={2} fill="url(#bizRevenue)" dot={false} />
+                  <Area type="monotone" dataKey="revenue" stroke="#026648" strokeWidth={2} fill="url(#bizRevenue)" dot={false} />
                   <Area type="monotone" dataKey="expenses" stroke="#f87171" strokeWidth={2} fill="url(#bizExpense)" dot={false} />
-                  <Area type="monotone" dataKey="netProfit" stroke="#22c55e" strokeWidth={1.5} fill="url(#bizProfit)" dot={false} strokeDasharray="4 3" />
+                  <Area type="monotone" dataKey="netProfit" stroke="#026648" strokeWidth={1.5} fill="url(#bizProfit)" dot={false} strokeDasharray="4 3" />
                 </AreaChart>
               </ResponsiveContainer>
             </div>

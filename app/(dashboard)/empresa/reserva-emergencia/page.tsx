@@ -31,7 +31,7 @@ import type { ReserveStatus } from '@/lib/modules/reserve/service'
 const STATUS_COLORS: Record<ReserveStatus, string> = {
   critico: '#f87171',
   atencao: '#f59e0b',
-  saudavel: '#22c55e',
+  saudavel: '#026648',
   forte: 'var(--accent-blue)',
 }
 
@@ -249,7 +249,7 @@ function MovementForm({
   const entryType = watch('entryType')
 
   const ENTRY_TYPE_CONFIG = {
-    aporte: { label: 'Aporte', icon: TrendingUp, color: '#22c55e' },
+    aporte: { label: 'Aporte', icon: TrendingUp, color: '#026648' },
     resgate: { label: 'Resgate', icon: TrendingDown, color: '#f87171' },
     ajuste: { label: 'Ajuste', icon: SlidersHorizontal, color: '#94a3b8' },
   }
@@ -379,7 +379,7 @@ function ReserveProgressBar({
 }) {
   const pct = target > 0 ? Math.min(100, (current / target) * 100) : 0
   const progressColor =
-    status ? STATUS_COLORS[status] : pct >= 66 ? '#22c55e' : pct >= 33 ? '#f59e0b' : '#f87171'
+    status ? STATUS_COLORS[status] : pct >= 66 ? '#026648' : pct >= 33 ? '#f59e0b' : '#f87171'
 
   return (
     <div className="panel-card p-5">

@@ -210,7 +210,7 @@ const INSIGHT_CFG: Record<InsightType, { color: string; bg: string; border: stri
   risk:        { color: '#f87171', bg: '#f8717108', border: '#f8717122', Icon: TriangleAlert, label: 'Risco'        },
   warning:     { color: '#f59e0b', bg: '#f59e0b08', border: '#f59e0b22', Icon: TriangleAlert, label: 'Atenção'      },
   opportunity: { color: '#026648', bg: '#02664808', border: '#02664822', Icon: Lightbulb,     label: 'Oportunidade' },
-  achievement: { color: '#22c55e', bg: '#22c55e08', border: '#22c55e22', Icon: BadgeCheck,    label: 'Conquista'    },
+  achievement: { color: '#026648', bg: '#02664808', border: '#02664822', Icon: BadgeCheck,    label: 'Conquista'    },
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -220,7 +220,7 @@ const INSIGHT_CFG: Record<InsightType, { color: string; bg: string; border: stri
 function healthScore(margin: number, taxRate: number, hasRevenue: boolean) {
   if (!hasRevenue) return { score: 0, label: 'Sem dados', color: '#4B5563' }
   const s = Math.round(Math.min(margin * 250, 60) + Math.max(0, 40 - taxRate * 200))
-  if (s >= 75) return { score: s, label: 'Saudável',  color: '#22c55e' }
+  if (s >= 75) return { score: s, label: 'Saudável',  color: '#026648' }
   if (s >= 55) return { score: s, label: 'Estável',   color: '#026648' }
   if (s >= 35) return { score: s, label: 'Atenção',   color: '#f59e0b' }
   return              { score: s, label: 'Crítico',   color: '#f87171' }
@@ -494,7 +494,7 @@ export default function EmpresaPage() {
             <div>
               <p className="text-sm font-bold text-app flex items-center gap-1.5">
                 Pearfy <span style={{ color: 'var(--accent-blue)' }}>Inteligência</span>
-                <span className="h-1.5 w-1.5 rounded-full bg-[#22c55e] animate-pulse" />
+                <span className="h-1.5 w-1.5 rounded-full bg-[#026648] animate-pulse" />
               </p>
               <p className="text-[10px] text-app-soft">
                 {intelligence.length > 0
@@ -504,7 +504,7 @@ export default function EmpresaPage() {
             </div>
           </div>
           <span className="flex items-center gap-1 rounded-full px-2.5 py-1 text-[9px] font-bold uppercase tracking-widest"
-            style={{ background: '#22c55e12', color: '#22c55e', border: '1px solid #22c55e25' }}>
+            style={{ background: '#02664812', color: '#026648', border: '1px solid #02664822' }}>
             <Sparkles className="h-2.5 w-2.5" /> ao vivo
           </span>
         </div>
@@ -567,9 +567,9 @@ export default function EmpresaPage() {
           {/* Linhas A receber / A pagar */}
           <div className="space-y-3">
             <div className="flex items-center justify-between p-3 rounded-[8px]"
-              style={{ background: '#22c55e08', border: '1px solid #22c55e18' }}>
+              style={{ background: '#02664808', border: '1px solid #02664812' }}>
               <div className="flex items-center gap-2">
-                <ArrowUpRight className="h-4 w-4 text-[#22c55e]" />
+                <ArrowUpRight className="h-4 w-4 text-[#026648]" />
                 <span className="text-xs font-semibold text-app-soft">A receber</span>
               </div>
               <div className="flex items-center gap-2">
@@ -578,7 +578,7 @@ export default function EmpresaPage() {
                     {arAp.overdueRevenues} atrasado{arAp.overdueRevenues > 1 ? 's' : ''}
                   </span>
                 )}
-                <span className="text-sm font-extrabold tabular-nums text-[#22c55e]">
+                <span className="text-sm font-extrabold tabular-nums text-[#026648]">
                   {arAp ? formatCurrency(arAp.totalAReceber) : '—'}
                 </span>
               </div>
@@ -725,7 +725,7 @@ export default function EmpresaPage() {
             </div>
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <Handshake className="h-4 w-4 text-[#22c55e]" />
+                <Handshake className="h-4 w-4 text-[#026648]" />
                 <span className="text-xs text-app-soft">Clientes ativos</span>
               </div>
               <span className="text-sm font-extrabold tabular-nums text-app">
@@ -768,7 +768,7 @@ export default function EmpresaPage() {
           const budActual = comprehensive?.budgetActual ?? 0
           const pct = budTotal > 0 ? budActual / budTotal : 0
           const pctCapped = Math.min(100, Math.round(pct * 100))
-          const barColor = pct >= 1 ? '#f87171' : pct >= 0.7 ? '#f59e0b' : '#22c55e'
+          const barColor = pct >= 1 ? '#f87171' : pct >= 0.7 ? '#f59e0b' : '#026648'
           const statusText = pct >= 1
             ? 'Orçamento estourado'
             : pct >= 0.7

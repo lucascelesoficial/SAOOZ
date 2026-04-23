@@ -77,7 +77,7 @@ export function PaymentPageClient() {
                       className="shrink-0 rounded-[6px] p-2 transition-colors"
                       style={{ background: 'var(--panel-bg)', border: '1px solid var(--panel-border)' }}
                     >
-                      {copied ? <CheckCircle2 className="h-4 w-4 text-[#22c55e]" /> : <Copy className="h-4 w-4 text-app-soft" />}
+                      {copied ? <CheckCircle2 className="h-4 w-4 text-[#026648]" /> : <Copy className="h-4 w-4 text-app-soft" />}
                     </button>
                   </div>
                   <p className="mt-2 text-xs text-app-soft">Beneficiário: {pixName}</p>

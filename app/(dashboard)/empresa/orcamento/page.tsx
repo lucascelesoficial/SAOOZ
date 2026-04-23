@@ -49,7 +49,7 @@ const GROUP_COLORS: Record<string, string> = {
   Fixos:       '#f87171',
   Variáveis:   '#f59e0b',
   Operacional: '#3b82f6',
-  Investimento:'#0ea5e9',
+  Investimento:'#026648',
 }
 
 type DraftMap = Record<string, string>  // category → raw input string
@@ -57,7 +57,7 @@ type DraftMap = Record<string, string>  // category → raw input string
 function barColor(pct: number) {
   if (pct > 100) return '#ef4444'
   if (pct > 80)  return '#f59e0b'
-  return '#22c55e'
+  return '#026648'
 }
 
 export default function OrcamentoPage() {
@@ -255,8 +255,8 @@ export default function OrcamentoPage() {
       <div className="grid grid-cols-3 gap-3">
         {[
           { label: 'Total orçado',   value: totalBudget, color: '#3b82f6' },
-          { label: 'Total gasto',    value: totalActual, color: totalActual > totalBudget ? '#ef4444' : '#22c55e' },
-          { label: 'Saldo restante', value: totalBudget - totalActual, color: totalBudget - totalActual >= 0 ? '#22c55e' : '#ef4444' },
+          { label: 'Total gasto',    value: totalActual, color: totalActual > totalBudget ? '#ef4444' : '#026648' },
+          { label: 'Saldo restante', value: totalBudget - totalActual, color: totalBudget - totalActual >= 0 ? '#026648' : '#ef4444' },
         ].map(({ label, value, color }) => (
           <div key={label} className="card-premium rounded-[14px] p-4">
             <p className="text-xs text-app-soft mb-1">{label}</p>

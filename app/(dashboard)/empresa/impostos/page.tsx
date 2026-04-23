@@ -175,7 +175,7 @@ export default function ImpostosPage() {
           <h2 className="text-sm font-bold text-white mb-4">Faturamento × Imposto</h2>
           <div className="space-y-3">
             {[
-              { label: 'Faturamento bruto',  value: totals.totalRevenue,  color: '#22c55e', pct: 100 },
+              { label: 'Faturamento bruto',  value: totals.totalRevenue,  color: '#026648', pct: 100 },
               { label: 'Imposto estimado',   value: totals.taxAmount,     color: '#f59e0b', pct: (totals.taxAmount / totals.totalRevenue) * 100 },
               { label: 'Restante líquido',   value: totals.totalRevenue - totals.taxAmount, color: '#3b82f6', pct: ((totals.totalRevenue - totals.taxAmount) / totals.totalRevenue) * 100 },
             ].map((row) => (

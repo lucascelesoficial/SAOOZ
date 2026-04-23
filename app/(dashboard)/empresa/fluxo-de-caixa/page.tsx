@@ -294,12 +294,12 @@ export default function FluxoDeCaixaPage() {
                 style={{ background: 'var(--panel-bg-soft)' }}>
                 <div className="flex items-center gap-2 min-w-0">
                   {s.kind === 'revenue'
-                    ? <ArrowUpRight className="h-3.5 w-3.5 shrink-0 text-[#22c55e]" />
+                    ? <ArrowUpRight className="h-3.5 w-3.5 shrink-0 text-[#026648]" />
                     : <ArrowDownLeft className="h-3.5 w-3.5 shrink-0 text-[#f87171]" />}
                   <span className="text-xs text-app truncate">{s.description ?? s.category.replace(/_/g, ' ')}</span>
                 </div>
                 <span className="text-xs font-semibold tabular-nums shrink-0"
-                  style={{ color: s.kind === 'revenue' ? '#22c55e' : '#f87171' }}>
+                  style={{ color: s.kind === 'revenue' ? '#026648' : '#f87171' }}>
                   {formatCurrency(s.amount)}
                 </span>
               </div>
@@ -312,7 +312,7 @@ export default function FluxoDeCaixaPage() {
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
         <div className="panel-card p-4">
           <p className="text-xs text-app-soft">A Receber</p>
-          <p className="mt-1 text-2xl font-bold tabular-nums text-[#22c55e]">
+          <p className="mt-1 text-2xl font-bold tabular-nums text-[#026648]">
             {formatCurrency(totalAReceber)}
           </p>
           <p className="mt-1 text-xs text-app-soft">{revenues.length} lançamento(s)</p>
@@ -329,8 +329,8 @@ export default function FluxoDeCaixaPage() {
           style={
             saldoProjetado !== 0
               ? {
-                  borderColor: `color-mix(in oklab, ${saldoProjetado > 0 ? '#22c55e' : '#f87171'} 30%, transparent)`,
-                  background: `color-mix(in oklab, ${saldoProjetado > 0 ? '#22c55e' : '#f87171'} 5%, transparent)`,
+                  borderColor: `color-mix(in oklab, ${saldoProjetado > 0 ? '#026648' : '#f87171'} 30%, transparent)`,
+                  background: `color-mix(in oklab, ${saldoProjetado > 0 ? '#026648' : '#f87171'} 5%, transparent)`,
                 }
               : {}
           }
@@ -338,7 +338,7 @@ export default function FluxoDeCaixaPage() {
           <p className="text-xs text-app-soft">Saldo Projetado</p>
           <p
             className="mt-1 text-2xl font-bold tabular-nums"
-            style={{ color: saldoProjetado >= 0 ? '#22c55e' : '#f87171' }}
+            style={{ color: saldoProjetado >= 0 ? '#026648' : '#f87171' }}
           >
             {formatCurrency(saldoProjetado)}
           </p>
@@ -379,7 +379,7 @@ export default function FluxoDeCaixaPage() {
       {/* Contas a Receber */}
       <section>
         <div className="mb-3 flex items-center gap-2">
-          <ArrowUpRight className="h-4 w-4 text-[#22c55e]" />
+          <ArrowUpRight className="h-4 w-4 text-[#026648]" />
           <h2 className="text-sm font-bold text-app">Contas a Receber</h2>
           <span className="text-xs text-app-soft">({revenues.length})</span>
         </div>
@@ -412,13 +412,13 @@ export default function FluxoDeCaixaPage() {
                     </div>
                   </div>
                   <div className="flex shrink-0 items-center gap-3">
-                    <span className="font-bold tabular-nums text-[#22c55e]">
+                    <span className="font-bold tabular-nums text-[#026648]">
                       {formatCurrency(r.amount)}
                     </span>
                     <button
                       onClick={() => markRevenuePaid(r.id)}
                       className="flex items-center gap-1 rounded-[8px] px-2.5 py-1.5 text-xs font-medium text-white transition-opacity hover:opacity-80"
-                      style={{ background: '#22c55e' }}
+                      style={{ background: '#026648' }}
                       title="Marcar como recebido"
                     >
                       <CheckCircle className="h-3.5 w-3.5" />

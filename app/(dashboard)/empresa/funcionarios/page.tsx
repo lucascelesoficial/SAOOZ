@@ -26,7 +26,7 @@ function totalLaborCost(salary: number) {
 }
 
 const STATUS_CONFIG: Record<EmployeeStatus, { label: string; color: string; icon: typeof BadgeCheck }> = {
-  active: { label: 'Ativo', color: '#22c55e', icon: BadgeCheck },
+  active: { label: 'Ativo', color: '#026648', icon: BadgeCheck },
   on_leave: { label: 'Afastado', color: '#f59e0b', icon: Clock },
   terminated: { label: 'Desligado', color: '#6B7280', icon: AlertCircle },
 }
@@ -183,7 +183,7 @@ function EmployeeForm({
               className="rounded-[8px]"
               style={{ background: 'var(--panel-bg)', borderColor: 'var(--panel-border)', color: 'var(--text-strong)' }}
             >
-              <SelectItem value="active"><span style={{ color: '#22c55e' }}>Ativo</span></SelectItem>
+              <SelectItem value="active"><span style={{ color: '#026648' }}>Ativo</span></SelectItem>
               <SelectItem value="on_leave"><span style={{ color: '#f59e0b' }}>Afastado</span></SelectItem>
               <SelectItem value="terminated"><span style={{ color: '#6B7280' }}>Desligado</span></SelectItem>
             </SelectContent>

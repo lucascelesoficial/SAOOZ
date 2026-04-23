@@ -29,7 +29,7 @@ const CATEGORIES: Array<{ id: BusinessRevCategory; label: string }> = [
 ]
 
 const STATUS_OPTIONS: Array<{ id: BusinessRevenueStatus; label: string; color: string }> = [
-  { id: 'received', label: 'Recebido', color: '#22c55e' },
+  { id: 'received', label: 'Recebido', color: '#026648' },
   { id: 'pending', label: 'Pendente', color: '#f59e0b' },
   { id: 'overdue', label: 'Atrasado', color: '#f87171' },
   { id: 'canceled', label: 'Cancelado', color: '#6B7280' },
@@ -179,12 +179,12 @@ function RevenueForm({
       <div
         className="flex items-center gap-2 rounded-[8px] px-3 py-2 text-xs"
         style={{
-          background: 'color-mix(in oklab, #22c55e 8%, transparent)',
-          border: '1px solid color-mix(in oklab, #22c55e 25%, transparent)',
-          color: '#22c55e',
+          background: 'color-mix(in oklab, #026648 8%, transparent)',
+          border: '1px solid color-mix(in oklab, #026648 25%, transparent)',
+          color: '#026648',
         }}
       >
-        <span className="h-1.5 w-1.5 rounded-full bg-[#22c55e]" />
+        <span className="h-1.5 w-1.5 rounded-full bg-[#026648]" />
         Lancando em: <span className="ml-0.5 font-semibold">{formatMonth(currentMonth)}</span>
       </div>
 
@@ -330,7 +330,7 @@ function RevenueForm({
         <Button
           type="submit"
           disabled={loading}
-          className="flex-1 rounded-[8px] bg-[#22c55e] text-white hover:bg-[#16a34a]"
+          className="flex-1 rounded-[8px] bg-[#026648] text-white hover:bg-[#014840]"
         >
           {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : editing ? 'Atualizar' : 'Adicionar'}
         </Button>
@@ -439,7 +439,7 @@ export default function EmpresaFinancasPage() {
           />
           <Button
             onClick={() => { setEditing(null); setModalOpen(true) }}
-            className="rounded-[8px] bg-[#22c55e] text-white hover:bg-[#16a34a]"
+            className="rounded-[8px] bg-[#026648] text-white hover:bg-[#014840]"
           >
             <Plus className="mr-1 h-4 w-4" /> Lançar
           </Button>
@@ -448,7 +448,7 @@ export default function EmpresaFinancasPage() {
 
       <div className="panel-card mb-6 p-5">
         <p className="text-sm text-app-base">Total em {formatMonth(currentMonth)}</p>
-        <p className="mt-1 text-3xl font-bold tabular-nums text-[#22c55e]">{formatCurrency(totals.totalRevenue)}</p>
+        <p className="mt-1 text-3xl font-bold tabular-nums text-[#026648]">{formatCurrency(totals.totalRevenue)}</p>
       </div>
 
       {revenues.length === 0 ? (
@@ -525,11 +525,11 @@ export default function EmpresaFinancasPage() {
                   </div>
                 </div>
                 <div className="mb-1.5 flex items-center justify-between">
-                  <span className="font-semibold tabular-nums text-[#22c55e]">{formatCurrency(r.amount)}</span>
+                  <span className="font-semibold tabular-nums text-[#026648]">{formatCurrency(r.amount)}</span>
                   <span className="text-xs text-app-soft">{pct}% do faturamento</span>
                 </div>
                 <div className="h-1.5 overflow-hidden rounded-full" style={{ background: 'var(--panel-border)' }}>
-                  <div className="h-full rounded-full bg-[#22c55e] transition-all" style={{ width: `${pct}%` }} />
+                  <div className="h-full rounded-full bg-[#026648] transition-all" style={{ width: `${pct}%` }} />
                 </div>
               </div>
             )

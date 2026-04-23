@@ -54,8 +54,8 @@ interface PasswordValues {
 function PasswordReq({ met, label }: { met: boolean; label: string }) {
   return (
     <div className="flex items-center gap-1.5 text-xs">
-      {met ? <Check className="h-3 w-3 text-[#22c55e]" /> : <X className="h-3 w-3 text-app-soft" />}
-      <span className={met ? 'text-[#22c55e]' : 'text-app-soft'}>{label}</span>
+      {met ? <Check className="h-3 w-3 text-[#026648]" /> : <X className="h-3 w-3 text-app-soft" />}
+      <span className={met ? 'text-[#026648]' : 'text-app-soft'}>{label}</span>
     </div>
   )
 }
@@ -370,7 +370,7 @@ export default function ConfiguracoesPage() {
               <p className="text-[#f87171] text-xs">CPF inválido. Verifique os números.</p>
             )}
             {cpf && validateCPF(cpf) && (
-              <div className="flex items-center gap-1.5 text-xs text-[#22c55e]">
+              <div className="flex items-center gap-1.5 text-xs text-[#026648]">
                 <Check className="h-3.5 w-3.5" /> CPF válido
               </div>
             )}
