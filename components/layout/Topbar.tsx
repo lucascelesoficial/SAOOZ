@@ -202,7 +202,8 @@ export function Topbar({ profile, businesses, canAccessPersonalModule, canAccess
       <div className="flex-1" />
 
       {/* Center: month navigation — absolutely centered */}
-      <div className="absolute left-1/2 -translate-x-1/2 relative flex items-center gap-0.5">
+      <div className="absolute left-1/2 -translate-x-1/2">
+      <div className="relative flex items-center gap-0.5">
         <button
           onClick={prevMonth}
           className="rounded-[6px] p-1.5 text-app-soft transition-colors hover:text-app hover:bg-[var(--panel-bg)]"
@@ -245,6 +246,7 @@ export function Topbar({ profile, businesses, canAccessPersonalModule, canAccess
             onClose={() => setPickerOpen(false)}
           />
         )}
+      </div>
       </div>
 
       {/* Right: notifications + theme + user */}
