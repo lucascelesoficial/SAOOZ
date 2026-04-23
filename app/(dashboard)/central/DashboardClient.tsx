@@ -160,18 +160,16 @@ export function DashboardClient({
         </div>
       </div>
 
-      {/* ── Bottom row: categories + AI ── */}
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-        <div className="panel-card p-5">
-          <h2 className="mb-4 text-sm font-semibold uppercase tracking-wider text-app-base">
-            Gastos por Categoria
-          </h2>
-          <CategoryList data={categoryData} loading={isLoading} onAddExpense={() => setModalOpen(true)} />
-        </div>
-        <div>
-          <SaoozAI userId={userId} totals={totals} categoryData={categoryData} />
-        </div>
+      {/* ── Bottom row: categories ── */}
+      <div className="panel-card p-5">
+        <h2 className="mb-4 text-sm font-semibold uppercase tracking-wider text-app-base">
+          Gastos por Categoria
+        </h2>
+        <CategoryList data={categoryData} loading={isLoading} onAddExpense={() => setModalOpen(true)} />
       </div>
+
+      {/* ── Floating AI assistant ── */}
+      <SaoozAI userId={userId} totals={totals} categoryData={categoryData} />
 
       {/* ── Business module CTA ── */}
       {!canCreateBusiness && !businessLimitReached && (

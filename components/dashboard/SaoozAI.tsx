@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
-import { CheckCircle2, Loader2, Send, ShieldCheck, X } from 'lucide-react'
+import { CheckCircle2, Loader2, Minus, Send, ShieldCheck, X } from 'lucide-react'
 import { SaoozIcon } from '@/components/ui/SaoozLogo'
 import type { OrbState } from '@/components/ui/SaoozLogo'
 import { useFinancialData } from '@/lib/hooks/useFinancialData'
@@ -48,6 +48,7 @@ const QUICK_ACTIONS = [
 
 export function SaoozAI({ totals, categoryData }: SaoozAIProps) {
   const { refresh, currentMonth } = useFinancialData()
+  const [open, setOpen] = useState(false)
   const [messages, setMessages] = useState<Message[]>([
     {
       role: 'ai',
@@ -59,10 +60,18 @@ export function SaoozAI({ totals, categoryData }: SaoozAIProps) {
   const [voiceMode, setVoiceMode] = useState(false)
   const [orbState, setOrbState] = useState<OrbState>('idle')
   const [confirmingIndex, setConfirmingIndex] = useState<number | null>(null)
+  const [unread, setUnread] = useState(0)
 
   const bottomRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
   const sendRef = useRef<(text: string) => void>(() => {})
+
+  useEffect(() => {
+    if (open) {
+      setUnread(0)
+      setTimeout(() => inputRef.current?.focus(), 150)
+    }
+  }, [open])
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -73,46 +82,31 @@ export function SaoozAI({ totals, categoryData }: SaoozAIProps) {
       primeTTS()
       document.removeEventListener('click', handler)
     }
-
     document.addEventListener('click', handler)
     return () => document.removeEventListener('click', handler)
   }, [])
 
   const { listening, isSupported, startListening, stopListening, pauseForTTS, resumeAfterTTS } =
-    useVoice({
-      onResult: (text) => sendRef.current(text),
-    })
+    useVoice({ onResult: (text) => sendRef.current(text) })
 
   useEffect(() => {
-    if (listening) {
-      setOrbState('listening')
-    } else if (orbState === 'listening') {
-      setOrbState('idle')
-    }
+    if (listening) setOrbState('listening')
+    else if (orbState === 'listening') setOrbState('idle')
   }, [listening, orbState])
 
   useEffect(() => {
-    if (loading) {
-      setOrbState('thinking')
-      stopSpeaking()
-    } else if (orbState === 'thinking') {
-      setOrbState('idle')
-    }
+    if (loading) { setOrbState('thinking'); stopSpeaking() }
+    else if (orbState === 'thinking') setOrbState('idle')
   }, [loading, orbState])
 
   async function send(text: string) {
-    if (!text.trim() || loading) {
-      return
-    }
+    if (!text.trim() || loading) return
+    if (listening) pauseForTTS()
 
-    if (listening) {
-      pauseForTTS()
-    }
-
-    setMessages((previous) => [...previous, { role: 'user', text: text.trim() }])
+    setMessages((prev) => [...prev, { role: 'user', text: text.trim() }])
     setInput('')
     setLoading(true)
-    setMessages((previous) => [...previous, { role: 'ai', text: '', streaming: true }])
+    setMessages((prev) => [...prev, { role: 'ai', text: '', streaming: true }])
 
     try {
       const response = await fetch('/api/ai', {
@@ -136,9 +130,7 @@ export function SaoozAI({ totals, categoryData }: SaoozAIProps) {
       })
 
       const data = await response.json()
-      if (!response.ok || data.error) {
-        throw new Error(data.error || 'Erro ao processar a IA.')
-      }
+      if (!response.ok || data.error) throw new Error(data.error || 'Erro ao processar a IA.')
 
       const replyText =
         typeof data.text === 'string' && data.text.trim()
@@ -147,32 +139,26 @@ export function SaoozAI({ totals, categoryData }: SaoozAIProps) {
 
       const proposal = data.proposal as AIExecutableAction | undefined
 
-      setMessages((previous) => {
-        const next = [...previous]
-        next[next.length - 1] = {
-          role: 'ai',
-          text: replyText,
-          proposal,
-          streaming: false,
-        }
+      setMessages((prev) => {
+        const next = [...prev]
+        next[next.length - 1] = { role: 'ai', text: replyText, proposal, streaming: false }
         return next
       })
+
+      if (!open) setUnread((n) => n + 1)
 
       if (voiceMode) {
         speak(replyText, {
           onStart: () => setOrbState('speaking'),
-          onEnd: () => {
-            setOrbState('idle')
-            resumeAfterTTS()
-          },
+          onEnd: () => { setOrbState('idle'); resumeAfterTTS() },
         })
       } else {
         resumeAfterTTS()
       }
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Erro desconhecido.'
-      setMessages((previous) => {
-        const next = [...previous]
+      setMessages((prev) => {
+        const next = [...prev]
         next[next.length - 1] = { role: 'ai', text: message, streaming: false }
         return next
       })
@@ -187,65 +173,32 @@ export function SaoozAI({ totals, categoryData }: SaoozAIProps) {
 
   async function confirmProposal(index: number, proposal: AIExecutableAction) {
     setConfirmingIndex(index)
-
     try {
       const response = await fetch('/api/ai/action', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          proposal,
-          month: toMonthISO(currentMonth),
-        }),
+        body: JSON.stringify({ proposal, month: toMonthISO(currentMonth) }),
       })
-
       const data = await response.json()
-
-      if (!response.ok || data.error) {
+      if (!response.ok || data.error)
         throw Object.assign(new Error(data.error || 'Não foi possível executar a ação.'), {
           upgradeRequired: Boolean(data.upgradeRequired),
         })
-      }
-
       await refresh()
-
-      setMessages((previous) =>
-        previous.map((message, messageIndex) =>
-          messageIndex === index
-            ? {
-                ...message,
-                text: data.text ?? 'Ação concluída com sucesso.',
-                proposal: undefined,
-                action: {
-                  label: data.label ?? 'Ação executada',
-                  success: true,
-                },
-              }
-            : message
+      setMessages((prev) =>
+        prev.map((msg, i) =>
+          i === index
+            ? { ...msg, text: data.text ?? 'Ação concluída.', proposal: undefined, action: { label: data.label ?? 'Ação executada', success: true } }
+            : msg
         )
       )
     } catch (error) {
-      const upgradeRequired =
-        typeof error === 'object' &&
-        error !== null &&
-        'upgradeRequired' in error &&
-        Boolean(error.upgradeRequired)
-
-      const message =
-        error instanceof Error ? error.message : 'Não foi possível executar a ação.'
-
-      setMessages((previous) =>
-        previous.map((item, messageIndex) =>
-          messageIndex === index
-            ? {
-                ...item,
-                text: message,
-                proposal: undefined,
-                action: {
-                  label: upgradeRequired ? 'Upgrade necessário' : 'Execução falhou',
-                  success: false,
-                  upgradeRequired,
-                },
-              }
+      const upgradeRequired = typeof error === 'object' && error !== null && 'upgradeRequired' in error && Boolean(error.upgradeRequired)
+      const message = error instanceof Error ? error.message : 'Não foi possível executar a ação.'
+      setMessages((prev) =>
+        prev.map((item, i) =>
+          i === index
+            ? { ...item, text: message, proposal: undefined, action: { label: upgradeRequired ? 'Upgrade necessário' : 'Execução falhou', success: false, upgradeRequired } }
             : item
         )
       )
@@ -255,15 +208,11 @@ export function SaoozAI({ totals, categoryData }: SaoozAIProps) {
   }
 
   function cancelProposal(index: number) {
-    setMessages((previous) =>
-      previous.map((message, messageIndex) =>
-        messageIndex === index
-          ? {
-              ...message,
-              text: `${message.text}\n\nAção cancelada. Nada foi registrado.`,
-              proposal: undefined,
-            }
-          : message
+    setMessages((prev) =>
+      prev.map((msg, i) =>
+        i === index
+          ? { ...msg, text: `${msg.text}\n\nAção cancelada. Nada foi registrado.`, proposal: undefined }
+          : msg
       )
     )
   }
@@ -271,251 +220,204 @@ export function SaoozAI({ totals, categoryData }: SaoozAIProps) {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   function toggleVoice() {
     primeTTS()
-
-    if (voiceMode) {
-      stopListening()
-      stopSpeaking()
-      setVoiceMode(false)
-      setOrbState('idle')
-      return
-    }
-
+    if (voiceMode) { stopListening(); stopSpeaking(); setVoiceMode(false); setOrbState('idle'); return }
     setVoiceMode(true)
-    if (isSupported) {
-      startListening()
-    }
+    if (isSupported) startListening()
   }
 
-  function handleKeyDown(event: React.KeyboardEvent) {
-    if (event.key === 'Enter' && !event.shiftKey) {
-      event.preventDefault()
-      void send(input)
-    }
+  function handleKeyDown(e: React.KeyboardEvent) {
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); void send(input) }
   }
 
   return (
-    <div
-      className="flex h-full min-h-[420px] flex-col rounded-[12px]"
-      style={{
-        background: 'var(--surface-bg)',
-        border: '1px solid var(--panel-border)',
-        boxShadow: '0 4px 32px color-mix(in oklab, var(--accent-blue) 4%, transparent)',
-      }}
-    >
-      <div
-        className="flex items-center gap-3 border-b px-4 py-3"
-        style={{
-          borderColor: 'transparent',
-          background: 'linear-gradient(135deg, #0A1D13, #163424)',
-        }}
-      >
-        <div className="shrink-0">
-          <SaoozIcon size={34} />
-        </div>
+    <>
+      <style>{`
+        @keyframes ai-pulse {
+          0%, 100% { box-shadow: 0 0 0 0 rgba(2,102,72,0.55), 0 4px 20px rgba(2,102,72,0.35); }
+          50%       { box-shadow: 0 0 0 10px rgba(2,102,72,0), 0 4px 20px rgba(2,102,72,0.35); }
+        }
+        @keyframes ai-panel-in {
+          from { opacity: 0; transform: translateY(16px) scale(0.97); }
+          to   { opacity: 1; transform: translateY(0)    scale(1); }
+        }
+        .ai-panel-enter { animation: ai-panel-in 0.22s cubic-bezier(0.34,1.4,0.64,1) forwards; }
+      `}</style>
 
-        <div className="min-w-0 flex-1">
-          <p className="text-sm font-bold leading-none" style={{ color: '#ffffff' }}>
-            Pearfy <span style={{ color: 'rgba(232,246,212,0.85)' }}>IA</span>
-          </p>
-          <p
-            className="mt-0.5 text-[10px] transition-all duration-300"
-            style={{
-              color:
-                orbState === 'listening'
-                  ? '#B7D98A'
-                  : orbState === 'speaking'
-                    ? '#86efac'
-                    : orbState === 'thinking'
-                      ? '#fcd34d'
-                      : 'rgba(255,255,255,0.60)',
-            }}
-          >
-            {voiceMode ? STATE_HINT[orbState] : 'Assistente seguro · sugere antes de executar'}
-          </p>
-        </div>
-
-        <span
-          className="flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold"
+      {/* ── Floating chat panel ── */}
+      {open && (
+        <div
+          className="ai-panel-enter fixed z-50 flex flex-col rounded-[16px] overflow-hidden"
           style={{
-            background: 'rgba(34,197,94,0.18)',
-            color: '#86efac',
-            border: '1px solid rgba(34,197,94,0.25)',
+            bottom: 88,
+            right: 24,
+            width: 380,
+            height: 520,
+            background: 'var(--surface-bg)',
+            border: '1px solid var(--panel-border)',
+            boxShadow: '0 24px 64px rgba(0,0,0,0.35), 0 4px 16px rgba(2,102,72,0.12)',
           }}
         >
-          <ShieldCheck className="h-3 w-3" />
-          confirmação
-        </span>
-      </div>
-
-      <div className="min-h-0 flex-1 space-y-3 overflow-y-auto px-4 py-3" style={{ maxHeight: 320 }}>
-        {messages.map((message, index) => (
+          {/* Header */}
           <div
-            key={index}
-            className={`flex gap-2 ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
+            className="flex shrink-0 items-center gap-3 px-4 py-3"
+            style={{ background: 'linear-gradient(135deg, #0A1D13, #163424)' }}
           >
-            {message.role === 'ai' && (
-              <div className="mt-0.5 shrink-0">
-                <SaoozIcon size={20} />
-              </div>
-            )}
+            <SaoozIcon size={32} />
+            <div className="min-w-0 flex-1">
+              <p className="text-sm font-bold leading-none text-white">
+                Pearfy <span style={{ color: 'rgba(232,246,212,0.85)' }}>IA</span>
+              </p>
+              <p className="mt-0.5 text-[10px] transition-all duration-300"
+                style={{
+                  color: orbState === 'listening' ? '#B7D98A'
+                    : orbState === 'speaking' ? '#86efac'
+                    : orbState === 'thinking' ? '#fcd34d'
+                    : 'rgba(255,255,255,0.55)',
+                }}>
+                {voiceMode ? STATE_HINT[orbState] : 'Assistente seguro · sugere antes de executar'}
+              </p>
+            </div>
+            <span className="flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold"
+              style={{ background: 'rgba(34,197,94,0.18)', color: '#86efac', border: '1px solid rgba(34,197,94,0.25)' }}>
+              <ShieldCheck className="h-3 w-3" />
+              confirmação
+            </span>
+            <button
+              onClick={() => setOpen(false)}
+              className="flex h-7 w-7 items-center justify-center rounded-full transition-colors"
+              style={{ color: 'rgba(255,255,255,0.55)' }}
+              onMouseEnter={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.10)', e.currentTarget.style.color = '#fff')}
+              onMouseLeave={e => (e.currentTarget.style.background = 'transparent', e.currentTarget.style.color = 'rgba(255,255,255,0.55)')}
+            >
+              <Minus className="h-4 w-4" />
+            </button>
+          </div>
 
-            <div className="max-w-[85%] space-y-1.5">
-              <div
-                className="rounded-[10px] px-3 py-2 text-sm leading-relaxed"
-                style={
-                  message.role === 'user'
-                    ? {
-                        background: 'linear-gradient(135deg, #026648, #026648)',
-                        color: '#fff',
-                        borderBottomRightRadius: 3,
-                      }
-                    : {
-                        background: 'var(--panel-bg-soft)',
-                        color: 'var(--text-strong)',
-                        borderBottomLeftRadius: 3,
-                        border: '1px solid var(--panel-border-strong)',
-                        whiteSpace: 'pre-line',
-                      }
-                }
-              >
-                {message.streaming && !message.text ? (
-                  <Loader2 className="h-3.5 w-3.5 animate-spin text-app-soft" />
-                ) : (
-                  message.text
+          {/* Messages */}
+          <div className="min-h-0 flex-1 space-y-3 overflow-y-auto px-4 py-3">
+            {messages.map((msg, index) => (
+              <div key={index} className={`flex gap-2 ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                {msg.role === 'ai' && (
+                  <div className="mt-0.5 shrink-0"><SaoozIcon size={20} /></div>
                 )}
-              </div>
-
-              {message.proposal && (
-                <div
-                  className="rounded-[10px] border px-3 py-3"
-                  style={{
-                    background: 'var(--panel-bg-soft)',
-                    borderColor: 'var(--panel-border)',
-                  }}
-                >
-                  <p
-                    className="text-xs font-semibold uppercase tracking-wider"
-                    style={{ color: 'var(--accent-blue)' }}
+                <div className="max-w-[85%] space-y-1.5">
+                  <div className="rounded-[10px] px-3 py-2 text-sm leading-relaxed"
+                    style={msg.role === 'user'
+                      ? { background: 'linear-gradient(135deg, #026648, #014d37)', color: '#fff', borderBottomRightRadius: 3 }
+                      : { background: 'var(--panel-bg-soft)', color: 'var(--text-strong)', borderBottomLeftRadius: 3, border: '1px solid var(--panel-border-strong)', whiteSpace: 'pre-line' }
+                    }
                   >
-                    Ação sugerida
-                  </p>
-                  <p className="mt-2 text-xs text-app-soft">
-                    Revise e confirme. Nada é gravado sem sua aprovação.
-                  </p>
-                  <div className="mt-3 flex gap-2">
-                    <button
-                      onClick={() => void confirmProposal(index, message.proposal!)}
-                      disabled={confirmingIndex === index}
-                      className="inline-flex h-8 items-center justify-center gap-2 rounded-[8px] px-3 text-xs font-semibold text-white transition-opacity disabled:opacity-60"
-                      style={{ background: 'linear-gradient(135deg, #026648, #026648)' }}
-                    >
-                      {confirmingIndex === index ? (
-                        <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                      ) : (
-                        <>
-                          <CheckCircle2 className="h-3.5 w-3.5" />
-                          Confirmar
-                        </>
-                      )}
-                    </button>
-                    <button
-                      onClick={() => cancelProposal(index)}
-                      disabled={confirmingIndex === index}
-                      className="inline-flex h-8 items-center justify-center gap-2 rounded-[8px] border px-3 text-xs font-semibold text-app-soft transition-opacity disabled:opacity-60"
-                      style={{ borderColor: 'var(--panel-border)' }}
-                    >
-                      <X className="h-3.5 w-3.5" />
-                      Cancelar
-                    </button>
+                    {msg.streaming && !msg.text
+                      ? <Loader2 className="h-3.5 w-3.5 animate-spin text-app-soft" />
+                      : msg.text}
                   </div>
-                </div>
-              )}
 
-              {message.action && (
-                <div
-                  className="flex items-center gap-1.5 rounded-[6px] px-2 py-1 text-[11px]"
-                  style={
-                    message.action.success
-                      ? {
-                          background: '#02664812',
-                          border: '1px solid #02664820',
-                          color: '#026648',
-                        }
-                      : {
-                          background: '#f8717110',
-                          border: '1px solid #f8717120',
-                          color: '#f87171',
-                        }
-                  }
-                >
-                  <CheckCircle2 className="h-3 w-3" />
-                  {message.action.label}
-                  {message.action.upgradeRequired && (
-                    <Link href="/planos" className="ml-1 underline">
-                      Ver planos
-                    </Link>
+                  {msg.proposal && (
+                    <div className="rounded-[10px] border px-3 py-3"
+                      style={{ background: 'var(--panel-bg-soft)', borderColor: 'var(--panel-border)' }}>
+                      <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--accent-blue)' }}>
+                        Ação sugerida
+                      </p>
+                      <p className="mt-2 text-xs text-app-soft">Revise e confirme. Nada é gravado sem sua aprovação.</p>
+                      <div className="mt-3 flex gap-2">
+                        <button onClick={() => void confirmProposal(index, msg.proposal!)} disabled={confirmingIndex === index}
+                          className="inline-flex h-8 items-center justify-center gap-2 rounded-[8px] px-3 text-xs font-semibold text-white transition-opacity disabled:opacity-60"
+                          style={{ background: 'linear-gradient(135deg, #026648, #014d37)' }}>
+                          {confirmingIndex === index
+                            ? <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                            : <><CheckCircle2 className="h-3.5 w-3.5" />Confirmar</>}
+                        </button>
+                        <button onClick={() => cancelProposal(index)} disabled={confirmingIndex === index}
+                          className="inline-flex h-8 items-center justify-center gap-2 rounded-[8px] border px-3 text-xs font-semibold text-app-soft transition-opacity disabled:opacity-60"
+                          style={{ borderColor: 'var(--panel-border)' }}>
+                          <X className="h-3.5 w-3.5" />Cancelar
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                  {msg.action && (
+                    <div className="flex items-center gap-1.5 rounded-[6px] px-2 py-1 text-[11px]"
+                      style={msg.action.success
+                        ? { background: '#02664812', border: '1px solid #02664820', color: '#026648' }
+                        : { background: '#f8717110', border: '1px solid #f8717120', color: '#f87171' }}>
+                      <CheckCircle2 className="h-3 w-3" />
+                      {msg.action.label}
+                      {msg.action.upgradeRequired && (
+                        <Link href="/planos" className="ml-1 underline">Ver planos</Link>
+                      )}
+                    </div>
                   )}
                 </div>
-              )}
+              </div>
+            ))}
+            <div ref={bottomRef} />
+          </div>
+
+          {/* Quick actions */}
+          {messages.length <= 1 && !loading && !voiceMode && (
+            <div className="flex shrink-0 flex-wrap gap-1.5 px-4 pb-2">
+              {QUICK_ACTIONS.map((action) => (
+                <button key={action} onClick={() => void send(action)}
+                  className="rounded-full px-2.5 py-1 text-[11px] transition-all"
+                  style={{ background: 'var(--panel-border)', border: '1px solid var(--panel-border-strong)', color: 'var(--text-base)' }}>
+                  {action}
+                </button>
+              ))}
             </div>
-          </div>
-        ))}
-        <div ref={bottomRef} />
-      </div>
+          )}
 
-      {messages.length <= 1 && !loading && !voiceMode && (
-        <div className="flex flex-wrap gap-1.5 px-4 pb-2">
-          {QUICK_ACTIONS.map((action) => (
-            <button
-              key={action}
-              onClick={() => void send(action)}
-              className="rounded-full px-2.5 py-1 text-[11px] transition-all"
-              style={{
-                background: 'var(--panel-border)',
-                border: '1px solid var(--panel-border-strong)',
-                color: 'var(--text-base)',
-              }}
-            >
-              {action}
-            </button>
-          ))}
+          {/* Input */}
+          {!voiceMode && (
+            <div className="shrink-0 px-3 pb-3">
+              <div className="flex items-center gap-2 rounded-[10px] px-3 py-2"
+                style={{ background: 'var(--panel-bg-soft)', border: '1px solid var(--panel-border-strong)' }}>
+                <input ref={inputRef} value={input} onChange={(e) => setInput(e.target.value)}
+                  onKeyDown={handleKeyDown} placeholder="Escreva sua mensagem..." disabled={loading}
+                  className="flex-1 bg-transparent text-sm text-app outline-none placeholder:text-app-soft disabled:opacity-50" />
+                <button onClick={() => void send(input)} disabled={loading || !input.trim()}
+                  className="flex h-7 w-7 items-center justify-center rounded-[6px] transition-all disabled:opacity-30"
+                  style={{ background: input.trim() ? 'linear-gradient(135deg, #026648, #014d37)' : 'var(--panel-border)' }}>
+                  {loading
+                    ? <Loader2 className="h-3.5 w-3.5 animate-spin text-white" />
+                    : <Send className="h-3.5 w-3.5 text-white" />}
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       )}
 
-      {!voiceMode && (
-        <div className="px-3 pb-3">
-          <div
-            className="flex items-center gap-2 rounded-[10px] px-3 py-2"
-            style={{ background: 'var(--panel-bg-soft)', border: '1px solid var(--panel-border-strong)' }}
-          >
-            <input
-              ref={inputRef}
-              value={input}
-              onChange={(event) => setInput(event.target.value)}
-              onKeyDown={handleKeyDown}
-              placeholder="Escreva sua mensagem..."
-              disabled={loading}
-              className="flex-1 bg-transparent text-sm text-app outline-none placeholder:text-app-soft disabled:opacity-50"
-            />
-            <button
-              onClick={() => void send(input)}
-              disabled={loading || !input.trim()}
-              className="flex h-7 w-7 items-center justify-center rounded-[6px] transition-all disabled:opacity-30"
-              style={{
-                background: input.trim()
-                  ? 'linear-gradient(135deg, #026648, #026648)'
-                  : 'var(--panel-border)',
-              }}
-            >
-              {loading ? (
-                <Loader2 className="h-3.5 w-3.5 animate-spin text-white" />
-              ) : (
-                <Send className="h-3.5 w-3.5 text-white" />
-              )}
-            </button>
-          </div>
-        </div>
-      )}
-    </div>
+      {/* ── FAB ── */}
+      <button
+        onClick={() => setOpen((v) => !v)}
+        aria-label={open ? 'Fechar assistente' : 'Abrir assistente Pearfy IA'}
+        className="fixed z-50 flex items-center justify-center rounded-full transition-transform duration-200 hover:scale-105 active:scale-95"
+        style={{
+          bottom: 24,
+          right: 24,
+          width: 56,
+          height: 56,
+          background: 'linear-gradient(135deg, #026648 0%, #013d2c 100%)',
+          animation: open ? 'none' : 'ai-pulse 2.8s ease-in-out infinite',
+          boxShadow: open
+            ? '0 4px 20px rgba(2,102,72,0.45)'
+            : undefined,
+        }}
+      >
+        {open
+          ? <X style={{ width: 22, height: 22, color: '#fff' }} />
+          : <SaoozIcon size={34} />
+        }
+
+        {/* Unread badge */}
+        {!open && unread > 0 && (
+          <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full text-[10px] font-bold text-white"
+            style={{ background: '#ef4444' }}>
+            {unread}
+          </span>
+        )}
+      </button>
+    </>
   )
 }
