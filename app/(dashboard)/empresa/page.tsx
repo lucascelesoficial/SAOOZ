@@ -209,7 +209,7 @@ function generateIntelligence(
 const INSIGHT_CFG: Record<InsightType, { color: string; bg: string; border: string; Icon: React.ElementType; label: string }> = {
   risk:        { color: '#f87171', bg: '#f8717108', border: '#f8717122', Icon: TriangleAlert, label: 'Risco'        },
   warning:     { color: '#f59e0b', bg: '#f59e0b08', border: '#f59e0b22', Icon: TriangleAlert, label: 'Atenção'      },
-  opportunity: { color: '#74A93D', bg: '#74A93D08', border: '#74A93D22', Icon: Lightbulb,     label: 'Oportunidade' },
+  opportunity: { color: '#026648', bg: '#02664808', border: '#02664822', Icon: Lightbulb,     label: 'Oportunidade' },
   achievement: { color: '#22c55e', bg: '#22c55e08', border: '#22c55e22', Icon: BadgeCheck,    label: 'Conquista'    },
 }
 
@@ -221,7 +221,7 @@ function healthScore(margin: number, taxRate: number, hasRevenue: boolean) {
   if (!hasRevenue) return { score: 0, label: 'Sem dados', color: '#4B5563' }
   const s = Math.round(Math.min(margin * 250, 60) + Math.max(0, 40 - taxRate * 200))
   if (s >= 75) return { score: s, label: 'Saudável',  color: '#22c55e' }
-  if (s >= 55) return { score: s, label: 'Estável',   color: '#74A93D' }
+  if (s >= 55) return { score: s, label: 'Estável',   color: '#026648' }
   if (s >= 35) return { score: s, label: 'Atenção',   color: '#f59e0b' }
   return              { score: s, label: 'Crítico',   color: '#f87171' }
 }
@@ -420,7 +420,7 @@ export default function EmpresaPage() {
               taxRegime: business?.tax_regime,
               sections: [],
             }}
-              fileName={`pear-finance-empresa-${currentMonth.toISOString().slice(0, 7)}.pdf`}
+              fileName={`pearfy-empresa-${currentMonth.toISOString().slice(0, 7)}.pdf`}
           />
 
           {totals.totalRevenue > 0 && (
@@ -493,7 +493,7 @@ export default function EmpresaPage() {
             </div>
             <div>
               <p className="text-sm font-bold text-app flex items-center gap-1.5">
-                Pear Finance <span style={{ color: 'var(--accent-blue)' }}>Inteligência</span>
+                Pearfy <span style={{ color: 'var(--accent-blue)' }}>Inteligência</span>
                 <span className="h-1.5 w-1.5 rounded-full bg-[#22c55e] animate-pulse" />
               </p>
               <p className="text-[10px] text-app-soft">
@@ -548,8 +548,8 @@ export default function EmpresaPage() {
           <div className="flex items-start justify-between gap-3 mb-4">
             <div className="flex items-center gap-2.5">
               <div className="h-8 w-8 rounded-[8px] flex items-center justify-center"
-              style={{ background: '#74A93D12', border: '1px solid #74A93D22' }}>
-              <Calendar className="h-4 w-4" style={{ color: '#74A93D' }} />
+              style={{ background: '#02664812', border: '1px solid #02664822' }}>
+              <Calendar className="h-4 w-4" style={{ color: '#026648' }} />
               </div>
               <div>
                 <p className="text-sm font-bold text-app">Contas do mês</p>
@@ -716,7 +716,7 @@ export default function EmpresaPage() {
           <div className="space-y-3">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <Users2 className="h-4 w-4 text-[#74A93D]" />
+                <Users2 className="h-4 w-4 text-[#026648]" />
                 <span className="text-xs text-app-soft">Funcionários</span>
               </div>
               <span className="text-sm font-extrabold tabular-nums text-app">

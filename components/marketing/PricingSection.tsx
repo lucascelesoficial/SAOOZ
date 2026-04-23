@@ -66,7 +66,7 @@ const PLANS = [
     code: 'comando',
     name: 'Comando',
     monthlyPrice: 147,
-    subtitle: 'Acesso total ao ecossistema Pear Finance — visão completa, inteligência sem limite, operação com poder.',
+    subtitle: 'Acesso total ao ecossistema Pearfy — visão completa, inteligência sem limite, operação com poder.',
     highlight: true,
     color: '#026648',
     features: [
