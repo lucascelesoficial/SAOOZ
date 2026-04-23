@@ -1009,7 +1009,6 @@ export function SalesLanding() {
               <div style={{ display: 'flex', gap: 22 }}>
                 {[['Pessoal · PF', User],['Empresarial · PJ', Building2],['IA Integrada', TrendingUp]].map(([l, Icon]) => (
                   <span key={l as string} style={{ display: 'flex', alignItems: 'center', gap: 6, color: '#9ca3af' }}>
-                    {/* @ts-expect-error – dynamic icon component */}
                     <Icon style={{ width: 14, height: 14, color: G }} />{l as string}
                   </span>
                 ))}
