@@ -193,9 +193,10 @@ export function Topbar({ profile, businesses, canAccessPersonalModule, canAccess
     <header
       className="sticky top-0 z-20 flex h-12 items-center border-b px-4 md:px-6"
       style={{
-        background: 'var(--surface-bg)',
-        borderColor: 'var(--panel-border)',
+        background: 'linear-gradient(135deg, #026648 0%, #014d37 60%, #013d2c 100%)',
+        borderColor: 'rgba(255,255,255,0.08)',
         position: 'relative',
+        boxShadow: '0 1px 0 rgba(255,255,255,0.06), 0 2px 12px rgba(1,61,44,0.35)',
       }}
     >
       {/* Left: empty spacer to balance right side */}
@@ -206,7 +207,10 @@ export function Topbar({ profile, businesses, canAccessPersonalModule, canAccess
       <div className="relative flex items-center gap-0.5">
         <button
           onClick={prevMonth}
-          className="rounded-[6px] p-1.5 text-app-soft transition-colors hover:text-app hover:bg-[var(--panel-bg)]"
+          className="rounded-[6px] p-1.5 transition-colors"
+          style={{ color: 'rgba(255,255,255,0.65)' }}
+          onMouseEnter={e => (e.currentTarget.style.color = '#fff', e.currentTarget.style.background = 'rgba(255,255,255,0.10)')}
+          onMouseLeave={e => (e.currentTarget.style.color = 'rgba(255,255,255,0.65)', e.currentTarget.style.background = 'transparent')}
           aria-label="Mês anterior"
         >
           <ChevronLeft className="h-4 w-4" />
@@ -214,17 +218,19 @@ export function Topbar({ profile, businesses, canAccessPersonalModule, canAccess
 
         <button
           onClick={() => setPickerOpen((v) => !v)}
-          className="flex flex-col items-center rounded-[8px] px-3 py-1 transition-colors hover:bg-[var(--panel-bg)]"
+          className="flex flex-col items-center rounded-[8px] px-3 py-1 transition-colors"
+          onMouseEnter={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.10)')}
+          onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
           aria-label="Selecionar mês"
         >
           <span
-            className="text-sm font-semibold capitalize text-app"
-            style={{ minWidth: 90, textAlign: 'center' }}
+            className="text-sm font-semibold capitalize"
+            style={{ minWidth: 90, textAlign: 'center', color: '#ffffff' }}
           >
             {formatMonth(currentMonth)}
           </span>
           {isFutureMonth && (
-            <span className="text-[9px] font-bold uppercase tracking-widest leading-none" style={{ color: '#f59e0b' }}>
+            <span className="text-[9px] font-bold uppercase tracking-widest leading-none" style={{ color: '#fcd34d' }}>
               previsão
             </span>
           )}
@@ -233,7 +239,10 @@ export function Topbar({ profile, businesses, canAccessPersonalModule, canAccess
         <button
           onClick={nextMonth}
           disabled={isMaxFutureMonth}
-          className="rounded-[6px] p-1.5 text-app-soft transition-colors hover:text-app hover:bg-[var(--panel-bg)] disabled:cursor-not-allowed disabled:opacity-30"
+          className="rounded-[6px] p-1.5 transition-colors disabled:cursor-not-allowed disabled:opacity-30"
+          style={{ color: 'rgba(255,255,255,0.65)' }}
+          onMouseEnter={e => (e.currentTarget.style.color = '#fff', e.currentTarget.style.background = 'rgba(255,255,255,0.10)')}
+          onMouseLeave={e => (e.currentTarget.style.color = 'rgba(255,255,255,0.65)', e.currentTarget.style.background = 'transparent')}
           aria-label="Próximo mês"
         >
           <ChevronRight className="h-4 w-4" />
@@ -253,7 +262,10 @@ export function Topbar({ profile, businesses, canAccessPersonalModule, canAccess
       <div className="flex-1 flex items-center justify-end gap-1.5">
         {/* Notification bell (decorative for now) */}
         <button
-          className="flex h-8 w-8 items-center justify-center rounded-[8px] text-app-soft transition-colors hover:bg-[var(--panel-bg)] hover:text-app"
+          className="flex h-8 w-8 items-center justify-center rounded-[8px] transition-colors"
+          style={{ color: 'rgba(255,255,255,0.65)' }}
+          onMouseEnter={e => (e.currentTarget.style.color = '#fff', e.currentTarget.style.background = 'rgba(255,255,255,0.10)')}
+          onMouseLeave={e => (e.currentTarget.style.color = 'rgba(255,255,255,0.65)', e.currentTarget.style.background = 'transparent')}
           aria-label="Notificações"
         >
           <Bell className="h-4 w-4" />
@@ -267,8 +279,8 @@ export function Topbar({ profile, businesses, canAccessPersonalModule, canAccess
             onClick={() => setMenuOpen((v) => !v)}
             className="flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-full text-xs font-bold text-white transition-opacity hover:opacity-80"
             style={{
-              background: 'linear-gradient(135deg, var(--accent-blue), var(--accent-cyan))',
-              boxShadow: '0 0 0 2px color-mix(in oklab, var(--accent-blue) 35%, transparent)',
+              background: 'linear-gradient(135deg, #04a372, #026648)',
+              boxShadow: '0 0 0 2px rgba(255,255,255,0.30)',
             }}
             aria-label="Menu do usuário"
           >
