@@ -7,8 +7,7 @@ import { createClient } from '@/lib/supabase/client'
 import { trackEvent, identifyUser, EVENTS } from '@/lib/posthog/client'
 import { TurnstileWidget } from '@/components/security/TurnstileWidget'
 
-const G    = '#026648'
-const GLit = '#04a372'
+const G = '#026648'
 
 export default function LoginPage() {
   const [loading, setLoading]   = useState(false)
@@ -65,142 +64,104 @@ export default function LoginPage() {
     }
   }
 
+  /* ── Input style helpers ── */
+  const base: React.CSSProperties = {
+    height: 48,
+    width: '100%',
+    borderRadius: 10,
+    padding: '0 16px',
+    fontSize: 15,
+    fontFamily: 'inherit',
+    fontWeight: 400,
+    outline: 'none',
+    transition: 'border-color .15s, box-shadow .15s',
+    background: '#fff',
+    border: '1.5px solid #e5e7eb',
+    color: '#0f172a',
+    display: 'block',
+    boxSizing: 'border-box' as const,
+  }
+  const err: React.CSSProperties = {
+    ...base,
+    border: '1.5px solid #fca5a5',
+    background: '#fff5f5',
+  }
+
   return (
     <>
       <style>{`
-        /* ── Inputs ── */
-        .li {
-          display: block;
-          height: 52px;
-          width: 100%;
-          background: rgba(255,255,255,0.045);
-          border: 1px solid rgba(255,255,255,0.09);
-          border-radius: 14px;
-          padding: 0 18px;
-          font-size: 15px;
-          font-weight: 400;
-          color: #fff;
-          outline: none;
-          font-family: inherit;
-          transition: background 0.15s, border-color 0.15s, box-shadow 0.15s;
-          -webkit-appearance: none;
-        }
-        .li::placeholder { color: rgba(255,255,255,0.20); }
+        .li::placeholder { color: #94a3b8; }
         .li:focus {
-          background: rgba(255,255,255,0.07);
-          border-color: rgba(2,102,72,0.75);
-          box-shadow: 0 0 0 4px rgba(2,102,72,0.14);
+          border-color: ${G} !important;
+          box-shadow: 0 0 0 3px rgba(2,102,72,0.10) !important;
+          background: #fff !important;
         }
-        .li.e {
-          background: rgba(153,27,27,0.14);
-          border-color: rgba(248,113,113,0.40);
+        .li.err:focus {
+          border-color: #f87171 !important;
+          box-shadow: 0 0 0 3px rgba(248,113,113,0.10) !important;
         }
-        .li.e:focus { box-shadow: 0 0 0 4px rgba(248,113,113,0.10); }
-
-        /* ── Label ── */
-        .ll {
-          display: block;
-          font-size: 13px;
-          font-weight: 500;
-          color: rgba(255,255,255,0.42);
-          margin-bottom: 8px;
-          letter-spacing: 0.01em;
-        }
-
-        /* ── Submit button ── */
-        .lb {
-          position: relative;
+        .lbtn {
+          height: 50px;
+          width: 100%;
+          border: none;
+          border-radius: 11px;
+          background: ${G};
+          color: #fff;
+          font-size: 15px;
+          font-weight: 700;
+          font-family: inherit;
+          letter-spacing: -0.01em;
+          cursor: pointer;
           display: flex;
           align-items: center;
           justify-content: center;
           gap: 8px;
-          height: 52px;
-          width: 100%;
-          border: none;
-          border-radius: 14px;
-          font-size: 15px;
-          font-weight: 700;
-          color: #fff;
-          letter-spacing: -0.01em;
-          cursor: pointer;
-          overflow: hidden;
-          font-family: inherit;
-          background: ${G};
-          /* Gloss top highlight */
-          box-shadow:
-            inset 0 1px 0 rgba(255,255,255,0.14),
-            0 1px 3px rgba(0,0,0,0.40),
-            0 6px 20px rgba(2,102,72,0.32);
-          transition: opacity 0.15s, transform 0.12s, box-shadow 0.15s;
+          transition: background .15s, transform .12s, box-shadow .15s;
+          box-shadow: 0 2px 8px rgba(2,102,72,0.20);
         }
-        .lb:hover:not(:disabled) {
-          opacity: 0.90;
+        .lbtn:hover:not(:disabled) {
+          background: #01553b;
           transform: translateY(-1px);
-          box-shadow:
-            inset 0 1px 0 rgba(255,255,255,0.14),
-            0 2px 4px rgba(0,0,0,0.40),
-            0 10px 28px rgba(2,102,72,0.42);
+          box-shadow: 0 6px 20px rgba(2,102,72,0.28);
         }
-        .lb:active:not(:disabled) { transform: translateY(0); }
-        .lb:disabled { opacity: 0.45; cursor: not-allowed; }
+        .lbtn:active:not(:disabled) { transform: translateY(0); }
+        .lbtn:disabled { opacity: 0.50; cursor: not-allowed; }
+        @keyframes lspin { to { transform: rotate(360deg); } }
+        .lspin { animation: lspin 0.85s linear infinite; }
 
-        /* ── Helper link ── */
-        .la {
-          color: rgba(255,255,255,0.35);
-          font-size: 13px;
-          font-weight: 400;
-          text-decoration: none;
-          transition: color 0.15s;
-        }
-        .la:hover { color: rgba(255,255,255,0.75); }
-
-        /* ── Signup link ── */
-        .lg {
-          color: ${GLit};
-          font-size: 14px;
-          font-weight: 600;
-          text-decoration: none;
-          transition: color 0.15s;
-        }
-        .lg:hover { color: #fff; }
-
-        @keyframes li-spin { to { transform: rotate(360deg); } }
-        .li-spin { animation: li-spin 0.85s linear infinite; }
+        .llink { color: #64748b; font-size: 13px; text-decoration: none; transition: color .15s; }
+        .llink:hover { color: ${G}; }
+        .llink-g { color: ${G}; font-size: 14px; font-weight: 600; text-decoration: none; transition: color .15s; }
+        .llink-g:hover { color: #014d35; }
       `}</style>
 
       {/* Heading */}
-      <div style={{ marginBottom: 40 }}>
+      <div style={{ marginBottom: 32 }}>
         <h1 style={{
-          fontSize: 28,
+          fontSize: 26,
           fontWeight: 800,
-          color: '#fff',
-          letterSpacing: '-0.035em',
-          lineHeight: 1.15,
-          margin: '0 0 10px',
+          color: '#0f172a',
+          letterSpacing: '-0.03em',
+          lineHeight: 1.2,
+          marginBottom: 8,
         }}>
-          Bem-vindo de volta
+          Entrar na sua conta
         </h1>
-        <p style={{
-          fontSize: 15,
-          color: 'rgba(255,255,255,0.38)',
-          margin: 0,
-          lineHeight: 1.55,
-          fontWeight: 400,
-        }}>
-          Entre na sua conta para continuar
+        <p style={{ fontSize: 14, color: '#64748b', lineHeight: 1.55, fontWeight: 400 }}>
+          Insira seus dados para continuar sua jornada na PearFy
         </p>
       </div>
 
-      {/* Auth error banner */}
+      {/* Auth error */}
       {errors.auth && (
         <div style={{
-          marginBottom: 24,
-          padding: '13px 18px',
-          borderRadius: 12,
+          marginBottom: 20,
+          padding: '12px 16px',
+          borderRadius: 10,
           fontSize: 14,
-          color: '#fca5a5',
-          background: 'rgba(127,29,29,0.22)',
-          border: '1px solid rgba(248,113,113,0.20)',
+          color: '#dc2626',
+          background: '#fef2f2',
+          border: '1px solid #fecaca',
           lineHeight: 1.5,
         }}>
           {errors.auth}
@@ -208,12 +169,22 @@ export default function LoginPage() {
       )}
 
       {/* Form */}
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
+
         {/* Email */}
-        <div style={{ marginBottom: 20 }}>
-          <label className="ll">E-mail</label>
+        <div>
+          <label style={{
+            display: 'block',
+            fontSize: 13,
+            fontWeight: 500,
+            color: '#374151',
+            marginBottom: 7,
+          }}>
+            E-mail
+          </label>
           <input
-            className={`li${errors.email || errors.auth ? ' e' : ''}`}
+            className={`li${errors.email || errors.auth ? ' err' : ''}`}
+            style={errors.email || errors.auth ? err : base}
             type="email"
             autoComplete="email"
             placeholder="seu@email.com"
@@ -221,23 +192,26 @@ export default function LoginPage() {
             onChange={e => { setEmail(e.target.value); setErrors(p => ({ ...p, auth: '', email: '' })) }}
           />
           {errors.email && (
-            <p style={{ fontSize: 12, color: '#f87171', margin: '6px 0 0' }}>{errors.email}</p>
+            <p style={{ fontSize: 12, color: '#ef4444', marginTop: 5 }}>{errors.email}</p>
           )}
         </div>
 
         {/* Password */}
-        <div style={{ marginBottom: 8 }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 8 }}>
-            <span className="ll" style={{ marginBottom: 0 }}>Senha</span>
-            <Link href="/esqueci-senha" className="la">Esqueci a senha</Link>
+        <div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 7 }}>
+            <label style={{ fontSize: 13, fontWeight: 500, color: '#374151' }}>Senha</label>
+            <Link href="/esqueci-senha" className="llink">Esqueci a senha</Link>
           </div>
           <div style={{ position: 'relative' }}>
             <input
-              className={`li${errors.password || errors.auth ? ' e' : ''}`}
+              className={`li${errors.password || errors.auth ? ' err' : ''}`}
+              style={{
+                ...(errors.password || errors.auth ? err : base),
+                paddingRight: 50,
+              }}
               type={showPass ? 'text' : 'password'}
               autoComplete="current-password"
               placeholder="••••••••"
-              style={{ paddingRight: 52 }}
               value={password}
               onChange={e => { setPassword(e.target.value); setErrors(p => ({ ...p, auth: '', password: '' })) }}
             />
@@ -246,55 +220,44 @@ export default function LoginPage() {
               tabIndex={-1}
               onClick={() => setShowPass(v => !v)}
               style={{
-                position: 'absolute', right: 16, top: '50%', transform: 'translateY(-50%)',
+                position: 'absolute', right: 14, top: '50%', transform: 'translateY(-50%)',
                 background: 'none', border: 'none', cursor: 'pointer', padding: 4,
-                color: 'rgba(255,255,255,0.28)', display: 'flex', alignItems: 'center',
+                color: '#9ca3af', display: 'flex', alignItems: 'center',
                 transition: 'color .15s',
               }}
-              onMouseEnter={e => (e.currentTarget.style.color = 'rgba(255,255,255,0.65)')}
-              onMouseLeave={e => (e.currentTarget.style.color = 'rgba(255,255,255,0.28)')}
+              onMouseEnter={e => (e.currentTarget.style.color = '#475569')}
+              onMouseLeave={e => (e.currentTarget.style.color = '#9ca3af')}
             >
-              {showPass
-                ? <EyeOff style={{ width: 16, height: 16 }} />
-                : <Eye     style={{ width: 16, height: 16 }} />}
+              {showPass ? <EyeOff style={{ width: 16, height: 16 }} /> : <Eye style={{ width: 16, height: 16 }} />}
             </button>
           </div>
           {errors.password && (
-            <p style={{ fontSize: 12, color: '#f87171', margin: '6px 0 0' }}>{errors.password}</p>
+            <p style={{ fontSize: 12, color: '#ef4444', marginTop: 5 }}>{errors.password}</p>
           )}
         </div>
 
-        {/* Turnstile */}
-        <div style={{ marginBottom: 4 }}>
-          <TurnstileWidget onVerify={setCfToken} onError={() => setCfToken('')} onExpire={() => setCfToken('')} />
-        </div>
+        <TurnstileWidget onVerify={setCfToken} onError={() => setCfToken('')} onExpire={() => setCfToken('')} />
 
         {/* Submit */}
-        <button className="lb" type="submit" disabled={loading} style={{ marginTop: 28 }}>
+        <button className="lbtn" type="submit" disabled={loading} style={{ marginTop: 6 }}>
           {loading
-            ? <Loader2 className="li-spin" style={{ width: 18, height: 18 }} />
+            ? <Loader2 className="lspin" style={{ width: 18, height: 18 }} />
             : 'Entrar'}
         </button>
       </form>
 
-      {/* Divider */}
+      {/* Footer */}
       <div style={{
-        margin: '32px 0',
-        height: 1,
-        background: 'rgba(255,255,255,0.06)',
-      }} />
-
-      {/* Sign up */}
-      <p style={{
+        marginTop: 28,
+        paddingTop: 24,
+        borderTop: '1px solid #f1f5f9',
         textAlign: 'center',
-        fontSize: 14,
-        color: 'rgba(255,255,255,0.32)',
-        margin: 0,
-        lineHeight: 1.6,
       }}>
-        Não tem uma conta?{' '}
-        <Link href="/cadastro" className="lg">Criar conta grátis</Link>
-      </p>
+        <p style={{ fontSize: 14, color: '#64748b' }}>
+          Não tem uma conta?{' '}
+          <Link href="/cadastro" className="llink-g">Criar conta</Link>
+        </p>
+      </div>
     </>
   )
 }
