@@ -7,9 +7,9 @@ import { createClient } from '@/lib/supabase/client'
 import { trackEvent, identifyUser, EVENTS } from '@/lib/posthog/client'
 import { TurnstileWidget } from '@/components/security/TurnstileWidget'
 
-const G = '#249833'
-const G_DARK = '#1b7726'
-const G_RGB = '36,152,51'
+const G = '#025b4d'
+const G_DARK = '#014840'
+const G_RGB = '2,91,77'
 
 export default function LoginPage() {
   const [mode, setMode]           = useState<'magic' | 'password'>('magic')
@@ -99,11 +99,11 @@ export default function LoginPage() {
     <>
       <style>{`
         .lp-inp {
-          height: 50px;
+          height: 56px;
           width: 100%;
-          border-radius: 12px;
-          padding: 0 16px;
-          font-size: 15px;
+          border-radius: 13px;
+          padding: 0 18px;
+          font-size: 16px;
           font-family: var(--font-inter), -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
           font-weight: 400;
           outline: none;
@@ -132,21 +132,21 @@ export default function LoginPage() {
         }
         .lp-lbl {
           display: block;
-          font-size: 13px;
+          font-size: 14px;
           font-weight: 600;
           color: #1e293b;
-          margin-bottom: 7px;
+          margin-bottom: 9px;
           letter-spacing: -0.01em;
           font-family: var(--font-inter), -apple-system, sans-serif;
         }
         .lp-btn {
-          height: 52px;
+          height: 58px;
           width: 100%;
           border: none;
-          border-radius: 13px;
+          border-radius: 14px;
           background: ${G};
           color: #fff;
-          font-size: 15px;
+          font-size: 16px;
           font-weight: 700;
           font-family: var(--font-inter), -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
           letter-spacing: -0.01em;
@@ -186,8 +186,8 @@ export default function LoginPage() {
           border-radius: 8px; transition: color .15s, background .15s;
         }
         .lp-eye:hover { color: #475569; background: rgba(0,0,0,0.04); }
-        .lp-ferr { font-size: 12px; color: #ef4444; font-weight: 500; margin-top: 5px; }
-        .lp-link { font-size: 13px; color: #64748b; font-weight: 500; text-decoration: none; transition: color .15s; }
+        .lp-ferr { font-size: 13px; color: #ef4444; font-weight: 500; margin-top: 6px; }
+        .lp-link { font-size: 14px; color: #64748b; font-weight: 500; text-decoration: none; transition: color .15s; }
         .lp-link:hover { color: ${G}; }
         .lp-link-g { color: ${G}; font-weight: 700; text-decoration: none; transition: color .15s; }
         .lp-link-g:hover { color: ${G_DARK}; }
@@ -196,17 +196,17 @@ export default function LoginPage() {
         .lp-tabs {
           display: flex;
           background: #f1f5f9;
-          border-radius: 12px;
-          padding: 3px;
+          border-radius: 13px;
+          padding: 4px;
           gap: 2px;
-          margin-bottom: 28px;
+          margin-bottom: 32px;
         }
         .lp-tab {
           flex: 1;
-          height: 38px;
+          height: 44px;
           border: none;
-          border-radius: 10px;
-          font-size: 13.5px;
+          border-radius: 11px;
+          font-size: 14.5px;
           font-weight: 600;
           font-family: var(--font-inter), -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
           cursor: pointer;
@@ -251,18 +251,18 @@ export default function LoginPage() {
       `}</style>
 
       {/* Heading */}
-      <div style={{ marginBottom: 28 }}>
+      <div style={{ marginBottom: 32 }}>
         <h1 style={{
-          fontSize: 'clamp(22px, 2.8vw, 26px)',
+          fontSize: 'clamp(26px, 3vw, 30px)',
           fontWeight: 800,
           color: '#0a1628',
           letterSpacing: '-0.04em',
           lineHeight: 1.2,
-          marginBottom: 8,
+          marginBottom: 10,
         }}>
           Entrar na sua conta
         </h1>
-        <p style={{ fontSize: 14, color: '#64748b', lineHeight: 1.55, fontWeight: 400 }}>
+        <p style={{ fontSize: 15, color: '#64748b', lineHeight: 1.55, fontWeight: 400 }}>
           Acesse sua central financeira para organizar suas finanças pessoais e empresariais com clareza.
         </p>
       </div>
@@ -373,8 +373,8 @@ export default function LoginPage() {
               )}
             </button>
             <div>
-              <span style={{ fontSize: 13.5, fontWeight: 600, color: '#1e293b' }}>Manter conexão</span>
-              <p style={{ fontSize: 12, color: '#94a3b8', marginTop: 1, lineHeight: 1.4 }}>
+              <span style={{ fontSize: 14.5, fontWeight: 600, color: '#1e293b' }}>Manter conexão</span>
+              <p style={{ fontSize: 13, color: '#94a3b8', marginTop: 2, lineHeight: 1.4 }}>
                 Se você marcar esta opção, seu login será mantido até que faça logout ou limpe os dados do navegador
               </p>
             </div>
@@ -455,7 +455,7 @@ export default function LoginPage() {
         borderTop: '1px solid #f0f4f8',
         textAlign: 'center',
       }}>
-        <p style={{ fontSize: 14, color: '#64748b' }}>
+        <p style={{ fontSize: 15, color: '#64748b' }}>
           Não tem uma conta?{' '}
           <Link href="/cadastro" className="lp-link-g">Cadastre-se</Link>
         </p>
