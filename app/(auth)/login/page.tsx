@@ -20,12 +20,10 @@ export default function LoginPage() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-
     const errs: Record<string, string> = {}
     if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) errs.email = 'E-mail inválido'
     if (!password || password.length < 6) errs.password = 'Mínimo de 6 caracteres'
     if (Object.keys(errs).length) { setErrors(errs); return }
-
     setErrors({})
     setLoading(true)
 
@@ -35,10 +33,9 @@ export default function LoginPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ token: cfToken }),
       }).catch(() => null)
-
       if (cfRes && !cfRes.ok) {
         setLoading(false)
-        setErrors({ auth: 'Verificação de segurança falhou. Recarregue a página e tente novamente.' })
+        setErrors({ auth: 'Verificação de segurança falhou. Recarregue e tente novamente.' })
         return
       }
     }
@@ -46,14 +43,11 @@ export default function LoginPage() {
     try {
       const supabase = createClient()
       const { error } = await supabase.auth.signInWithPassword({ email, password })
-
       if (error) {
-        console.error('[login] supabase error:', error.message, error.status)
-        setErrors({ auth: 'E-mail ou senha incorretos. Verifique e tente novamente.' })
+        setErrors({ auth: 'E-mail ou senha incorretos.' })
         setLoading(false)
         return
       }
-
       const { data: userData } = await supabase.auth.getUser()
       if (userData.user) {
         identifyUser(userData.user.id, { email })
@@ -64,91 +58,147 @@ export default function LoginPage() {
           body: JSON.stringify({ eventType: 'auth.login', metadata: { method: 'email' } }),
         }).catch(() => undefined)
       }
-
       window.location.href = '/central'
-    } catch (err) {
-      console.error('[login] unexpected error:', err)
-      setErrors({ auth: 'Erro de conexão. Verifique sua internet e tente novamente.' })
+    } catch {
+      setErrors({ auth: 'Erro de conexão. Verifique sua internet.' })
       setLoading(false)
     }
   }
 
-  /* ── Dark input styles ── */
-  const inputBase: React.CSSProperties = {
-    background: '#111',
-    border: '1px solid rgba(255,255,255,0.11)',
-    color: '#fff',
-  }
-  const inputErr: React.CSSProperties = {
-    background: '#160808',
-    border: '1px solid rgba(248,113,113,0.55)',
-    boxShadow: '0 0 0 3px rgba(248,113,113,0.08)',
-    color: '#fff',
-  }
-  const focusOk:  React.CSSProperties = { border: `1px solid ${G}`, boxShadow: `0 0 0 3px rgba(2,102,72,0.14)` }
-  const focusErr: React.CSSProperties = { border: '1px solid rgba(248,113,113,0.65)', boxShadow: '0 0 0 3px rgba(248,113,113,0.10)' }
-
-  const labelStyle: React.CSSProperties = {
-    display: 'block',
-    fontSize: 11,
-    fontWeight: 600,
-    textTransform: 'uppercase',
-    letterSpacing: '0.12em',
-    color: '#9ca3af',
-    marginBottom: 8,
-  }
-
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 28 }}>
+    <>
+      <style>{`
+        .auth-input {
+          height: 48px;
+          width: 100%;
+          border-radius: 12px;
+          padding: 0 16px;
+          font-size: 15px;
+          outline: none;
+          box-sizing: border-box;
+          transition: border 0.15s, box-shadow 0.15s, background 0.15s;
+          background: rgba(255,255,255,0.05);
+          border: 1px solid rgba(255,255,255,0.10);
+          color: #fff;
+          font-family: inherit;
+        }
+        .auth-input::placeholder { color: rgba(255,255,255,0.25); }
+        .auth-input:focus {
+          background: rgba(255,255,255,0.07);
+          border-color: ${G};
+          box-shadow: 0 0 0 3px rgba(2,102,72,0.18);
+        }
+        .auth-input.err {
+          background: rgba(127,29,29,0.18);
+          border-color: rgba(248,113,113,0.45);
+        }
+        .auth-input.err:focus {
+          box-shadow: 0 0 0 3px rgba(248,113,113,0.12);
+        }
+        .auth-label {
+          display: block;
+          font-size: 11px;
+          font-weight: 600;
+          text-transform: uppercase;
+          letter-spacing: 0.12em;
+          color: rgba(255,255,255,0.45);
+          margin-bottom: 8px;
+        }
+        .auth-submit {
+          height: 50px;
+          width: 100%;
+          border: none;
+          border-radius: 13px;
+          font-size: 15px;
+          font-weight: 700;
+          color: #fff;
+          cursor: pointer;
+          letter-spacing: -0.01em;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 8px;
+          background: linear-gradient(135deg, ${GLit} 0%, ${G} 100%);
+          box-shadow: 0 4px 20px rgba(2,102,72,0.30), 0 1px 0 rgba(255,255,255,0.08) inset;
+          transition: opacity 0.15s, box-shadow 0.15s, transform 0.12s;
+          font-family: inherit;
+        }
+        .auth-submit:hover:not(:disabled) {
+          opacity: 0.88;
+          box-shadow: 0 6px 28px rgba(2,102,72,0.42);
+          transform: translateY(-1px);
+        }
+        .auth-submit:active:not(:disabled) { transform: translateY(0); }
+        .auth-submit:disabled { opacity: 0.5; cursor: not-allowed; }
+        @keyframes auth-spin { to { transform: rotate(360deg); } }
+        .auth-spin { animation: auth-spin 0.9s linear infinite; }
+        .auth-link {
+          color: rgba(255,255,255,0.45);
+          font-size: 13px;
+          transition: color 0.15s;
+          text-decoration: none;
+        }
+        .auth-link:hover { color: #fff; }
+        .auth-link-green {
+          color: ${GLit};
+          font-weight: 600;
+          font-size: 14px;
+          text-decoration: none;
+          transition: color 0.15s;
+        }
+        .auth-link-green:hover { color: #fff; }
+        .auth-divider {
+          width: 100%;
+          height: 1px;
+          background: rgba(255,255,255,0.07);
+          margin: 8px 0;
+        }
+      `}</style>
 
-      {/* Header */}
-      <div>
-        <h1 style={{ fontSize: 22, fontWeight: 800, color: '#fff', letterSpacing: '-0.025em', margin: '0 0 8px' }}>
-          Entrar na PearFy
+      {/* Title */}
+      <div style={{ marginBottom: 36, textAlign: 'center' }}>
+        <h1 style={{
+          fontSize: 26,
+          fontWeight: 800,
+          color: '#fff',
+          letterSpacing: '-0.03em',
+          margin: '0 0 8px',
+        }}>
+          Bem-vindo de volta
         </h1>
-        <p style={{ fontSize: 14, color: '#9ca3af', margin: 0, lineHeight: 1.6 }}>
-          Acesse sua conta para continuar seu controle financeiro.
+        <p style={{ fontSize: 15, color: 'rgba(255,255,255,0.40)', margin: 0, fontWeight: 400 }}>
+          Entre na sua conta PearFy
         </p>
       </div>
 
       {/* Auth error */}
       {errors.auth && (
-        <div
-          style={{
-            borderRadius: 10,
-            padding: '12px 16px',
-            fontSize: 14,
-            color: '#fca5a5',
-            background: 'rgba(127,29,29,0.30)',
-            border: '1px solid rgba(248,113,113,0.25)',
-          }}
-        >
+        <div style={{
+          marginBottom: 24,
+          padding: '12px 16px',
+          borderRadius: 11,
+          fontSize: 14,
+          color: '#fca5a5',
+          background: 'rgba(127,29,29,0.25)',
+          border: '1px solid rgba(248,113,113,0.22)',
+        }}>
           {errors.auth}
         </div>
       )}
 
       {/* Form */}
-      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
+      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
 
         {/* Email */}
         <div>
-          <label htmlFor="email" style={labelStyle}>E-mail</label>
+          <label className="auth-label">E-mail</label>
           <input
-            id="email"
+            className={`auth-input${errors.email || errors.auth ? ' err' : ''}`}
             type="email"
             autoComplete="email"
             placeholder="seu@email.com"
             value={email}
-            onChange={(e) => { setEmail(e.target.value); setErrors((p) => ({ ...p, auth: '' })) }}
-            style={{
-              ...( errors.email || errors.auth ? inputErr : inputBase ),
-              height: 46, width: '100%', borderRadius: 10,
-              padding: '0 16px', fontSize: 15, outline: 'none',
-              transition: 'border .15s, box-shadow .15s',
-              boxSizing: 'border-box',
-            }}
-            onFocus={(e) => Object.assign(e.currentTarget.style, errors.email ? focusErr : focusOk)}
-            onBlur={(e)  => Object.assign(e.currentTarget.style, errors.email || errors.auth ? inputErr : inputBase)}
+            onChange={(e) => { setEmail(e.target.value); setErrors(p => ({ ...p, auth: '', email: '' })) }}
           />
           {errors.email && (
             <p style={{ fontSize: 12, color: '#f87171', marginTop: 5 }}>{errors.email}</p>
@@ -158,47 +208,35 @@ export default function LoginPage() {
         {/* Password */}
         <div>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-            <label htmlFor="password" style={{ ...labelStyle, marginBottom: 0 }}>Senha</label>
-            <Link
-              href="/esqueci-senha"
-              style={{ fontSize: 12, color: '#9ca3af', fontWeight: 400, transition: 'color .15s' }}
-              onMouseEnter={(e) => (e.currentTarget.style.color = '#fff')}
-              onMouseLeave={(e) => (e.currentTarget.style.color = '#9ca3af')}
-            >
-              Esqueci minha senha
-            </Link>
+            <span className="auth-label" style={{ marginBottom: 0 }}>Senha</span>
+            <Link href="/esqueci-senha" className="auth-link">Esqueci a senha</Link>
           </div>
           <div style={{ position: 'relative' }}>
             <input
-              id="password"
+              className={`auth-input${errors.password || errors.auth ? ' err' : ''}`}
               type={showPass ? 'text' : 'password'}
               autoComplete="current-password"
               placeholder="••••••••"
+              style={{ paddingRight: 48 }}
               value={password}
-              onChange={(e) => { setPassword(e.target.value); setErrors((p) => ({ ...p, auth: '' })) }}
-              style={{
-                ...( errors.password || errors.auth ? inputErr : inputBase ),
-                height: 46, width: '100%', borderRadius: 10,
-                padding: '0 44px 0 16px', fontSize: 15, outline: 'none',
-                transition: 'border .15s, box-shadow .15s',
-                boxSizing: 'border-box',
-              }}
-              onFocus={(e) => Object.assign(e.currentTarget.style, errors.password ? focusErr : focusOk)}
-              onBlur={(e)  => Object.assign(e.currentTarget.style, errors.password || errors.auth ? inputErr : inputBase)}
+              onChange={(e) => { setPassword(e.target.value); setErrors(p => ({ ...p, auth: '', password: '' })) }}
             />
             <button
               type="button"
-              onClick={() => setShowPass(!showPass)}
               tabIndex={-1}
+              onClick={() => setShowPass(v => !v)}
               style={{
                 position: 'absolute', right: 14, top: '50%', transform: 'translateY(-50%)',
-                color: '#6b7280', background: 'none', border: 'none', cursor: 'pointer',
-                display: 'flex', alignItems: 'center', padding: 0, transition: 'color .15s',
+                color: 'rgba(255,255,255,0.30)', background: 'none', border: 'none',
+                cursor: 'pointer', display: 'flex', padding: 0,
+                transition: 'color .15s',
               }}
-              onMouseEnter={(e) => (e.currentTarget.style.color = '#fff')}
-              onMouseLeave={(e) => (e.currentTarget.style.color = '#6b7280')}
+              onMouseEnter={e => (e.currentTarget.style.color = 'rgba(255,255,255,0.75)')}
+              onMouseLeave={e => (e.currentTarget.style.color = 'rgba(255,255,255,0.30)')}
             >
-              {showPass ? <EyeOff style={{ width: 16, height: 16 }} /> : <Eye style={{ width: 16, height: 16 }} />}
+              {showPass
+                ? <EyeOff style={{ width: 16, height: 16 }} />
+                : <Eye     style={{ width: 16, height: 16 }} />}
             </button>
           </div>
           {errors.password && (
@@ -208,55 +246,19 @@ export default function LoginPage() {
 
         <TurnstileWidget onVerify={setCfToken} onError={() => setCfToken('')} onExpire={() => setCfToken('')} />
 
-        {/* Submit */}
-        <button
-          type="submit"
-          disabled={loading}
-          style={{
-            marginTop: 4,
-            height: 48,
-            width: '100%',
-            borderRadius: 11,
-            fontSize: 15,
-            fontWeight: 700,
-            color: '#fff',
-            border: 'none',
-            cursor: loading ? 'not-allowed' : 'pointer',
-            opacity: loading ? 0.65 : 1,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: 8,
-            background: `linear-gradient(135deg, ${GLit} 0%, ${G} 100%)`,
-            boxShadow: `0 6px 24px rgba(2,102,72,0.35)`,
-            transition: 'opacity .15s, box-shadow .15s',
-            letterSpacing: '-0.01em',
-          }}
-          onMouseEnter={(e) => { if (!loading) (e.currentTarget.style.opacity = '0.88') }}
-          onMouseLeave={(e) => { if (!loading) (e.currentTarget.style.opacity = '1') }}
-        >
-          {loading ? <Loader2 style={{ width: 18, height: 18, animation: 'spin 1s linear infinite' }} /> : 'Entrar'}
+        <button type="submit" className="auth-submit" disabled={loading} style={{ marginTop: 4 }}>
+          {loading
+            ? <Loader2 className="auth-spin" style={{ width: 18, height: 18 }} />
+            : 'Entrar'}
         </button>
       </form>
 
-      {/* Footer links */}
-      <div style={{ textAlign: 'center', borderTop: '1px solid rgba(255,255,255,0.07)', paddingTop: 24 }}>
-        <p style={{ fontSize: 14, color: '#9ca3af', margin: 0 }}>
-          Ainda não tem conta?{' '}
-          <Link
-            href="/cadastro"
-            style={{ color: GLit, fontWeight: 600, transition: 'color .15s' }}
-            onMouseEnter={(e) => (e.currentTarget.style.color = '#fff')}
-            onMouseLeave={(e) => (e.currentTarget.style.color = GLit)}
-          >
-            Criar conta
-          </Link>
-        </p>
-      </div>
-
-      <style>{`
-        @keyframes spin { to { transform: rotate(360deg); } }
-      `}</style>
-    </div>
+      {/* Footer */}
+      <div className="auth-divider" style={{ marginTop: 32 }} />
+      <p style={{ textAlign: 'center', fontSize: 14, color: 'rgba(255,255,255,0.35)', margin: '20px 0 0' }}>
+        Ainda não tem conta?{' '}
+        <Link href="/cadastro" className="auth-link-green">Criar conta</Link>
+      </p>
+    </>
   )
 }
