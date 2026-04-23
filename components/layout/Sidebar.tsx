@@ -124,9 +124,9 @@ export function Sidebar({
         <SaoozIcon size={40} />
         <span
           style={{
-            fontSize:      22,
-            fontWeight:    900,
-            letterSpacing: '-0.045em',
+            fontSize:      26,
+            fontWeight:    700,
+            letterSpacing: '-0.04em',
             lineHeight:    1,
             color:         '#026648',
             whiteSpace:    'nowrap',
