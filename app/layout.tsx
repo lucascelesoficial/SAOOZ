@@ -1,11 +1,12 @@
 import type { Metadata, Viewport } from 'next'
-import { Inter } from 'next/font/google'
+import { Poppins } from 'next/font/google'
 import './globals.css'
 import { Toaster } from '@/components/ui/sonner'
 import { Providers } from './providers'
 
-const inter = Inter({
+const poppins = Poppins({
   subsets: ['latin'],
+  weight: ['300', '400', '500', '600', '700', '800', '900'],
   variable: '--font-inter',
 })
 
@@ -46,7 +47,7 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="pt-BR" className={inter.variable} suppressHydrationWarning>
+    <html lang="pt-BR" className={poppins.variable} suppressHydrationWarning>
       <body className="app-body antialiased">
         <Providers>
           {children}
