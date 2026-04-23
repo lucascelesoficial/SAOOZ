@@ -7,9 +7,9 @@ import { createClient } from '@/lib/supabase/client'
 import { trackEvent, identifyUser, EVENTS } from '@/lib/posthog/client'
 import { TurnstileWidget } from '@/components/security/TurnstileWidget'
 
-const G = '#025b4d'
-const G_DARK = '#014840'
-const G_RGB = '2,91,77'
+const G = '#026648'
+const G_DARK = '#015038'
+const G_RGB = '2,102,72'
 
 export default function LoginPage() {
   const [mode, setMode]           = useState<'magic' | 'password'>('magic')
