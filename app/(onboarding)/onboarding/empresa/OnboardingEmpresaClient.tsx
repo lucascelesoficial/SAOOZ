@@ -343,9 +343,9 @@ export function OnboardingEmpresaClient({
       <div className="mb-7 flex items-center gap-3">
         <div
           className="flex h-10 w-10 items-center justify-center rounded-xl"
-          style={{ background: '#0ea5e915', border: '1px solid #0ea5e930' }}
+          style={{ background: '#02664815', border: '1px solid #02664830' }}
         >
-          <Building2 className="h-5 w-5 text-[#0ea5e9]" />
+          <Building2 className="h-5 w-5" style={{ color: '#026648' }} />
         </div>
         <div>
           <h1 className="text-xl font-extrabold text-app">
@@ -383,7 +383,7 @@ export function OnboardingEmpresaClient({
             onBlur={blurStyle}
           />
           {cnpj && validateCNPJ(cnpj) && (
-            <p className="text-xs text-[#22c55e] mt-1">CNPJ válido</p>
+            <p className="text-xs mt-1" style={{ color: '#026648' }}>CNPJ válido ✓</p>
           )}
         </FieldWrap>
 
@@ -397,16 +397,16 @@ export function OnboardingEmpresaClient({
                 onClick={() => setRegime(taxRegime.id)}
                 className="rounded-[10px] p-3 text-left transition-all"
                 style={{
-                  background: regime === taxRegime.id ? '#0ea5e915' : 'var(--panel-bg-soft)',
-                  border: regime === taxRegime.id ? '1.5px solid #0ea5e9' : '1.5px solid var(--panel-border)',
-                  boxShadow: regime === taxRegime.id ? '0 0 12px #0ea5e930' : 'none',
+                  background: regime === taxRegime.id ? '#02664812' : 'var(--panel-bg-soft)',
+                  border: regime === taxRegime.id ? '1.5px solid #026648' : '1.5px solid var(--panel-border)',
+                  boxShadow: regime === taxRegime.id ? '0 0 12px #02664825' : 'none',
                 }}
               >
-                <p className="text-sm font-semibold" style={{ color: regime === taxRegime.id ? '#0ea5e9' : 'var(--text-base)' }}>
+                <p className="text-sm font-semibold" style={{ color: regime === taxRegime.id ? '#026648' : 'var(--text-base)' }}>
                   {taxRegime.label}
                 </p>
                 <p className="mt-0.5 text-[11px] leading-tight text-app-soft">{taxRegime.desc}</p>
-                <p className="mt-0.5 text-[10px] leading-tight" style={{ color: regime === taxRegime.id ? '#0ea5e960' : 'var(--text-soft)' }}>{taxRegime.porte}</p>
+                <p className="mt-0.5 text-[10px] leading-tight" style={{ color: regime === taxRegime.id ? '#02664870' : 'var(--text-soft)' }}>{taxRegime.porte}</p>
               </button>
             ))}
           </div>
@@ -460,7 +460,7 @@ export function OnboardingEmpresaClient({
               onBlur={blurStyle}
             />
             {socioCpf && validateCPF(socioCpf) && (
-              <p className="text-xs text-[#22c55e] mt-1">CPF válido</p>
+              <p className="text-xs mt-1" style={{ color: '#026648' }}>CPF válido ✓</p>
             )}
           </FieldWrap>
 
@@ -527,8 +527,8 @@ export function OnboardingEmpresaClient({
           disabled={loading || loadingBusiness || skipping}
           className="mt-2 flex h-12 w-full items-center justify-center gap-2 rounded-[12px] text-sm font-bold text-white transition-all disabled:opacity-60"
           style={{
-            background: 'linear-gradient(135deg, #0ea5e9, #0284c7)',
-            boxShadow: '0 4px 20px #0ea5e930',
+            background: 'linear-gradient(135deg, #026648, #013d2c)',
+            boxShadow: '0 4px 20px rgba(2,102,72,0.30)',
           }}
         >
           {loading || loadingBusiness ? (

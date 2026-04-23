@@ -16,8 +16,10 @@ import {
   Compass,
   Flame,
   Radar,
+  Sparkles,
   TrendingUp,
 } from 'lucide-react'
+import Link from 'next/link'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useFinancialData } from '@/lib/hooks/useFinancialData'
@@ -327,35 +329,61 @@ function AttentionBlock({
             return (
               <div
                 key={item.title}
-                className="rounded-[10px] border px-3 py-3"
-                style={{ background: style.bg, borderColor: style.border }}
+                className="rounded-[10px] border px-4 py-3 flex gap-3"
+                style={{ background: style.bg, borderColor: style.border, borderLeft: `3px solid ${style.color}` }}
               >
-                <p className="text-sm font-semibold" style={{ color: style.color }}>
-                  {item.title}
-                </p>
-                <p className="mt-1 text-xs text-app-soft">{item.description}</p>
+                <div
+                  className="mt-0.5 shrink-0 h-5 w-5 rounded-full flex items-center justify-center"
+                  style={{ background: style.bg, border: `1px solid ${style.color}30` }}
+                >
+                  <AlertTriangle className="h-3 w-3" style={{ color: style.color }} />
+                </div>
+                <div>
+                  <p className="text-sm font-semibold" style={{ color: style.color }}>{item.title}</p>
+                  <p className="mt-0.5 text-xs text-app-soft">{item.description}</p>
+                </div>
               </div>
             )
           })
         ) : (
           <div
-            className="rounded-[10px] border px-3 py-3"
-            style={{ background: '#02664812', borderColor: '#02664822' }}
+            className="rounded-[10px] border px-4 py-3 flex gap-3"
+            style={{ background: '#02664812', borderColor: '#02664822', borderLeft: '3px solid #026648' }}
           >
-            <p className="text-sm font-semibold text-[#026648]">Tudo sob controle</p>
-            <p className="mt-1 text-xs text-app-soft">Nenhum alerta crítico no momento. Continue no mesmo ritmo.</p>
+            <div
+              className="mt-0.5 shrink-0 h-5 w-5 rounded-full flex items-center justify-center"
+              style={{ background: '#02664812', border: '1px solid #02664830' }}
+            >
+              <AlertTriangle className="h-3 w-3" style={{ color: '#026648' }} />
+            </div>
+            <div>
+              <p className="text-sm font-semibold text-[#026648]">Tudo sob controle</p>
+              <p className="mt-0.5 text-xs text-app-soft">Nenhum alerta crítico no momento. Continue no mesmo ritmo.</p>
+            </div>
           </div>
         )}
 
         {topRec && (
           <div
-            className="rounded-[10px] border px-3 py-3"
-            style={{ borderColor: 'color-mix(in oklab, var(--accent-blue) 25%, transparent)', background: 'color-mix(in oklab, var(--accent-blue) 6%, transparent)' }}
+            className="rounded-[10px] border px-4 py-3 flex gap-3"
+            style={{
+              borderColor: 'color-mix(in oklab, var(--accent-blue) 25%, transparent)',
+              background: 'color-mix(in oklab, var(--accent-blue) 6%, transparent)',
+              borderLeft: '3px solid var(--accent-blue)',
+            }}
           >
-            <p className="text-sm font-semibold" style={{ color: 'var(--accent-blue)' }}>
-              {topRec.title}
-            </p>
-            <p className="mt-1 text-xs text-app-soft">{topRec.description}</p>
+            <div
+              className="mt-0.5 shrink-0 h-5 w-5 rounded-full flex items-center justify-center"
+              style={{ background: 'color-mix(in oklab, var(--accent-blue) 6%, transparent)', border: '1px solid color-mix(in oklab, var(--accent-blue) 30%, transparent)' }}
+            >
+              <AlertTriangle className="h-3 w-3" style={{ color: 'var(--accent-blue)' }} />
+            </div>
+            <div>
+              <p className="text-sm font-semibold" style={{ color: 'var(--accent-blue)' }}>
+                {topRec.title}
+              </p>
+              <p className="mt-0.5 text-xs text-app-soft">{topRec.description}</p>
+            </div>
           </div>
         )}
       </div>
@@ -450,15 +478,34 @@ export function InteligenciaClient({
 
   return (
     <div className="mx-auto max-w-4xl space-y-6 pb-6">
-      <div className="panel-card p-5">
-        <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-          <div>
-            <h1 className="text-xl font-bold text-app">Inteligência</h1>
-            <p className="mt-1 text-sm text-app-soft">
-              Leitura automática do mês com alertas, projeção e próximos movimentos.
-            </p>
-          </div>
-          <div className="flex flex-col items-start gap-2 sm:flex-row sm:items-center">
+      {/* Gradient header banner */}
+      <div
+        className="rounded-[16px] overflow-hidden"
+        style={{
+          background: 'linear-gradient(135deg, #0A1D13 0%, #163424 60%, #0f2d1e 100%)',
+          border: '1px solid rgba(255,255,255,0.07)',
+        }}
+      >
+        <div className="px-6 py-5">
+          {/* top row: title left, export button right */}
+          <div className="flex items-start justify-between gap-4 mb-4">
+            <div>
+              <p
+                className="text-[10px] font-bold uppercase tracking-widest mb-1"
+                style={{ color: 'rgba(255,255,255,0.45)' }}
+              >
+                Pearfy Inteligência
+              </p>
+              <h1
+                className="text-2xl font-extrabold"
+                style={{ color: '#ffffff', letterSpacing: '-0.03em' }}
+              >
+                Inteligência
+              </h1>
+              <p className="mt-1 text-sm" style={{ color: 'rgba(255,255,255,0.55)' }}>
+                Leitura automática do mês com alertas, projeção e próximos movimentos.
+              </p>
+            </div>
             <ExportPDFButton
               data={{
                 title: 'Relatório de Inteligência',
@@ -507,28 +554,48 @@ export function InteligenciaClient({
               }}
               fileName={`saooz-inteligencia-${currentMonth.toISOString().slice(0, 7)}.pdf`}
             />
-            <div
-              className="rounded-[12px] border px-4 py-3 text-sm text-app"
-              style={{
-                borderColor: 'color-mix(in oklab, var(--accent-blue) 22%, transparent)',
-                background: 'color-mix(in oklab, var(--accent-blue) 8%, transparent)',
-              }}
-            >
+          </div>
+
+          {/* summary pill */}
+          <div
+            className="inline-flex items-center gap-2 rounded-full px-4 py-2"
+            style={{
+              background: 'rgba(255,255,255,0.08)',
+              border: '1px solid rgba(255,255,255,0.12)',
+            }}
+          >
+            <span className="h-2 w-2 rounded-full bg-[#4ade80] animate-pulse" />
+            <span className="text-sm font-medium" style={{ color: 'rgba(255,255,255,0.85)' }}>
               {intelligence.summary}
-            </div>
+            </span>
           </div>
         </div>
       </div>
 
       {!advancedInsightsEnabled && (
         <div
-          className="rounded-[12px] border px-4 py-4 text-sm text-app"
+          className="rounded-[12px] px-5 py-4 flex items-center gap-4"
           style={{
-            borderColor: 'color-mix(in oklab, var(--accent-blue) 24%, transparent)',
-            background: 'color-mix(in oklab, var(--accent-blue) 8%, transparent)',
+            background: 'color-mix(in oklab, var(--accent-blue) 6%, transparent)',
+            border: '1px solid color-mix(in oklab, var(--accent-blue) 20%, transparent)',
           }}
         >
-          Seu plano atual libera a leitura essencial. Projeções, recomendações aprofundadas e comparativos avançados estão disponíveis no PRO.
+          <div
+            className="h-9 w-9 shrink-0 rounded-[10px] flex items-center justify-center"
+            style={{ background: 'color-mix(in oklab, var(--accent-blue) 15%, transparent)' }}
+          >
+            <Sparkles className="h-4 w-4" style={{ color: 'var(--accent-blue)' }} />
+          </div>
+          <p className="text-sm text-app flex-1">
+            Seu plano atual libera a leitura essencial. Projeções, recomendações aprofundadas e comparativos avançados estão disponíveis no PRO.
+          </p>
+          <Link
+            href="/planos"
+            className="shrink-0 text-xs font-bold px-3 py-1.5 rounded-full text-white"
+            style={{ background: 'var(--accent-blue)' }}
+          >
+            Ver PRO →
+          </Link>
         </div>
       )}
 
@@ -540,62 +607,122 @@ export function InteligenciaClient({
       />
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <div className="panel-card p-4">
-          <div className="flex items-center gap-2 text-app-soft">
-            <Flame className="h-4 w-4" style={{ color: 'var(--accent-blue)' }} />
-            <p className="text-xs uppercase tracking-wider">Burn rate</p>
+        <div
+          className="panel-card p-5 flex flex-col gap-3"
+          style={{ background: 'var(--panel-bg)', border: '1px solid var(--panel-border)', borderRadius: 14 }}
+        >
+          <div className="flex items-center gap-2">
+            <div
+              className="h-8 w-8 rounded-[8px] flex items-center justify-center"
+              style={{
+                background: 'color-mix(in oklab, var(--accent-blue) 12%, transparent)',
+                border: '1px solid color-mix(in oklab, var(--accent-blue) 22%, transparent)',
+              }}
+            >
+              <Flame className="h-4 w-4" style={{ color: 'var(--accent-blue)' }} />
+            </div>
+            <p className="text-xs font-semibold uppercase tracking-wider text-app-soft">Burn rate</p>
           </div>
-          <p className="mt-3 text-2xl font-bold text-app">
+          <p className="text-3xl font-extrabold text-app" style={{ letterSpacing: '-0.03em' }}>
             {formatCurrency(intelligence.burnRate)}
           </p>
-          <p className="mt-1 text-xs text-app-soft">Média dos últimos 3 meses</p>
+          <p className="text-xs text-app-soft">Média dos últimos 3 meses</p>
         </div>
 
-        <div className="panel-card p-4">
-          <div className="flex items-center gap-2 text-app-soft">
-            <TrendingUp className="h-4 w-4" style={{ color: 'var(--accent-blue)' }} />
-            <p className="text-xs uppercase tracking-wider">Saldo projetado</p>
+        <div
+          className="panel-card p-5 flex flex-col gap-3"
+          style={{ background: 'var(--panel-bg)', border: '1px solid var(--panel-border)', borderRadius: 14 }}
+        >
+          <div className="flex items-center gap-2">
+            <div
+              className="h-8 w-8 rounded-[8px] flex items-center justify-center"
+              style={{
+                background: 'color-mix(in oklab, var(--accent-blue) 12%, transparent)',
+                border: '1px solid color-mix(in oklab, var(--accent-blue) 22%, transparent)',
+              }}
+            >
+              <TrendingUp className="h-4 w-4" style={{ color: 'var(--accent-blue)' }} />
+            </div>
+            <p className="text-xs font-semibold uppercase tracking-wider text-app-soft">Saldo projetado</p>
           </div>
           <p
-            className="mt-3 text-2xl font-bold"
-            style={{ color: intelligence.projectedBalance >= 0 ? '#026648' : '#f87171' }}
+            className="text-3xl font-extrabold"
+            style={{
+              color: intelligence.projectedBalance >= 0 ? '#026648' : '#f87171',
+              letterSpacing: '-0.03em',
+            }}
           >
             {formatCurrency(intelligence.projectedBalance)}
           </p>
-          <p className="mt-1 text-xs text-app-soft">Baseado no ritmo médio recente</p>
+          <p className="text-xs text-app-soft">Baseado no ritmo médio recente</p>
         </div>
 
-        <div className="panel-card p-4">
-          <div className="flex items-center gap-2 text-app-soft">
-            <Radar className="h-4 w-4" style={{ color: 'var(--accent-blue)' }} />
-            <p className="text-xs uppercase tracking-wider">Categoria principal</p>
+        <div
+          className="panel-card p-5 flex flex-col gap-3"
+          style={{ background: 'var(--panel-bg)', border: '1px solid var(--panel-border)', borderRadius: 14 }}
+        >
+          <div className="flex items-center gap-2">
+            <div
+              className="h-8 w-8 rounded-[8px] flex items-center justify-center"
+              style={{
+                background: 'color-mix(in oklab, var(--accent-blue) 12%, transparent)',
+                border: '1px solid color-mix(in oklab, var(--accent-blue) 22%, transparent)',
+              }}
+            >
+              <Radar className="h-4 w-4" style={{ color: 'var(--accent-blue)' }} />
+            </div>
+            <p className="text-xs font-semibold uppercase tracking-wider text-app-soft">Categoria principal</p>
           </div>
-          <p className="mt-3 text-lg font-bold text-app">
+          <p className="text-3xl font-extrabold text-app" style={{ letterSpacing: '-0.03em' }}>
             {intelligence.focusCategory?.label ?? 'Sem destaque'}
           </p>
-          <p className="mt-1 text-xs text-app-soft">
+          <p className="text-xs text-app-soft">
             {intelligence.focusCategory
               ? `${intelligence.focusCategory.percentage}% dos gastos do mês`
               : 'Sem categoria dominante ainda'}
           </p>
         </div>
 
-        <div className="panel-card p-4">
-          <div className="flex items-center gap-2 text-app-soft">
-            <Compass className="h-4 w-4" style={{ color: 'var(--accent-blue)' }} />
-            <p className="text-xs uppercase tracking-wider">Desvios</p>
+        <div
+          className="panel-card p-5 flex flex-col gap-3"
+          style={{ background: 'var(--panel-bg)', border: '1px solid var(--panel-border)', borderRadius: 14 }}
+        >
+          <div className="flex items-center gap-2">
+            <div
+              className="h-8 w-8 rounded-[8px] flex items-center justify-center"
+              style={{
+                background: 'color-mix(in oklab, var(--accent-blue) 12%, transparent)',
+                border: '1px solid color-mix(in oklab, var(--accent-blue) 22%, transparent)',
+              }}
+            >
+              <Compass className="h-4 w-4" style={{ color: 'var(--accent-blue)' }} />
+            </div>
+            <p className="text-xs font-semibold uppercase tracking-wider text-app-soft">Desvios</p>
           </div>
-          <p className="mt-3 text-2xl font-bold text-app">{overBudgetCount}</p>
-          <p className="mt-1 text-xs text-app-soft">Categorias acima do planejado</p>
+          <p className="text-3xl font-extrabold text-app" style={{ letterSpacing: '-0.03em' }}>
+            {overBudgetCount}
+          </p>
+          <p className="text-xs text-app-soft">Categorias acima do planejado</p>
         </div>
 
-        <div className="panel-card p-4">
-          <div className="flex items-center gap-2 text-app-soft">
-            <TrendingUp className="h-4 w-4" style={{ color: 'var(--accent-blue)' }} />
-            <p className="text-xs uppercase tracking-wider">Variacao mensal</p>
+        <div
+          className="panel-card p-5 flex flex-col gap-3"
+          style={{ background: 'var(--panel-bg)', border: '1px solid var(--panel-border)', borderRadius: 14 }}
+        >
+          <div className="flex items-center gap-2">
+            <div
+              className="h-8 w-8 rounded-[8px] flex items-center justify-center"
+              style={{
+                background: 'color-mix(in oklab, var(--accent-blue) 12%, transparent)',
+                border: '1px solid color-mix(in oklab, var(--accent-blue) 22%, transparent)',
+              }}
+            >
+              <TrendingUp className="h-4 w-4" style={{ color: 'var(--accent-blue)' }} />
+            </div>
+            <p className="text-xs font-semibold uppercase tracking-wider text-app-soft">Variacao mensal</p>
           </div>
           <p
-            className="mt-3 text-2xl font-bold"
+            className="text-3xl font-extrabold"
             style={{
               color:
                 monthlyExpenseVariationPct === null
@@ -603,24 +730,36 @@ export function InteligenciaClient({
                   : monthlyExpenseVariationPct <= 0
                     ? '#026648'
                     : '#f87171',
+              letterSpacing: '-0.03em',
             }}
           >
             {monthlyExpenseVariationPct === null
               ? '--'
               : `${monthlyExpenseVariationPct > 0 ? '+' : ''}${monthlyExpenseVariationPct.toFixed(1)}%`}
           </p>
-          <p className="mt-1 text-xs text-app-soft">Gastos comparados ao mes anterior</p>
+          <p className="text-xs text-app-soft">Gastos comparados ao mes anterior</p>
         </div>
 
-        <div className="panel-card p-4">
-          <div className="flex items-center gap-2 text-app-soft">
-            <Radar className="h-4 w-4" style={{ color: 'var(--accent-blue)' }} />
-            <p className="text-xs uppercase tracking-wider">Maior crescimento</p>
+        <div
+          className="panel-card p-5 flex flex-col gap-3"
+          style={{ background: 'var(--panel-bg)', border: '1px solid var(--panel-border)', borderRadius: 14 }}
+        >
+          <div className="flex items-center gap-2">
+            <div
+              className="h-8 w-8 rounded-[8px] flex items-center justify-center"
+              style={{
+                background: 'color-mix(in oklab, var(--accent-blue) 12%, transparent)',
+                border: '1px solid color-mix(in oklab, var(--accent-blue) 22%, transparent)',
+              }}
+            >
+              <Radar className="h-4 w-4" style={{ color: 'var(--accent-blue)' }} />
+            </div>
+            <p className="text-xs font-semibold uppercase tracking-wider text-app-soft">Maior crescimento</p>
           </div>
-          <p className="mt-3 text-lg font-bold text-app">
+          <p className="text-3xl font-extrabold text-app" style={{ letterSpacing: '-0.03em' }}>
             {biggestCategoryGrowth?.label ?? 'Sem destaque'}
           </p>
-          <p className="mt-1 text-xs text-app-soft">
+          <p className="text-xs text-app-soft">
             {biggestCategoryGrowth
               ? `Aumento de ${formatCurrency(biggestCategoryGrowth.delta)} no mes`
               : 'Sem aumento relevante por categoria'}

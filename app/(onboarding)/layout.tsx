@@ -3,8 +3,8 @@ import Image from 'next/image'
 
 export const metadata: Metadata = {
   title: {
-    default: 'SAOOZ',
-    template: 'SAOOZ | %s',
+    default: 'Pearfy',
+    template: 'Pearfy | %s',
   },
 }
 
@@ -12,37 +12,45 @@ export default function OnboardingLayout({ children }: { children: React.ReactNo
   return (
     <div
       className="force-light min-h-screen flex flex-col items-center justify-center p-4"
-      style={{ background: '#F8FAFC' }}
+      style={{ background: '#F2F7F5' }}
     >
-      {/* Grid de pontos azuis sutis */}
+      {/* Subtle green dot grid */}
       <div
         className="pointer-events-none fixed inset-0"
         style={{
-          backgroundImage: 'radial-gradient(circle, #2563EB18 1px, transparent 1px)',
+          backgroundImage: 'radial-gradient(circle, #02664818 1px, transparent 1px)',
           backgroundSize: '32px 32px',
         }}
       />
 
       {/* Logo */}
-      <div className="mb-10 relative z-10 flex flex-col items-center gap-3">
+      <div className="mb-8 relative z-10 flex items-center gap-3">
         <div style={{
-          borderRadius: 18,
-          boxShadow: '0 2px 12px rgba(37,99,235,0.15), 0 0 0 1px rgba(0,0,0,0.06)',
+          borderRadius: 16,
+          boxShadow: '0 2px 16px rgba(2,102,72,0.18), 0 0 0 1px rgba(0,0,0,0.06)',
           overflow: 'hidden',
           display: 'inline-flex',
+          flexShrink: 0,
         }}>
           <Image
-            src="/saooz-logo.svg"
-            alt="SAOOZ"
-            width={56}
-            height={56}
+            src="/favicon.svg"
+            alt="Pearfy"
+            width={52}
+            height={52}
             priority
-            style={{ width: 56, height: 56, objectFit: 'contain', display: 'block' }}
+            style={{ width: 52, height: 52, display: 'block' }}
           />
         </div>
-        <p className="text-lg font-extrabold text-slate-900 tracking-tight" style={{ letterSpacing: '0.05em' }}>
-          SAOOZ
-        </p>
+        <span style={{
+          fontSize: 26,
+          fontWeight: 800,
+          letterSpacing: '-0.04em',
+          color: '#026648',
+          lineHeight: 1,
+          fontFamily: 'var(--font-inter), system-ui, sans-serif',
+        }}>
+          Pearfy
+        </span>
       </div>
 
       {/* Card */}
