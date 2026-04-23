@@ -15,8 +15,8 @@ const WORD_H = { sm: 26, md: 38, lg: 52, xl: 72 } as const
 export function SaoozIcon({ size = 40 }: { size?: number }) {
   return (
     <Image
-      src="/pear-finance-logo.svg"
-      alt="Pear Finance"
+      src="/favicon.svg"
+      alt="Pearfy"
       width={size}
       height={size}
       priority
@@ -75,38 +75,38 @@ export function NucleusIcon({ size = 40 }: { size?: number }) {
           </feMerge>
         </filter>
         <radialGradient id={`${id}cg`} cx="50%" cy="50%" r="50%">
-          <stop offset="0%" stopColor="#E8F6D4" stopOpacity="1" />
-          <stop offset="60%" stopColor="#A7CF63" stopOpacity="0.6" />
-          <stop offset="100%" stopColor="#5B9637" stopOpacity="0" />
+          <stop offset="0%" stopColor="#d0f5ec" stopOpacity="1" />
+          <stop offset="60%" stopColor="#04a372" stopOpacity="0.6" />
+          <stop offset="100%" stopColor="#026648" stopOpacity="0" />
         </radialGradient>
       </defs>
 
-      <circle cx="40" cy="40" r="36" stroke="#5B9637" strokeWidth="1" fill="none" filter={`url(#${id}g1)`} strokeDasharray="6 10">
+      <circle cx="40" cy="40" r="36" stroke="#026648" strokeWidth="1" fill="none" filter={`url(#${id}g1)`} strokeDasharray="6 10">
         <animateTransform attributeName="transform" type="rotate" from="0 40 40" to="360 40 40" dur="18s" repeatCount="indefinite" />
         <animate attributeName="opacity" values="0.4;0.9;0.4" dur="3.5s" repeatCount="indefinite" />
       </circle>
-      <circle cx="40" cy="40" r="30" stroke="#74A93D" strokeWidth="1.5" fill="none" filter={`url(#${id}g2)`}>
+      <circle cx="40" cy="40" r="30" stroke="#026648" strokeWidth="1.5" fill="none" filter={`url(#${id}g2)`}>
         <animateTransform attributeName="transform" type="rotate" from="0 40 40" to="-360 40 40" dur="12s" repeatCount="indefinite" />
         <animate attributeName="stroke-opacity" values="0.7;1;0.7" dur="2.8s" repeatCount="indefinite" />
       </circle>
-      <circle cx="40" cy="40" r="23" stroke="#8CC85A" strokeWidth="2" fill="none" filter={`url(#${id}g2)`}>
+      <circle cx="40" cy="40" r="23" stroke="#04a372" strokeWidth="2" fill="none" filter={`url(#${id}g2)`}>
         <animate attributeName="stroke-opacity" values="0.6;1;0.6" dur="2.2s" repeatCount="indefinite" />
         <animate attributeName="r" values="23;24;23" dur="2.2s" repeatCount="indefinite" />
       </circle>
-      <circle cx="40" cy="40" r="16" stroke="#A7CF63" strokeWidth="2.5" fill="none" filter={`url(#${id}g2)`}>
+      <circle cx="40" cy="40" r="16" stroke="#04a372" strokeWidth="2.5" fill="none" filter={`url(#${id}g2)`}>
         <animateTransform attributeName="transform" type="rotate" from="0 40 40" to="360 40 40" dur="7s" repeatCount="indefinite" />
         <animate attributeName="stroke-opacity" values="0.5;1;0.5" dur="1.8s" repeatCount="indefinite" />
       </circle>
-      <circle cx="40" cy="40" r="9.5" stroke="#D8EDB0" strokeWidth="2" fill="none" filter={`url(#${id}g2)`}>
+      <circle cx="40" cy="40" r="9.5" stroke="#a0dbc8" strokeWidth="2" fill="none" filter={`url(#${id}g2)`}>
         <animate attributeName="stroke-opacity" values="0.6;1;0.6" dur="1.4s" repeatCount="indefinite" />
       </circle>
       <circle cx="40" cy="40" r="7" fill={`url(#${id}cg)`} opacity="0.3" filter={`url(#${id}g3)`}>
         <animate attributeName="r" values="7;11;7" dur="2s" repeatCount="indefinite" />
         <animate attributeName="opacity" values="0.2;0.6;0.2" dur="2s" repeatCount="indefinite" />
       </circle>
-      <circle cx="40" cy="40" r="3.5" fill="#E8F6D4" filter={`url(#${id}g3)`}>
+      <circle cx="40" cy="40" r="3.5" fill="#d0f5ec" filter={`url(#${id}g3)`}>
         <animate attributeName="r" values="3;5;3" dur="2s" repeatCount="indefinite" />
-        <animate attributeName="fill" values="#E8F6D4;#ffffff;#E8F6D4" dur="2s" repeatCount="indefinite" />
+        <animate attributeName="fill" values="#d0f5ec;#ffffff;#d0f5ec" dur="2s" repeatCount="indefinite" />
         <animate attributeName="opacity" values="0.8;1;0.8" dur="2s" repeatCount="indefinite" />
       </circle>
     </svg>
@@ -129,7 +129,7 @@ const ORB_CFG: Record<
   idle: {
     filter: 'none',
     scale: '1',
-    glow: '#74A93D18',
+    glow: '#02664818',
     ringColor: 'transparent',
     ringOpacity: 0,
     anim: 'none',
@@ -137,8 +137,8 @@ const ORB_CFG: Record<
   listening: {
     filter: 'brightness(1.5) saturate(1.3)',
     scale: '1.12',
-    glow: '#74A93D55',
-    ringColor: '#74A93D',
+    glow: '#02664855',
+    ringColor: '#026648',
     ringOpacity: 0.9,
     anim: 'orb-ping 1s ease-out infinite',
   },
@@ -222,7 +222,7 @@ export function SaoozWordmark({ size = 'md', onDark = false }: Props) {
   const gap = Math.round(h * 0.22)
 
   return (
-    <span className="inline-flex items-center select-none" style={{ gap }} aria-label="Pear Finance">
+    <span className="inline-flex items-center select-none" style={{ gap }} aria-label="Pearfy">
       <span
         style={{
           display: 'inline-flex',
@@ -236,8 +236,8 @@ export function SaoozWordmark({ size = 'md', onDark = false }: Props) {
         }}
       >
         <Image
-          src="/pear-finance-logo.svg"
-          alt="Pear Finance"
+          src="/favicon.svg"
+          alt="Pearfy"
           width={iconPx}
           height={iconPx}
           priority
@@ -255,8 +255,7 @@ export function SaoozWordmark({ size = 'md', onDark = false }: Props) {
           color: onDark ? '#FFFFFF' : '#102317',
         }}
       >
-        <span style={{ color: '#74A93D' }}>Pear </span>
-        <span>Finance</span>
+        <span style={{ color: '#026648' }}>Pearfy</span>
       </span>
     </span>
   )

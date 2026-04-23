@@ -39,7 +39,7 @@ export function DashboardClient({
   useEffect(() => {
     if (searchParams.get('checkout') === 'success') {
       toast.success('Plano ativado com sucesso!', {
-        description: 'Bem-vindo ao Pear Finance. Seu acesso completo está liberado.',
+        description: 'Bem-vindo ao Pearfy. Seu acesso completo está liberado.',
         duration: 6000,
       })
       const url = new URL(window.location.href)
@@ -100,7 +100,7 @@ export function DashboardClient({
                 date: e.created_at ? new Date(e.created_at).toLocaleDateString('pt-BR') : undefined,
               })),
             }}
-            fileName={`pear-finance-central-${currentMonth.toISOString().slice(0, 7)}.pdf`}
+            fileName={`pearfy-central-${currentMonth.toISOString().slice(0, 7)}.pdf`}
           />
           {showHeaderCta && (
             <Link

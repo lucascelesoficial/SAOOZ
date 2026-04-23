@@ -15,20 +15,20 @@ export const viewport: Viewport = {
   initialScale: 1,
   maximumScale: 1,
   userScalable: false,
-  themeColor: '#74A93D',
+  themeColor: '#026648',
 }
 
 export const metadata: Metadata = {
   title: {
-    default: 'Pear Finance',
-    template: 'Pear Finance | %s',
+    default: 'Pearfy',
+    template: 'Pearfy | %s',
   },
   description: 'Finanças inteligentes para um futuro mais brilhante.',
   manifest: '/manifest.webmanifest',
   appleWebApp: {
     capable: true,
     statusBarStyle: 'default',
-    title: 'Pear Finance',
+    title: 'Pearfy',
   },
   icons: {
     icon: [

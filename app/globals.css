@@ -41,18 +41,18 @@
   --card-foreground: 0 0% 7%;
   --popover: 0 0% 100%;
   --popover-foreground: 0 0% 7%;
-  --primary: 96 46% 41%;
+  --primary: 162 96% 20%;
   --primary-foreground: 0 0% 100%;
   --secondary: 0 0% 96%;
   --secondary-foreground: 0 0% 13%;
   --muted: 0 0% 96%;
   --muted-foreground: 0 0% 45%;
-  --accent: 96 46% 41%;
+  --accent: 162 96% 20%;
   --accent-foreground: 0 0% 100%;
   --destructive: 0 84% 60%;
   --border: 0 0% 90%;
   --input: 0 0% 90%;
-  --ring: 96 46% 41%;
+  --ring: 162 96% 20%;
   --radius: 0.75rem;
 
   --app-bg: #f7f7f7;
@@ -64,8 +64,8 @@
   --text-strong: #111111;
   --text-base: #444444;
   --text-soft: #888888;
-  --accent-blue: #5b9637;
-  --accent-cyan: #8cc85a;
+  --accent-blue: #026648;
+  --accent-cyan: #04a372;
   --chart-grid: #e8e8e8;
 }
 
@@ -77,18 +77,18 @@
   --card-foreground: 0 0% 95%;
   --popover: 0 0% 10%;
   --popover-foreground: 0 0% 95%;
-  --primary: 88 51% 61%;
+  --primary: 162 97% 33%;
   --primary-foreground: 0 0% 100%;
   --secondary: 0 0% 14%;
   --secondary-foreground: 0 0% 80%;
   --muted: 0 0% 14%;
   --muted-foreground: 0 0% 55%;
-  --accent: 88 51% 61%;
+  --accent: 162 97% 33%;
   --accent-foreground: 0 0% 100%;
   --destructive: 0 91% 71%;
   --border: 0 0% 16%;
   --input: 0 0% 16%;
-  --ring: 88 51% 61%;
+  --ring: 162 97% 33%;
 
   --app-bg: #0a0a0a;
   --surface-bg: #111111;
@@ -99,8 +99,8 @@
   --text-strong: #f0f0f0;
   --text-base: #c0c0c0;
   --text-soft: #787878;
-  --accent-blue: #a7cf63;
-  --accent-cyan: #74a93d;
+  --accent-blue: #04a372;
+  --accent-cyan: #026648;
   --chart-grid: #222222;
 }
 
@@ -117,16 +117,16 @@
   --card-foreground: 0 0% 7% !important;
   --popover: 0 0% 100% !important;
   --popover-foreground: 0 0% 7% !important;
-  --primary: 96 46% 41% !important;
+  --primary: 162 96% 20% !important;
   --primary-foreground: 0 0% 100% !important;
   --muted: 0 0% 96% !important;
   --muted-foreground: 0 0% 45% !important;
-  --accent: 96 46% 41% !important;
+  --accent: 162 96% 20% !important;
   --accent-foreground: 0 0% 100% !important;
   --destructive: 0 84% 60% !important;
   --border: 0 0% 90% !important;
   --input: 0 0% 90% !important;
-  --ring: 96 46% 41% !important;
+  --ring: 162 96% 20% !important;
 
   --app-bg: #f7f7f7 !important;
   --surface-bg: #ffffff !important;
@@ -137,8 +137,8 @@
   --text-strong: #111111 !important;
   --text-base: #444444 !important;
   --text-soft: #888888 !important;
-  --accent-blue: #5b9637 !important;
-  --accent-cyan: #8cc85a !important;
+  --accent-blue: #026648 !important;
+  --accent-cyan: #04a372 !important;
   --chart-grid: #e8e8e8 !important;
 }
 
@@ -239,7 +239,7 @@
 }
 
 .glow-blue {
-  text-shadow: 0 0 12px #5b963788, 0 0 28px #5b963733;
+  text-shadow: 0 0 12px #02664888, 0 0 28px #02664833;
 }
 
 .glow-warning {

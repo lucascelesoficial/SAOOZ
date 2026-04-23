@@ -129,7 +129,7 @@ export function Sidebar({
             transition: 'opacity 200ms ease, max-width 300ms ease',
           }}
         >
-          Pear Finance
+          Pearfy
         </span>
       </div>
 

@@ -315,7 +315,7 @@ export function SaoozAI({ totals, categoryData }: SaoozAIProps) {
 
         <div className="min-w-0 flex-1">
           <p className="text-sm font-bold leading-none" style={{ color: '#ffffff' }}>
-            Pear Finance <span style={{ color: 'rgba(232,246,212,0.85)' }}>IA</span>
+            Pearfy <span style={{ color: 'rgba(232,246,212,0.85)' }}>IA</span>
           </p>
           <p
             className="mt-0.5 text-[10px] transition-all duration-300"
@@ -365,7 +365,7 @@ export function SaoozAI({ totals, categoryData }: SaoozAIProps) {
                 style={
                   message.role === 'user'
                     ? {
-                        background: 'linear-gradient(135deg, #5B9637, #74A93D)',
+                        background: 'linear-gradient(135deg, #026648, #026648)',
                         color: '#fff',
                         borderBottomRightRadius: 3,
                       }
@@ -407,7 +407,7 @@ export function SaoozAI({ totals, categoryData }: SaoozAIProps) {
                       onClick={() => void confirmProposal(index, message.proposal!)}
                       disabled={confirmingIndex === index}
                       className="inline-flex h-8 items-center justify-center gap-2 rounded-[8px] px-3 text-xs font-semibold text-white transition-opacity disabled:opacity-60"
-                      style={{ background: 'linear-gradient(135deg, #5B9637, #74A93D)' }}
+                      style={{ background: 'linear-gradient(135deg, #026648, #026648)' }}
                     >
                       {confirmingIndex === index ? (
                         <Loader2 className="h-3.5 w-3.5 animate-spin" />
@@ -503,7 +503,7 @@ export function SaoozAI({ totals, categoryData }: SaoozAIProps) {
               className="flex h-7 w-7 items-center justify-center rounded-[6px] transition-all disabled:opacity-30"
               style={{
                 background: input.trim()
-                  ? 'linear-gradient(135deg, #5B9637, #74A93D)'
+                  ? 'linear-gradient(135deg, #026648, #026648)'
                   : 'var(--panel-border)',
               }}
             >

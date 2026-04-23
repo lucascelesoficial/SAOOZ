@@ -43,11 +43,11 @@ const VARIANT_CONFIG: Record<Variant, {
   },
   neutral: {
     icon: Info,
-    color: '#8CC85A',
-    glow: '0 0 16px #74A93D55',
+    color: '#04a372',
+    glow: '0 0 16px #02664855',
     bg: 'linear-gradient(135deg, #132419 0%, #0a1710 100%)',
-    border: '#74A93D22',
-    badge: 'text-[#8CC85A]',
+    border: '#02664822',
+    badge: 'text-[#04a372]',
   },
 }
 

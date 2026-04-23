@@ -19,7 +19,7 @@ const PLANS = [
     monthlyPrice: 37,
     subtitle: 'Sua vida financeira com visão clara, rotina organizada e IA assistida.',
     highlight: false,
-    color: '#74A93D',
+    color: '#026648',
     features: [
       'Dashboard financeiro pessoal',
       'Receitas, despesas e saldo mensal',
@@ -68,7 +68,7 @@ const PLANS = [
     monthlyPrice: 147,
     subtitle: 'Acesso total ao ecossistema Pear Finance — visão completa, inteligência sem limite, operação com poder.',
     highlight: true,
-    color: '#5B9637',
+    color: '#026648',
     features: [
       'Tudo do Clareza + tudo do Gestão',
       'Visão unificada PF + PJ',
