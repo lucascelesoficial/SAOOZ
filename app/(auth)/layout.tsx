@@ -5,22 +5,35 @@ export const metadata: Metadata = {
   description: 'Gestão financeira pessoal e empresarial com inteligência artificial.',
 }
 
+const G    = '#026648'
+const GLit = '#04a372'
+
+/* ─── Compact 3-D bar chart ─── */
+const BAR_DATA = [
+  { h: 32, mo: 'Out' },
+  { h: 54, mo: 'Nov' },
+  { h: 43, mo: 'Dez' },
+  { h: 70, mo: 'Jan' },
+  { h: 48, mo: 'Fev' },
+  { h: 92, mo: 'Mar' },
+  { h: 65, mo: 'Abr' },
+]
+
 export default function AuthLayout({ children }: { children: React.ReactNode }) {
   return (
     <>
       <style>{`
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
         html, body { height: 100%; }
 
-        .auth-root {
+        .al-root {
           display: flex;
           min-height: 100svh;
           font-family: var(--font-inter), -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
         }
 
         /* ─── LEFT: white form panel ─── */
-        .auth-left {
+        .al-left {
           position: relative;
           display: flex;
           flex-direction: column;
@@ -28,148 +41,155 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
           min-height: 100svh;
           background: #ffffff;
         }
-
-        .auth-left-body {
+        .al-left-body {
           flex: 1;
           display: flex;
           flex-direction: column;
           justify-content: center;
-          padding: 56px 40px 40px;
+          padding: 56px 40px 32px;
         }
-
-        .auth-left-inner {
+        .al-left-inner {
           width: 100%;
           max-width: 380px;
           margin: 0 auto;
         }
-
-        .auth-left-foot {
+        .al-left-foot {
           padding: 0 40px 40px;
-          max-width: calc(380px + 80px);
-          margin: 0 auto;
-          width: 100%;
         }
 
         /* ─── RIGHT: dark visual panel ─── */
-        .auth-right {
+        .al-right {
           display: none;
           position: relative;
           flex-shrink: 0;
-          width: 54%;
+          width: 56%;
           min-height: 100svh;
-          background: #07100a;
           overflow: hidden;
+          background: #07100a;
         }
 
-        /* Gradient layered background */
-        .auth-right-bg {
+        /* Multi-layer dark gradient background */
+        .al-bg {
           position: absolute;
           inset: 0;
           background:
-            radial-gradient(ellipse 80% 60% at 65% 20%, rgba(2,102,72,0.22) 0%, transparent 60%),
-            radial-gradient(ellipse 100% 50% at 50% 95%, rgba(2,102,72,0.18) 0%, transparent 55%),
-            linear-gradient(165deg, #0a1a10 0%, #07100a 35%, #040c07 65%, #020705 100%);
+            radial-gradient(ellipse 90% 55% at 60% 12%, rgba(2,102,72,0.20) 0%, transparent 60%),
+            radial-gradient(ellipse 80% 40% at 50% 88%, rgba(2,102,72,0.16) 0%, transparent 58%),
+            linear-gradient(168deg, #0b1d12 0%, #07110a 30%, #050d07 60%, #020705 100%);
           z-index: 0;
         }
 
-        /* Subtle noise grain texture */
-        .auth-right-bg::after {
+        /* Subtle grain */
+        .al-bg::after {
           content: '';
           position: absolute;
           inset: 0;
-          opacity: 0.035;
-          background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-          background-size: 180px 180px;
-          z-index: 1;
+          background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+          background-size: 160px 160px;
+          opacity: 0.03;
           pointer-events: none;
+          z-index: 1;
         }
 
-        /* Car image */
-        .auth-right-img {
+        /* Car + mascot image — fills most of the panel */
+        .al-car-img {
           position: absolute;
-          inset: 0;
-          width: 100%;
-          height: 100%;
+          top: 0; left: 0; right: 0;
+          bottom: 40%;        /* image lives in top 60% */
           object-fit: contain;
-          object-position: center 58%;
+          object-position: center bottom;
+          width: 100%;
+          height: 60%;
           display: block;
           z-index: 2;
         }
 
-        /* Bottom gradient overlay for text legibility */
-        .auth-right-overlay {
+        /* Strong gradient fade to make bottom content readable */
+        .al-fade {
           position: absolute;
           bottom: 0; left: 0; right: 0;
-          height: 55%;
+          height: 65%;
           background: linear-gradient(to top,
-            rgba(4,10,6,0.97) 0%,
-            rgba(4,10,6,0.80) 30%,
-            rgba(4,10,6,0.40) 60%,
+            rgba(5,10,7,0.99) 0%,
+            rgba(5,10,7,0.96) 20%,
+            rgba(5,10,7,0.85) 38%,
+            rgba(5,10,7,0.55) 55%,
             transparent 100%
           );
           z-index: 3;
         }
 
-        /* Brand content */
-        .auth-right-brand {
-          position: absolute;
-          bottom: 0; left: 0; right: 0;
-          padding: 0 56px 52px;
-          z-index: 4;
-        }
-
-        /* Thin top accent line */
-        .auth-right-accent {
+        /* Top accent line */
+        .al-accent-line {
           position: absolute;
           top: 0; left: 0; right: 0;
           height: 2px;
-          background: linear-gradient(90deg, transparent 0%, rgba(2,102,72,0.7) 40%, rgba(4,163,114,0.9) 55%, rgba(2,102,72,0.7) 70%, transparent 100%);
-          z-index: 5;
+          background: linear-gradient(90deg,
+            transparent 0%,
+            rgba(2,102,72,0.6) 30%,
+            rgba(4,163,114,0.95) 50%,
+            rgba(2,102,72,0.6) 70%,
+            transparent 100%
+          );
+          z-index: 10;
+        }
+
+        /* Content block at bottom */
+        .al-content {
+          position: absolute;
+          bottom: 0; left: 0; right: 0;
+          padding: 0 52px 52px;
+          z-index: 4;
+        }
+
+        /* 3D chart card */
+        .al-chart {
+          background: rgba(255,255,255,0.055);
+          backdrop-filter: blur(18px);
+          -webkit-backdrop-filter: blur(18px);
+          border: 1px solid rgba(255,255,255,0.09);
+          border-radius: 16px;
+          padding: 18px 20px 14px;
+          margin-top: 22px;
+          transform: perspective(900px) rotateX(3deg);
+          box-shadow: 0 24px 64px rgba(0,0,0,0.50);
         }
 
         @media (min-width: 1024px) {
-          .auth-right          { display: block; }
-          .auth-left           { width: 46%; }
-          .auth-left-body      { padding: 64px 72px 48px; }
-          .auth-left-inner     { margin: 0; }
-          .auth-left-foot      { padding: 0 72px 48px; margin: 0; max-width: 100%; }
+          .al-right          { display: block; }
+          .al-left           { width: 44%; }
+          .al-left-body      { padding: 64px 68px 32px; }
+          .al-left-inner     { margin: 0; }
+          .al-left-foot      { padding: 0 68px 48px; }
         }
         @media (min-width: 1280px) {
-          .auth-right          { width: 56%; }
-          .auth-left           { width: 44%; }
-          .auth-left-body      { padding: 72px 80px 48px; }
-          .auth-left-foot      { padding: 0 80px 52px; }
+          .al-right          { width: 56%; }
+          .al-left           { width: 44%; }
+          .al-left-body      { padding: 72px 80px 32px; }
+          .al-left-foot      { padding: 0 80px 52px; }
         }
         @media (min-width: 1440px) {
-          .auth-left-body      { padding: 80px 96px 48px; }
-          .auth-left-foot      { padding: 0 96px 56px; }
+          .al-left-body      { padding: 80px 96px 32px; }
+          .al-left-foot      { padding: 0 96px 56px; }
+          .al-content        { padding: 0 60px 60px; }
         }
       `}</style>
 
-      <div className="auth-root">
+      <div className="al-root">
 
-        {/* ── LEFT: Form ── */}
-        <div className="auth-left">
-          <div className="auth-left-body">
-            <div className="auth-left-inner">
+        {/* ── LEFT ── */}
+        <div className="al-left">
+          <div className="al-left-body">
+            <div className="al-left-inner">
 
-              {/* Logo */}
-              <div style={{ marginBottom: 52 }}>
-                <div style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  background: '#0f172a',
-                  borderRadius: 9,
-                  padding: '7px 15px',
-                  boxShadow: '0 1px 3px rgba(0,0,0,0.12)',
-                }}>
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src="/pearfy-wordmark.svg"
-                    alt="PearFy"
-                    style={{ height: 22, width: 'auto', display: 'block' }}
-                  />
-                </div>
+              {/* Logo — B&W version works directly on white */}
+              <div style={{ marginBottom: 48 }}>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src="/pearfy-logo-dark.png"
+                  alt="PearFy"
+                  style={{ height: 30, width: 'auto', display: 'block' }}
+                />
               </div>
 
               {children}
@@ -177,65 +197,156 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
             </div>
           </div>
 
-          {/* Footer */}
-          <div className="auth-left-foot">
-            <p style={{
-              fontSize: 12,
-              color: '#94a3b8',
-              textAlign: 'center',
-              lineHeight: 1.6,
-            }}>
+          <div className="al-left-foot">
+            <p style={{ fontSize: 12, color: '#94a3b8', textAlign: 'center' }}>
               © 2026 PearFy · Todos os direitos reservados
             </p>
           </div>
         </div>
 
-        {/* ── RIGHT: Visual ── */}
-        <div className="auth-right">
-          <div className="auth-right-accent" />
-          <div className="auth-right-bg" />
+        {/* ── RIGHT ── */}
+        <div className="al-right">
+          <div className="al-accent-line" />
+          <div className="al-bg" />
 
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            src="/lamborghini-visual.svg"
+            src="/lamborghini-mascot.png"
             alt=""
             aria-hidden
-            className="auth-right-img"
+            className="al-car-img"
           />
 
-          <div className="auth-right-overlay" />
+          <div className="al-fade" />
 
-          <div className="auth-right-brand">
+          <div className="al-content">
+
             {/* Green accent line */}
             <div style={{
-              width: 36,
+              width: 40,
               height: 2,
-              background: 'linear-gradient(90deg, #026648, #04a372)',
               borderRadius: 2,
-              marginBottom: 20,
+              background: `linear-gradient(90deg, ${G}, ${GLit})`,
+              marginBottom: 18,
             }} />
 
+            {/* Headline */}
             <p style={{
-              fontSize: 22,
+              fontSize: 'clamp(17px, 1.6vw, 22px)',
               fontWeight: 700,
               color: '#ffffff',
-              letterSpacing: '-0.02em',
+              letterSpacing: '-0.025em',
               lineHeight: 1.35,
-              marginBottom: 10,
+              maxWidth: 400,
             }}>
-              Sua vida financeira.<br />
-              No próximo nível.
+              A primeira plataforma do Brasil a unificar
+              {' '}<span style={{ color: GLit }}>PF e PJ</span> em um só lugar.
             </p>
 
-            <p style={{
-              fontSize: 13,
-              color: 'rgba(255,255,255,0.42)',
-              fontWeight: 400,
-              letterSpacing: '0.01em',
-              lineHeight: 1.5,
-            }}>
-              🇧🇷 &nbsp;Gestão financeira com IA · PF & PJ
-            </p>
+            {/* 3D Chart Card */}
+            <div className="al-chart">
+
+              {/* Card header */}
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 }}>
+                <div>
+                  <p style={{
+                    fontSize: 10,
+                    fontWeight: 600,
+                    color: 'rgba(255,255,255,0.38)',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.10em',
+                    marginBottom: 4,
+                  }}>
+                    Patrimônio total
+                  </p>
+                  <p style={{
+                    fontSize: 22,
+                    fontWeight: 800,
+                    color: '#ffffff',
+                    letterSpacing: '-0.04em',
+                    lineHeight: 1,
+                  }}>
+                    R$&nbsp;47.290
+                  </p>
+                </div>
+
+                {/* Badge */}
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 5,
+                  background: 'rgba(2,102,72,0.22)',
+                  border: `1px solid rgba(4,163,114,0.28)`,
+                  borderRadius: 20,
+                  padding: '4px 10px',
+                }}>
+                  <svg width="9" height="9" viewBox="0 0 9 9" fill="none">
+                    <path d="M4.5 1.5L7 4.5H2L4.5 1.5Z" fill={GLit}/>
+                  </svg>
+                  <span style={{ fontSize: 12, fontWeight: 700, color: GLit }}>+18,4%</span>
+                </div>
+              </div>
+
+              {/* Bar chart */}
+              <div style={{ display: 'flex', alignItems: 'flex-end', gap: 4, height: 58 }}>
+                {BAR_DATA.map((b, i) => (
+                  <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 0, height: '100%', justifyContent: 'flex-end' }}>
+                    <div style={{
+                      width: '100%',
+                      height: `${b.h}%`,
+                      borderRadius: '4px 4px 2px 2px',
+                      background: i === 5
+                        ? `linear-gradient(180deg, ${GLit} 0%, ${G} 100%)`
+                        : 'rgba(255,255,255,0.11)',
+                      boxShadow: i === 5 ? `0 0 14px rgba(4,163,114,0.45)` : 'none',
+                    }} />
+                  </div>
+                ))}
+              </div>
+
+              {/* Month labels */}
+              <div style={{ display: 'flex', gap: 4, marginTop: 7 }}>
+                {BAR_DATA.map((b, i) => (
+                  <div key={i} style={{
+                    flex: 1,
+                    textAlign: 'center',
+                    fontSize: 9,
+                    fontWeight: i === 5 ? 700 : 400,
+                    color: i === 5 ? GLit : 'rgba(255,255,255,0.28)',
+                  }}>
+                    {b.mo}
+                  </div>
+                ))}
+              </div>
+
+              {/* Bottom stats row */}
+              <div style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                marginTop: 14,
+                paddingTop: 12,
+                borderTop: '1px solid rgba(255,255,255,0.07)',
+              }}>
+                {[
+                  { label: 'PF', value: 'R$ 28.100' },
+                  { label: 'PJ', value: 'R$ 19.190' },
+                  { label: 'Rendimento', value: '+R$ 730' },
+                ].map((s, i) => (
+                  <div key={i}>
+                    <p style={{ fontSize: 9.5, color: 'rgba(255,255,255,0.35)', fontWeight: 500, marginBottom: 3 }}>{s.label}</p>
+                    <p style={{
+                      fontSize: 12.5,
+                      fontWeight: 700,
+                      color: s.label === 'Rendimento' ? GLit : 'rgba(255,255,255,0.82)',
+                      letterSpacing: '-0.02em',
+                    }}>
+                      {s.value}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </div>
+
           </div>
         </div>
 
