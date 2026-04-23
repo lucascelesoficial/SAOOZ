@@ -1,124 +1,157 @@
 import type { Metadata } from 'next'
-import Image from 'next/image'
-import { LineChart, Shield, Sparkles, Wallet } from 'lucide-react'
 
 export const metadata: Metadata = {
   title: {
-    default: 'Pear Finance',
-    template: 'Pear Finance | %s',
+    default: 'PearFy',
+    template: 'PearFy | %s',
   },
-  description: 'Finanças inteligentes para um futuro mais brilhante.',
+  description: 'Gestão financeira pessoal e empresarial com inteligência artificial.',
 }
 
-const FEATURES = [
-  { icon: Wallet, text: 'Controle suas finanças PF e PJ no mesmo painel' },
-  { icon: LineChart, text: 'Visualize tendências e evolução do seu caixa' },
-  { icon: Shield, text: 'Segurança de nível bancário para seus dados' },
-  { icon: Sparkles, text: 'IA financeira para decisões rápidas e claras' },
-]
+const G    = '#026648'
+const GLit = '#04a372'
 
 export default function AuthLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="force-light flex min-h-screen bg-white">
+    <div style={{ display: 'flex', minHeight: '100vh', background: '#000' }}>
+
+      {/* ── LEFT — Banner image ── */}
       <div
-        className="relative hidden overflow-hidden p-12 lg:flex lg:w-[52%] lg:flex-col lg:items-center lg:justify-center xl:w-[56%]"
-        style={{ background: 'linear-gradient(155deg, #1C3B22 0%, #3D7634 45%, #74A93D 100%)' }}
+        className="auth-banner"
+        style={{
+          position: 'relative',
+          width: '52%',
+          flexShrink: 0,
+          overflow: 'hidden',
+          display: 'none',
+        }}
       >
-        <div className="pointer-events-none absolute inset-0 overflow-hidden">
-          <div
-            className="absolute -top-36 -right-20 h-[420px] w-[420px] rounded-full"
-            style={{ background: 'radial-gradient(circle, rgba(217,249,157,0.28) 0%, rgba(217,249,157,0) 68%)' }}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src="/banner-login.svg"
+          alt=""
+          aria-hidden
+          style={{
+            position: 'absolute',
+            inset: 0,
+            width: '100%',
+            height: '100%',
+            objectFit: 'cover',
+            objectPosition: 'center',
+            display: 'block',
+          }}
+        />
+        {/* Subtle left-edge vignette to blend into dark form side */}
+        <div
+          aria-hidden
+          style={{
+            position: 'absolute',
+            top: 0, right: 0, bottom: 0,
+            width: 80,
+            background: 'linear-gradient(to right, transparent, #000)',
+            pointerEvents: 'none',
+          }}
+        />
+      </div>
+
+      {/* ── RIGHT — Dark form panel ── */}
+      <div
+        style={{
+          flex: 1,
+          minHeight: '100vh',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '56px 32px',
+          position: 'relative',
+          overflow: 'hidden',
+          /* grid bg */
+          backgroundImage: [
+            'linear-gradient(rgba(255,255,255,0.016) 1px, transparent 1px)',
+            'linear-gradient(90deg, rgba(255,255,255,0.016) 1px, transparent 1px)',
+          ].join(', '),
+          backgroundSize: '56px 56px',
+          backgroundColor: '#000',
+        }}
+      >
+        {/* Ambient green glow — top-right */}
+        <div
+          aria-hidden
+          style={{
+            position: 'absolute',
+            top: '-12%', right: '-8%',
+            width: 560, height: 560,
+            background: `radial-gradient(ellipse, ${G}18, transparent 65%)`,
+            filter: 'blur(32px)',
+            pointerEvents: 'none',
+          }}
+        />
+        {/* Ambient green glow — bottom-left */}
+        <div
+          aria-hidden
+          style={{
+            position: 'absolute',
+            bottom: '-10%', left: '-6%',
+            width: 400, height: 400,
+            background: `radial-gradient(ellipse, ${G}0e, transparent 65%)`,
+            filter: 'blur(40px)',
+            pointerEvents: 'none',
+          }}
+        />
+
+        {/* Logo above form */}
+        <div style={{ marginBottom: 40, position: 'relative', zIndex: 1 }}>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/pearfy-wordmark.svg"
+            alt="PearFy"
+            style={{ height: 38, width: 'auto', display: 'block' }}
           />
-          <div
-            className="absolute -bottom-36 -left-20 h-[420px] w-[420px] rounded-full"
-            style={{ background: 'radial-gradient(circle, rgba(91,150,55,0.34) 0%, rgba(91,150,55,0) 72%)' }}
-          />
-          <svg className="absolute inset-0 h-full w-full" xmlns="http://www.w3.org/2000/svg" aria-hidden>
-            <defs>
-              <pattern id="pear-grid-auth" width="36" height="36" patternUnits="userSpaceOnUse">
-                <path d="M36 0H0V36" fill="none" stroke="rgba(255,255,255,0.09)" strokeWidth="1" />
-              </pattern>
-            </defs>
-            <rect width="100%" height="100%" fill="url(#pear-grid-auth)" />
-          </svg>
         </div>
 
-        <div className="relative mb-12 flex flex-col items-center gap-5 text-center">
-          <div
-            className="inline-flex overflow-hidden rounded-[24px]"
-            style={{ boxShadow: '0 10px 36px rgba(3, 8, 18, 0.55), 0 0 0 1px rgba(255,255,255,0.16)' }}
-          >
-            <Image
-              src="/pear-finance-logo.svg"
-              alt="Logotipo da Pear Finance"
-              width={88}
-              height={88}
-              priority
-              style={{ display: 'block', height: 88, width: 88, objectFit: 'contain' }}
-            />
-          </div>
-
-          <div>
-            <p className="text-3xl font-extrabold tracking-tight">
-              <span style={{ color: '#85BD4A' }}>Pear </span>
-              <span style={{ color: '#FFFFFF' }}>Finance</span>
-            </p>
-            <p className="mt-1.5 text-sm font-medium uppercase tracking-[0.16em]" style={{ color: 'rgba(255,255,255,0.76)' }}>
-              Finanças inteligentes para um futuro mais brilhante
-            </p>
-          </div>
+        {/* Form card */}
+        <div
+          style={{
+            position: 'relative',
+            zIndex: 1,
+            width: '100%',
+            maxWidth: 420,
+            background: 'rgba(10,10,10,0.95)',
+            border: '1px solid rgba(255,255,255,0.09)',
+            borderRadius: 22,
+            padding: '44px 40px',
+            boxShadow: [
+              '0 32px 80px rgba(0,0,0,0.85)',
+              `0 0 0 1px rgba(2,102,72,0.10)`,
+              'inset 0 1px 0 rgba(255,255,255,0.06)',
+            ].join(', '),
+          }}
+        >
+          {children}
         </div>
 
-        <ul className="relative w-full max-w-sm space-y-3">
-          {FEATURES.map(({ icon: Icon, text }) => (
-            <li key={text} className="flex items-center gap-3">
-              <span
-                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-[8px]"
-                style={{
-                  background: 'rgba(133,189,74,0.16)',
-                  border: '1px solid rgba(133,189,74,0.32)',
-                }}
-              >
-                <Icon className="h-4 w-4" style={{ color: '#D9F99D' }} aria-hidden />
-              </span>
-              <span className="text-sm" style={{ color: 'rgba(255,255,255,0.88)' }}>
-                {text}
-              </span>
-            </li>
-          ))}
-        </ul>
-
-        <p className="absolute bottom-8 text-xs tracking-[0.24em]" style={{ color: 'rgba(255,255,255,0.42)' }}>
-          PEAR FINANCE · SISTEMA FINANCEIRO INTELIGENTE
+        {/* Bottom wordmark */}
+        <p
+          style={{
+            position: 'absolute',
+            bottom: 28,
+            fontSize: 11,
+            letterSpacing: '0.20em',
+            textTransform: 'uppercase',
+            color: 'rgba(255,255,255,0.18)',
+            fontWeight: 500,
+          }}
+        >
+          PearFy · Finanças com inteligência
         </p>
       </div>
 
-      <div className="flex min-h-screen flex-1 flex-col items-center justify-center bg-white px-6 py-12">
-        <div className="mb-10 flex flex-col items-center gap-3 lg:hidden">
-          <div
-            className="inline-flex overflow-hidden rounded-[16px]"
-            style={{ boxShadow: '0 4px 14px rgba(2, 6, 23, 0.14), 0 0 0 1px rgba(15, 23, 42, 0.06)' }}
-          >
-            <Image
-              src="/pear-finance-logo.svg"
-              alt="Logotipo da Pear Finance"
-              width={52}
-              height={52}
-              priority
-              style={{ display: 'block', height: 52, width: 52, objectFit: 'contain' }}
-            />
-          </div>
-          <div className="text-center">
-            <p className="text-xl font-extrabold tracking-tight">
-              <span style={{ color: '#74A93D' }}>Pear </span>
-              <span className="text-slate-900">Finance</span>
-            </p>
-            <p className="mt-0.5 text-xs tracking-wide text-slate-500">Finanças inteligentes para um futuro mais brilhante</p>
-          </div>
-        </div>
-
-        <div className="w-full max-w-[400px]">{children}</div>
-      </div>
+      <style>{`
+        @media (min-width: 1024px) {
+          .auth-banner { display: block !important; }
+        }
+      `}</style>
     </div>
   )
 }

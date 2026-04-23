@@ -7,13 +7,16 @@ import { createClient } from '@/lib/supabase/client'
 import { trackEvent, identifyUser, EVENTS } from '@/lib/posthog/client'
 import { TurnstileWidget } from '@/components/security/TurnstileWidget'
 
+const G    = '#026648'
+const GLit = '#04a372'
+
 export default function LoginPage() {
-  const [loading, setLoading] = useState(false)
-  const [email, setEmail] = useState('')
+  const [loading, setLoading]   = useState(false)
+  const [email, setEmail]       = useState('')
   const [password, setPassword] = useState('')
   const [showPass, setShowPass] = useState(false)
-  const [errors, setErrors] = useState<Record<string, string>>({})
-  const [cfToken, setCfToken] = useState('')
+  const [errors, setErrors]     = useState<Record<string, string>>({})
+  const [cfToken, setCfToken]   = useState('')
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -21,10 +24,7 @@ export default function LoginPage() {
     const errs: Record<string, string> = {}
     if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) errs.email = 'E-mail inválido'
     if (!password || password.length < 6) errs.password = 'Mínimo de 6 caracteres'
-    if (Object.keys(errs).length) {
-      setErrors(errs)
-      return
-    }
+    if (Object.keys(errs).length) { setErrors(errs); return }
 
     setErrors({})
     setLoading(true)
@@ -73,116 +73,190 @@ export default function LoginPage() {
     }
   }
 
-  const inputBase = {
-    background: '#F8FAFC',
-    border: '1px solid #DDE3ED',
-    color: '#0F172A',
+  /* ── Dark input styles ── */
+  const inputBase: React.CSSProperties = {
+    background: '#111',
+    border: '1px solid rgba(255,255,255,0.11)',
+    color: '#fff',
   }
-  const inputError = {
-    background: '#FFF5F5',
-    border: '1px solid #FCA5A5',
-    boxShadow: '0 0 0 3px #FEE2E220',
-    color: '#0F172A',
+  const inputErr: React.CSSProperties = {
+    background: '#160808',
+    border: '1px solid rgba(248,113,113,0.55)',
+    boxShadow: '0 0 0 3px rgba(248,113,113,0.08)',
+    color: '#fff',
   }
-  const inputFocusOk = { border: '1px solid #6CA33A', boxShadow: '0 0 0 3px #84CC1624' }
-  const inputFocusErr = { border: '1px solid #F87171', boxShadow: '0 0 0 3px #FEE2E220' }
+  const focusOk:  React.CSSProperties = { border: `1px solid ${G}`, boxShadow: `0 0 0 3px rgba(2,102,72,0.14)` }
+  const focusErr: React.CSSProperties = { border: '1px solid rgba(248,113,113,0.65)', boxShadow: '0 0 0 3px rgba(248,113,113,0.10)' }
+
+  const labelStyle: React.CSSProperties = {
+    display: 'block',
+    fontSize: 11,
+    fontWeight: 600,
+    textTransform: 'uppercase',
+    letterSpacing: '0.12em',
+    color: '#9ca3af',
+    marginBottom: 8,
+  }
 
   return (
-    <div className="space-y-8">
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 28 }}>
+
+      {/* Header */}
       <div>
-        <h1 className="text-2xl font-extrabold text-slate-900">Entrar na Pear Finance</h1>
-        <p className="mt-1.5 text-sm text-slate-500">Acesse sua conta para continuar seu controle financeiro.</p>
+        <h1 style={{ fontSize: 22, fontWeight: 800, color: '#fff', letterSpacing: '-0.025em', margin: '0 0 8px' }}>
+          Entrar na PearFy
+        </h1>
+        <p style={{ fontSize: 14, color: '#9ca3af', margin: 0, lineHeight: 1.6 }}>
+          Acesse sua conta para continuar seu controle financeiro.
+        </p>
       </div>
 
+      {/* Auth error */}
       {errors.auth && (
-        <div className="rounded-[10px] px-4 py-3 text-sm text-red-600" style={{ background: '#FEF2F2', border: '1px solid #FECACA' }}>
+        <div
+          style={{
+            borderRadius: 10,
+            padding: '12px 16px',
+            fontSize: 14,
+            color: '#fca5a5',
+            background: 'rgba(127,29,29,0.30)',
+            border: '1px solid rgba(248,113,113,0.25)',
+          }}
+        >
           {errors.auth}
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div className="space-y-1.5">
-          <label htmlFor="email" className="text-xs font-semibold uppercase tracking-wider text-slate-500">
-            E-mail
-          </label>
+      {/* Form */}
+      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
+
+        {/* Email */}
+        <div>
+          <label htmlFor="email" style={labelStyle}>E-mail</label>
           <input
             id="email"
             type="email"
             autoComplete="email"
             placeholder="seu@email.com"
             value={email}
-            onChange={(e) => {
-              setEmail(e.target.value)
-              setErrors((p) => ({ ...p, auth: '' }))
+            onChange={(e) => { setEmail(e.target.value); setErrors((p) => ({ ...p, auth: '' })) }}
+            style={{
+              ...( errors.email || errors.auth ? inputErr : inputBase ),
+              height: 46, width: '100%', borderRadius: 10,
+              padding: '0 16px', fontSize: 15, outline: 'none',
+              transition: 'border .15s, box-shadow .15s',
+              boxSizing: 'border-box',
             }}
-            className="h-11 w-full rounded-[10px] px-4 text-sm outline-none transition-all placeholder:text-slate-400"
-            style={errors.email || errors.auth ? inputError : inputBase}
-            onFocus={(e) => Object.assign(e.currentTarget.style, errors.email ? inputFocusErr : inputFocusOk)}
-            onBlur={(e) => Object.assign(e.currentTarget.style, errors.email || errors.auth ? inputError : inputBase)}
+            onFocus={(e) => Object.assign(e.currentTarget.style, errors.email ? focusErr : focusOk)}
+            onBlur={(e)  => Object.assign(e.currentTarget.style, errors.email || errors.auth ? inputErr : inputBase)}
           />
-          {errors.email && <p className="text-xs text-red-500">{errors.email}</p>}
+          {errors.email && (
+            <p style={{ fontSize: 12, color: '#f87171', marginTop: 5 }}>{errors.email}</p>
+          )}
         </div>
 
-        <div className="space-y-1.5">
-          <label htmlFor="password" className="text-xs font-semibold uppercase tracking-wider text-slate-500">
-            Senha
-          </label>
-          <div className="relative">
+        {/* Password */}
+        <div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+            <label htmlFor="password" style={{ ...labelStyle, marginBottom: 0 }}>Senha</label>
+            <Link
+              href="/esqueci-senha"
+              style={{ fontSize: 12, color: '#9ca3af', fontWeight: 400, transition: 'color .15s' }}
+              onMouseEnter={(e) => (e.currentTarget.style.color = '#fff')}
+              onMouseLeave={(e) => (e.currentTarget.style.color = '#9ca3af')}
+            >
+              Esqueci minha senha
+            </Link>
+          </div>
+          <div style={{ position: 'relative' }}>
             <input
               id="password"
               type={showPass ? 'text' : 'password'}
               autoComplete="current-password"
               placeholder="••••••••"
               value={password}
-              onChange={(e) => {
-                setPassword(e.target.value)
-                setErrors((p) => ({ ...p, auth: '' }))
+              onChange={(e) => { setPassword(e.target.value); setErrors((p) => ({ ...p, auth: '' })) }}
+              style={{
+                ...( errors.password || errors.auth ? inputErr : inputBase ),
+                height: 46, width: '100%', borderRadius: 10,
+                padding: '0 44px 0 16px', fontSize: 15, outline: 'none',
+                transition: 'border .15s, box-shadow .15s',
+                boxSizing: 'border-box',
               }}
-              className="h-11 w-full rounded-[10px] px-4 pr-11 text-sm outline-none transition-all placeholder:text-slate-400"
-              style={errors.password || errors.auth ? inputError : inputBase}
-              onFocus={(e) => Object.assign(e.currentTarget.style, errors.password ? inputFocusErr : inputFocusOk)}
-              onBlur={(e) => Object.assign(e.currentTarget.style, errors.password || errors.auth ? inputError : inputBase)}
+              onFocus={(e) => Object.assign(e.currentTarget.style, errors.password ? focusErr : focusOk)}
+              onBlur={(e)  => Object.assign(e.currentTarget.style, errors.password || errors.auth ? inputErr : inputBase)}
             />
             <button
               type="button"
               onClick={() => setShowPass(!showPass)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 transition-colors hover:text-slate-600"
               tabIndex={-1}
+              style={{
+                position: 'absolute', right: 14, top: '50%', transform: 'translateY(-50%)',
+                color: '#6b7280', background: 'none', border: 'none', cursor: 'pointer',
+                display: 'flex', alignItems: 'center', padding: 0, transition: 'color .15s',
+              }}
+              onMouseEnter={(e) => (e.currentTarget.style.color = '#fff')}
+              onMouseLeave={(e) => (e.currentTarget.style.color = '#6b7280')}
             >
-              {showPass ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              {showPass ? <EyeOff style={{ width: 16, height: 16 }} /> : <Eye style={{ width: 16, height: 16 }} />}
             </button>
           </div>
-          {errors.password && <p className="text-xs text-red-500">{errors.password}</p>}
+          {errors.password && (
+            <p style={{ fontSize: 12, color: '#f87171', marginTop: 5 }}>{errors.password}</p>
+          )}
         </div>
 
         <TurnstileWidget onVerify={setCfToken} onError={() => setCfToken('')} onExpire={() => setCfToken('')} />
 
+        {/* Submit */}
         <button
           type="submit"
           disabled={loading}
-          className="mt-2 flex h-11 w-full items-center justify-center gap-2 rounded-[10px] text-sm font-bold text-white transition-all disabled:cursor-not-allowed disabled:opacity-60"
           style={{
-            background: 'linear-gradient(135deg, #7AAE3A 0%, #5B9637 38%, #1F4E8C 100%)',
-            boxShadow: '0 6px 18px rgba(22, 101, 52, 0.24)',
+            marginTop: 4,
+            height: 48,
+            width: '100%',
+            borderRadius: 11,
+            fontSize: 15,
+            fontWeight: 700,
+            color: '#fff',
+            border: 'none',
+            cursor: loading ? 'not-allowed' : 'pointer',
+            opacity: loading ? 0.65 : 1,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: 8,
+            background: `linear-gradient(135deg, ${GLit} 0%, ${G} 100%)`,
+            boxShadow: `0 6px 24px rgba(2,102,72,0.35)`,
+            transition: 'opacity .15s, box-shadow .15s',
+            letterSpacing: '-0.01em',
           }}
+          onMouseEnter={(e) => { if (!loading) (e.currentTarget.style.opacity = '0.88') }}
+          onMouseLeave={(e) => { if (!loading) (e.currentTarget.style.opacity = '1') }}
         >
-          {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Entrar'}
+          {loading ? <Loader2 style={{ width: 18, height: 18, animation: 'spin 1s linear infinite' }} /> : 'Entrar'}
         </button>
       </form>
 
-      <div className="space-y-3 text-center text-sm text-slate-500">
-        <p>
-          <Link href="/esqueci-senha" className="text-slate-600 transition-colors hover:text-slate-900">
-            Esqueci minha senha
-          </Link>
-        </p>
-        <p>
+      {/* Footer links */}
+      <div style={{ textAlign: 'center', borderTop: '1px solid rgba(255,255,255,0.07)', paddingTop: 24 }}>
+        <p style={{ fontSize: 14, color: '#9ca3af', margin: 0 }}>
           Ainda não tem conta?{' '}
-          <Link href="/cadastro" className="font-semibold text-[#5A9638] transition-colors hover:text-[#45772C]">
+          <Link
+            href="/cadastro"
+            style={{ color: GLit, fontWeight: 600, transition: 'color .15s' }}
+            onMouseEnter={(e) => (e.currentTarget.style.color = '#fff')}
+            onMouseLeave={(e) => (e.currentTarget.style.color = GLit)}
+          >
             Criar conta
           </Link>
         </p>
       </div>
+
+      <style>{`
+        @keyframes spin { to { transform: rotate(360deg); } }
+      `}</style>
     </div>
   )
 }
