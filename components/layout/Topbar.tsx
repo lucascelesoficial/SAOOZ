@@ -271,7 +271,7 @@ export function Topbar({ profile, businesses, canAccessPersonalModule, canAccess
           <Bell className="h-4 w-4" />
         </button>
 
-        <ThemeToggle />
+        <ThemeToggle onDark />
 
         {/* User avatar + dropdown */}
         <div ref={menuRef} className="relative">
