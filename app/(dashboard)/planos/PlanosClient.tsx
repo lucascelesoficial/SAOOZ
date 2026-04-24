@@ -500,7 +500,7 @@ export function PlanosClient({ snapshot }: PlanosClientProps) {
               {/* Current plan badge */}
               {isActiveCurrentPlan && (
                 <div
-                  className="absolute left-4 top-4 inline-flex items-center gap-1 rounded-full px-2 py-1 text-[10px] font-bold uppercase"
+                  className="absolute right-4 top-4 inline-flex items-center gap-1 rounded-full px-2 py-1 text-[10px] font-bold uppercase"
                   style={{
                     background: 'color-mix(in oklab, #026648 18%, transparent)',
                     color: '#026648',
