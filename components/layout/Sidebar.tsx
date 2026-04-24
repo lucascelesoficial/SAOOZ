@@ -75,7 +75,6 @@ const PJ_NAV = [
   { href: '/empresa/pro-labore',        label: 'Pró-labore',     icon: ArrowUpRight     },
   { href: '/empresa/inteligencia',      label: 'Inteligência',   icon: BarChart2        },
   { href: '/empresa/assistente',        label: 'Assistente',     icon: Bot              },
-  { href: '/empresa/equipe',             label: 'Equipe',         icon: Users            },
   { href: '/planos',                    label: 'Planos',         icon: CreditCard       },
   { href: '/empresa/configuracoes',     label: 'Configurações',  icon: Settings         },
 ]

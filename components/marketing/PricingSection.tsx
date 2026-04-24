@@ -75,7 +75,6 @@ const PLANS = [
       'IA sem limite de uso',
       'Análises cruzadas e recomendações avançadas',
       'Relatórios premium',
-      'Compartilhamento e acesso para equipe',
       'Suporte prioritário',
     ],
     missing: [],

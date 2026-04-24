@@ -109,7 +109,7 @@ export async function middleware(request: NextRequest) {
 
   // pathname already extracted above for rate limiting
   // ── Route classification ──────────────────────────────────────────────────
-  const isAuthRoute             = pathname.startsWith('/login') || pathname.startsWith('/cadastro') || pathname.startsWith('/acesso-equipe')
+  const isAuthRoute             = pathname.startsWith('/login') || pathname.startsWith('/cadastro')
   const isPasswordRoute         = pathname.startsWith('/esqueci-senha') || pathname.startsWith('/redefinir-senha') || pathname.startsWith('/auth/callback')
   const isOnboardingPlano       = pathname.startsWith('/onboarding/plano')
   const isTrialConfirmRoute     = pathname.startsWith('/onboarding/trial-ativo')
@@ -157,7 +157,7 @@ export async function middleware(request: NextRequest) {
         .maybeSingle(),
       supabase
         .from('profiles')
-        .select('mode, is_team_member')
+        .select('mode')
         .eq('id', user.id)
         .maybeSingle(),
     ])
@@ -171,64 +171,8 @@ export async function middleware(request: NextRequest) {
       (sub.payment_method !== null && sub.payment_method !== 'none')
     )
 
-    // Team members were invited by an owner and don't need their own subscription.
-    // They bypass the payment gate entirely; the owner's plan controls team access.
-    // Primary check: is_team_member flag on profile (set by callback or invite route).
-    let isTeamMember = !!(profile as { is_team_member?: boolean } | null)?.is_team_member
-
-    // Fallback check: if profile flag is not set yet (e.g. existing user just invited
-    // for the first time, or profile update failed), query business_team_members directly.
-    // This table has RLS policy "team_member_self" so auth.uid() can read own rows.
-    if (!isTeamMember && !hasRealSubscription && (isProtectedRoute || isAuthRoute)) {
-      const { data: teamRow } = await supabase
-        .from('business_team_members')
-        .select('business_id')
-        .eq('member_user_id', user.id)
-        .eq('status', 'active')
-        .limit(1)
-        .maybeSingle()
-      if (teamRow) {
-        isTeamMember = true
-      }
-    }
-
     // mode being set means the user completed the mode-selection onboarding step.
     const hasCompletedOnboarding = !!profile?.mode
-
-    // ── Team member routing (no PF module; always land on /empresa) ───────────
-    if (isTeamMember) {
-      // Auth routes → always send to /empresa (they don't need login/signup flows)
-      if (isAuthRoute) {
-        return applySecurityHeaders(
-          NextResponse.redirect(new URL('/empresa', request.url))
-        )
-      }
-      // Personal-finance routes → redirect to the business dashboard
-      const isPersonalRoute =
-        pathname === '/central' ||
-        pathname.startsWith('/central/') ||
-        pathname === '/financas' ||
-        pathname.startsWith('/financas/') ||
-        pathname.startsWith('/despesas') ||
-        pathname.startsWith('/investimentos') ||
-        pathname.startsWith('/reserva-emergencia') ||
-        pathname.startsWith('/perfil-financeiro') ||
-        pathname.startsWith('/inteligencia') ||
-        pathname.startsWith('/analise')
-      if (isPersonalRoute) {
-        return applySecurityHeaders(
-          NextResponse.redirect(new URL('/empresa', request.url))
-        )
-      }
-      // Onboarding & plan pages → not needed for team members
-      if (isOnboardingPlano || isOnboardingRoute) {
-        return applySecurityHeaders(
-          NextResponse.redirect(new URL('/empresa', request.url))
-        )
-      }
-      // Allow all other routes (PJ module, settings, API, etc.)
-      return applySecurityHeaders(supabaseResponse)
-    }
 
     // ── No real subscription → force plan selection ──────────────────────────
     // Em desenvolvimento, bypass para facilitar testes locais.

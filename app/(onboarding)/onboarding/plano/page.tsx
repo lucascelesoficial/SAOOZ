@@ -1,8 +1,6 @@
 import type { Metadata } from 'next'
 import { Suspense } from 'react'
-import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
-import { createAdminClient } from '@/lib/supabase/admin'
 import { getBillingSnapshot } from '@/lib/billing/server'
 import { PlanoClient } from './PlanoClient'
 import type { SubscriptionPlanType } from '@/types/database.types'
@@ -16,92 +14,6 @@ interface PageProps {
 
 async function PlanoPageContent({ searchParams }: PageProps) {
   const { feature } = await searchParams
-
-  // ── Safety net: team members should never reach this page ─────────────────
-  // If a user with active team memberships lands here (e.g. callback redirect
-  // failed), detect it and set them up as team member before redirecting.
-  try {
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
-
-    if (user) {
-      // Check if user has active team memberships
-      const { data: memberships } = await supabase
-        .from('business_team_members')
-        .select('business_id')
-        .eq('member_user_id', user.id)
-        .eq('status', 'active')
-        .limit(1)
-
-      if (memberships && memberships.length > 0) {
-        // Ensure profile is set up as team member via admin client (bypasses RLS)
-        try {
-          const admin = createAdminClient()
-          await admin.from('profiles').update({
-            is_team_member: true,
-            mode: 'both',
-            active_business_id: memberships[0].business_id,
-          } as never).eq('id', user.id)
-        } catch { /* non-critical */ }
-
-        redirect('/empresa')
-      }
-
-      // Approach 1: SECURITY DEFINER RPC (requires migration 028)
-      let pendingBusinessId: string | null = null
-      try {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const { data: pendingMemberships } = await (supabase as any)
-          .rpc('accept_pending_team_invites') as {
-            data: Array<{ business_id: string }> | null
-          }
-        if (pendingMemberships && pendingMemberships.length > 0) {
-          pendingBusinessId = pendingMemberships[0].business_id
-        }
-      } catch { /* RPC not available */ }
-
-      // Approach 2: Admin client direct query — works even without migration 028 RPC
-      if (!pendingBusinessId && user.email) {
-        try {
-          const admin = createAdminClient()
-          const { data: pendingRow } = await admin
-            .from('business_team_members')
-            .select('id, business_id')
-            .eq('member_email', user.email)
-            .eq('status', 'pending')
-            .limit(1)
-            .maybeSingle()
-
-          if (pendingRow) {
-            await admin.from('business_team_members').update({
-              member_user_id: user.id,
-              status: 'active',
-              accepted_at: new Date().toISOString(),
-            }).eq('id', pendingRow.id)
-            pendingBusinessId = pendingRow.business_id
-          }
-        } catch { /* non-critical */ }
-      }
-
-      if (pendingBusinessId) {
-        try {
-          const admin = createAdminClient()
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          await (admin.from('profiles') as any).update({
-            is_team_member: true,
-            mode: 'both',
-            active_business_id: pendingBusinessId,
-          }).eq('id', user.id)
-        } catch { /* non-critical */ }
-
-        redirect('/empresa')
-      }
-    }
-  } catch (err) {
-    // If redirect() throws (which is how Next.js redirect works), rethrow it
-    if (err instanceof Error && err.message === 'NEXT_REDIRECT') throw err
-    // Otherwise fail open — show the plans page normally
-  }
 
   // Fetch billing state — anonymous or new users get null (show default CTA)
   let currentPlanType: SubscriptionPlanType | null = null

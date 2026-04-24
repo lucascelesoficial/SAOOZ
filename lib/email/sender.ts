@@ -8,7 +8,6 @@ import {
   dueDateReminderEmail,  dueDateReminderEmailText,
   overdueAlertEmail,     overdueAlertEmailText,
   monthlyDigestEmail,    monthlyDigestEmailText,
-  teamInviteEmail,       teamInviteEmailText,
   type DueItem,
   type MonthlyDigestData,
 } from './templates'
@@ -147,22 +146,6 @@ export async function sendMonthlyDigestEmail(
     `Fechamento de ${data.month} disponível — SAOOZ`,
     monthlyDigestEmail(name, data),
     monthlyDigestEmailText(name, data),
-  )
-}
-
-export async function sendTeamInviteEmail(
-  to: string,
-  businessName: string,
-  ownerName: string,
-  inviteUrl: string,
-  isNewUser: boolean,
-) {
-  const subject = `Você foi convidado para acessar ${businessName} — PearFy`
-  return send(
-    to,
-    subject,
-    teamInviteEmail(businessName, ownerName, inviteUrl, isNewUser),
-    teamInviteEmailText(businessName, ownerName, inviteUrl, isNewUser),
   )
 }
 
