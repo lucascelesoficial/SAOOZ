@@ -125,12 +125,14 @@ export default async function DashboardLayout({
           resolvedMemberships = [{ business_id: pendingRow.business_id }]
 
           // Update profile so future requests are fast (is_team_member flag)
+          // is_team_member not in generated types yet — cast the table ref
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          await admin.from('profiles').update({
+          const profilesTable = admin.from('profiles') as any
+          await profilesTable.update({
             is_team_member: true,
             mode: 'both',
             active_business_id: pendingRow.business_id,
-          } as any).eq('id', user.id)
+          }).eq('id', user.id)
         }
       } catch {
         // Admin client failed — fail silently
