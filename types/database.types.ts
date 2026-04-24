@@ -333,6 +333,44 @@ export interface Database {
         Relationships: []
       }
 
+      business_team_members: {
+        Row: {
+          id: string
+          business_id: string
+          owner_user_id: string
+          member_email: string
+          member_user_id: string | null
+          status: 'pending' | 'active' | 'revoked'
+          permissions: {
+            view: boolean
+            add_transactions: boolean
+            edit_transactions: boolean
+            delete_transactions: boolean
+            export_reports: boolean
+          }
+          invited_at: string
+          accepted_at: string | null
+        }
+        Insert: {
+          id?: string
+          business_id: string
+          owner_user_id: string
+          member_email: string
+          member_user_id?: string | null
+          status?: 'pending' | 'active' | 'revoked'
+          permissions?: Record<string, boolean>
+          invited_at?: string
+          accepted_at?: string | null
+        }
+        Update: {
+          status?: 'pending' | 'active' | 'revoked'
+          member_user_id?: string | null
+          permissions?: Record<string, boolean>
+          accepted_at?: string | null
+        }
+        Relationships: []
+      }
+
       business_profiles: {
         Row: {
           id: string
