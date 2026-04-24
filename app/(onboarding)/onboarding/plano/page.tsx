@@ -47,21 +47,51 @@ async function PlanoPageContent({ searchParams }: PageProps) {
         redirect('/empresa')
       }
 
-      // Also check for pending invites that weren't accepted yet
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const { data: pendingMemberships } = await (supabase as any)
-        .rpc('accept_pending_team_invites') as {
-          data: Array<{ business_id: string }> | null
+      // Approach 1: SECURITY DEFINER RPC (requires migration 028)
+      let pendingBusinessId: string | null = null
+      try {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const { data: pendingMemberships } = await (supabase as any)
+          .rpc('accept_pending_team_invites') as {
+            data: Array<{ business_id: string }> | null
+          }
+        if (pendingMemberships && pendingMemberships.length > 0) {
+          pendingBusinessId = pendingMemberships[0].business_id
         }
+      } catch { /* RPC not available */ }
 
-      if (pendingMemberships && pendingMemberships.length > 0) {
+      // Approach 2: Admin client direct query — works even without migration 028 RPC
+      if (!pendingBusinessId && user.email) {
         try {
           const admin = createAdminClient()
-          await admin.from('profiles').update({
+          const { data: pendingRow } = await admin
+            .from('business_team_members')
+            .select('id, business_id')
+            .eq('member_email', user.email)
+            .eq('status', 'pending')
+            .limit(1)
+            .maybeSingle()
+
+          if (pendingRow) {
+            await admin.from('business_team_members').update({
+              member_user_id: user.id,
+              status: 'active',
+              accepted_at: new Date().toISOString(),
+            }).eq('id', pendingRow.id)
+            pendingBusinessId = pendingRow.business_id
+          }
+        } catch { /* non-critical */ }
+      }
+
+      if (pendingBusinessId) {
+        try {
+          const admin = createAdminClient()
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          await (admin.from('profiles') as any).update({
             is_team_member: true,
             mode: 'both',
-            active_business_id: pendingMemberships[0].business_id,
-          } as never).eq('id', user.id)
+            active_business_id: pendingBusinessId,
+          }).eq('id', user.id)
         } catch { /* non-critical */ }
 
         redirect('/empresa')

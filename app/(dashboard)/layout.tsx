@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import type { Database } from '@/types/database.types'
 import { redirect } from 'next/navigation'
 import { resolveUserAccessPolicy } from '@/lib/billing/policy'
@@ -64,7 +65,8 @@ export default async function DashboardLayout({
       .eq('user_id', user.id)
       .order('created_at', { ascending: false }),
     // Fetch business IDs this user is a team member of (not owner).
-    // Used when the user was invited and has no businesses of their own.
+    // RLS policy "team_member_self" only returns rows where member_user_id = auth.uid(),
+    // so pending invites (member_user_id=null) are NOT returned here — handled below.
     supabase
       .from('business_team_members')
       .select('business_id')
@@ -72,8 +74,72 @@ export default async function DashboardLayout({
       .eq('status', 'active'),
   ])
 
+  // ── Accept pending invites ─────────────────────────────────────────────────
+  // If no active memberships were found, the user may have a *pending* invite.
+  // This happens when: (a) email confirmation is disabled so /auth/callback
+  // never ran, or (b) the callback failed for any reason.
+  //
+  // Strategy — try two approaches in order:
+  // 1. SECURITY DEFINER RPC (requires migration 028 to be applied in Supabase)
+  // 2. Admin client direct query+update (works even without migration 028 RPC)
+  let resolvedMemberships = teamMemberships ?? []
+  if (resolvedMemberships.length === 0 && (ownedBusinesses?.length ?? 0) === 0) {
+    // Approach 1: SECURITY DEFINER RPC
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { data: accepted } = await (supabase as any)
+        .rpc('accept_pending_team_invites') as {
+          data: Array<{ business_id: string }> | null
+        }
+      if (accepted && accepted.length > 0) {
+        resolvedMemberships = accepted
+      }
+    } catch {
+      // RPC not available — fall through to admin approach
+    }
+
+    // Approach 2: Admin client — bypasses RLS entirely, works for pending invites
+    // (member_user_id=null) which the anon client cannot read.
+    if (resolvedMemberships.length === 0 && user.email) {
+      try {
+        const admin = createAdminClient()
+        const { data: pendingRow } = await admin
+          .from('business_team_members')
+          .select('id, business_id')
+          .eq('member_email', user.email)
+          .eq('status', 'pending')
+          .limit(1)
+          .maybeSingle()
+
+        if (pendingRow) {
+          // Accept the invite
+          await admin
+            .from('business_team_members')
+            .update({
+              member_user_id: user.id,
+              status: 'active',
+              accepted_at: new Date().toISOString(),
+            })
+            .eq('id', pendingRow.id)
+
+          resolvedMemberships = [{ business_id: pendingRow.business_id }]
+
+          // Update profile so future requests are fast (is_team_member flag)
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          await admin.from('profiles').update({
+            is_team_member: true,
+            mode: 'both',
+            active_business_id: pendingRow.business_id,
+          } as any).eq('id', user.id)
+        }
+      } catch {
+        // Admin client failed — fail silently
+      }
+    }
+  }
+
   // If team member has no owned business, resolve business names separately.
-  const memberBusinessIds = (teamMemberships ?? []).map(m => m.business_id)
+  const memberBusinessIds = resolvedMemberships.map(m => m.business_id)
   let teamBusinesses: { id: string; name: string }[] = []
   if (memberBusinessIds.length > 0 && (ownedBusinesses?.length ?? 0) === 0) {
     const { data: teamBizData } = await supabase
@@ -87,14 +153,12 @@ export default async function DashboardLayout({
     ? ownedBusinesses
     : teamBusinesses
 
-  // A user is "team member only" when they have active team memberships and no owned
-  // businesses. We check the actual business_team_members rows (already queried above)
-  // rather than the is_team_member flag alone, so this stays accurate even if the
-  // profile flag was not yet updated.
+  // A user is "team member only" when they have active (or just-accepted) team
+  // memberships and no businesses of their own.
   const isTeamMemberOnly =
     (
       !!(profileData as { is_team_member?: boolean } | null)?.is_team_member ||
-      (teamMemberships ?? []).length > 0
+      resolvedMemberships.length > 0
     ) &&
     (ownedBusinesses?.length ?? 0) === 0
 
