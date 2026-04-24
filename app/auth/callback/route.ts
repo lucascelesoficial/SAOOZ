@@ -1,4 +1,5 @@
 import { createServerClient } from '@supabase/ssr'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { cookies } from 'next/headers'
 import { NextRequest, NextResponse } from 'next/server'
 
@@ -20,6 +21,8 @@ export async function GET(request: NextRequest) {
   }
 
   const cookieStore = await cookies()
+
+  // User-session client — needed for exchangeCodeForSession and SECURITY DEFINER RPCs
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
@@ -46,8 +49,8 @@ export async function GET(request: NextRequest) {
   const userEmail = sessionData.user.email ?? ''
 
   // ── Check for pending team invites ─────────────────────────────────────────
-  // accept_pending_team_invites() is SECURITY DEFINER — it reads auth.users.email
-  // and updates business_team_members rows where member_user_id IS NULL.
+  // accept_pending_team_invites() is SECURITY DEFINER and reads auth.uid(),
+  // so it must be called with the user-session client (not admin).
   try {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const { data: memberships, error: rpcError } = await (supabase as any)
@@ -57,30 +60,31 @@ export async function GET(request: NextRequest) {
       }
 
     if (rpcError) {
-      console.error('[callback] accept_pending_team_invites error:', rpcError)
+      console.error('[callback] accept_pending_team_invites rpc error:', rpcError)
     }
 
     if (memberships && memberships.length > 0) {
       const firstBusinessId = memberships[0].business_id
 
-      // Update profile: mark as team member, set PJ context.
-      // Uses upsert so it works even if the profile trigger hasn't fired yet.
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const { error: upsertError } = await (supabase as any)
-        .from('profiles')
-        .upsert(
-          {
-            id:                  userId,
-            email:               userEmail,
-            is_team_member:      true,
-            mode:                'both',
-            active_business_id:  firstBusinessId,
-          },
-          { onConflict: 'id' }
-        )
-
-      if (upsertError) {
-        console.error('[callback] profile upsert error:', upsertError)
+      // Use the admin client to update the profile — this bypasses RLS entirely
+      // so the update always succeeds regardless of whether INSERT or UPDATE policy exists.
+      try {
+        const admin = createAdminClient()
+        await admin
+          .from('profiles')
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          .upsert(
+            {
+              id:                 userId,
+              email:              userEmail,
+              is_team_member:     true,
+              mode:               'both',
+              active_business_id: firstBusinessId,
+            } as never,
+            { onConflict: 'id' }
+          )
+      } catch (adminErr) {
+        console.error('[callback] admin profile upsert error:', adminErr)
       }
 
       // Land team member directly in the PJ module
@@ -90,7 +94,6 @@ export async function GET(request: NextRequest) {
     console.error('[callback] team invite check failed:', err)
   }
 
-  // ── Standard redirect (no pending invites, or already a team member) ────────
-  // Middleware handles /central → /empresa for existing team members.
+  // ── Standard redirect (no pending invites) ─────────────────────────────────
   return NextResponse.redirect(`${origin}${next}`)
 }
