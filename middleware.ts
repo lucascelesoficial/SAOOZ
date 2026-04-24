@@ -206,10 +206,37 @@ export async function middleware(request: NextRequest) {
       return applySecurityHeaders(supabaseResponse)
     }
 
-    // ── No real subscription → force plan selection ──────────────────────
+    // ── No real subscription → check for pending team invites first ─────────
     // Em desenvolvimento, bypass para facilitar testes locais
     const isDev = process.env.NODE_ENV === 'development'
     if (!isDev && !hasRealSubscription && !isOnboardingPlano && !isTrialConfirmRoute) {
+      if (isProtectedRoute) {
+        // Before sending to /onboarding/plano, try to accept any pending team invites.
+        // This handles the case where the user signed up without going through the
+        // email-confirmation callback (e.g. auto-confirm or password signup).
+        try {
+          const { data: memberships } = await supabase.rpc('accept_pending_team_invites') as {
+            data: Array<{ business_id: string; owner_user_id: string }> | null
+          }
+          if (memberships && memberships.length > 0) {
+            // Mark user as team member and set business context
+            await supabase.from('profiles').update({
+              is_team_member: true,
+              mode: 'both',
+              active_business_id: memberships[0].business_id,
+            }).eq('id', user.id)
+
+            // Land them in the PJ module they were invited to
+            const dest = pathname.startsWith('/empresa') ? pathname : '/empresa'
+            return applySecurityHeaders(
+              NextResponse.redirect(new URL(dest, request.url))
+            )
+          }
+        } catch {
+          // If the RPC fails (e.g. migration not yet applied), fall through normally
+        }
+      }
+
       if (isAuthRoute || isProtectedRoute || isOnboardingRoute) {
         return applySecurityHeaders(
           NextResponse.redirect(new URL('/onboarding/plano', request.url))
