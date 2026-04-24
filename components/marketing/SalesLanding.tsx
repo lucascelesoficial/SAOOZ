@@ -535,10 +535,35 @@ export function SalesLanding() {
           .pl-ord2 { order: 2 !important; }
           .solar-root { display: none !important; }
         }
+        @media (max-width: 640px) {
+          /* Reduce horizontal padding on all sections and nav */
+          .pl section {
+            padding-left: 20px !important;
+            padding-right: 20px !important;
+          }
+          .pl > div > header > div {
+            padding-left: 18px !important;
+            padding-right: 18px !important;
+          }
+          /* Hide complex dashboard mockup — too dense to read on mobile */
+          .dash-wrap { display: none !important; }
+        }
         @media (max-width: 600px) {
           .pl-4col { grid-template-columns: 1fr !important; }
           .pl-ftcols { grid-template-columns: 1fr !important; }
-          .pl-hbtns { flex-direction: column !important; }
+          /* Stack + stretch CTA buttons */
+          .pl-hbtns { flex-direction: column !important; align-items: stretch !important; }
+          .pl-hbtns .pl-btn, .pl-hbtns > a {
+            width: 100% !important;
+            justify-content: center !important;
+            padding-left: 24px !important;
+            padding-right: 24px !important;
+          }
+          /* Footer bottom: hide icon badges, stack copyright */
+          .pl-foot-bottom { flex-direction: column !important; gap: 14px !important; }
+          .pl-foot-badges { display: none !important; }
+          /* Hero badge shrink */
+          .pl-hero-badge { padding: 8px 14px 8px 10px !important; }
         }
       `}</style>
 
@@ -1004,9 +1029,9 @@ export function SalesLanding() {
                 </div>
               </div>
             </div>
-            <div style={{ borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: 26, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 10, fontSize: 14, color: '#9ca3af', fontWeight: 400 }}>
+            <div className="pl-foot-bottom" style={{ borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: 26, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 10, fontSize: 14, color: '#9ca3af', fontWeight: 400 }}>
               <span>© 2026 PearFy · Todos os direitos reservados</span>
-              <div style={{ display: 'flex', gap: 22 }}>
+              <div className="pl-foot-badges" style={{ display: 'flex', gap: 22 }}>
                 {[['Pessoal · PF', User],['Empresarial · PJ', Building2],['IA Integrada', TrendingUp]].map(([l, Icon]) => (
                   <span key={l as string} style={{ display: 'flex', alignItems: 'center', gap: 6, color: '#9ca3af' }}>
                     <Icon style={{ width: 14, height: 14, color: G }} />{l as string}

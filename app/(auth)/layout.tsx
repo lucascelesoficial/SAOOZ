@@ -66,6 +66,11 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
           user-select: none;
         }
 
+        @media (max-width: 480px) {
+          .al-left-body { padding: 32px 22px 20px; }
+          .al-left-foot { padding: 0 22px 24px; }
+          .al-logo-wrap { margin-bottom: 28px !important; }
+        }
         @media (min-width: 1024px) {
           .al-right     { display: block; }
           .al-left      { width: 44%; }
@@ -93,7 +98,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
             <div className="al-left-inner">
 
               {/* Logo — full green logo */}
-              <div style={{ marginBottom: 44, display: 'flex', justifyContent: 'center' }}>
+              <div className="al-logo-wrap" style={{ marginBottom: 44, display: 'flex', justifyContent: 'center' }}>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src="/pearfy-logo.svg"

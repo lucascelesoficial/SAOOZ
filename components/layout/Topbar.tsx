@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
-import { Bell, ChevronLeft, ChevronRight, LogOut, Settings } from 'lucide-react'
+import { ArrowLeftRight, ChevronLeft, ChevronRight, LogOut, Settings } from 'lucide-react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { ThemeToggle } from '@/components/theme/ThemeToggle'
@@ -154,9 +154,8 @@ interface TopbarProps {
 }
 
 export function Topbar({ profile, businesses, canAccessPersonalModule, canAccessBusinessModule, canCreateBusiness, businessLimitReached, isTrial, planType }: TopbarProps) {
-  // These props are kept for API compatibility — future use
+  // Unused props kept for API compatibility
   void businesses; void canCreateBusiness; void businessLimitReached; void isTrial; void planType
-  void canAccessPersonalModule; void canAccessBusinessModule
 
   const pathname = usePathname()
   const router = useRouter()
@@ -199,78 +198,88 @@ export function Topbar({ profile, businesses, canAccessPersonalModule, canAccess
         boxShadow: '0 1px 0 rgba(255,255,255,0.06), 0 2px 12px rgba(1,61,44,0.35)',
       }}
     >
-      {/* Left: empty spacer to balance right side */}
-      <div className="flex-1" />
+      {/* Left: PF ⇄ PJ switcher */}
+      <div className="flex-1 flex items-center">
+        {canAccessPersonalModule && canAccessBusinessModule && (
+          <Link
+            href={currentScope === 'business' ? '/central' : '/empresa'}
+            className="flex items-center gap-1.5 rounded-[8px] px-2.5 py-1 text-xs font-bold transition-all"
+            style={{
+              background: 'rgba(255,255,255,0.10)',
+              color: '#ffffff',
+              border: '1px solid rgba(255,255,255,0.18)',
+              letterSpacing: '0.01em',
+            }}
+            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.18)' }}
+            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.10)' }}
+            title={currentScope === 'business' ? 'Ir para conta pessoal (PF)' : 'Ir para conta empresarial (PJ)'}
+          >
+            <span style={{ opacity: currentScope === 'personal' ? 1 : 0.55 }}>PF</span>
+            <ArrowLeftRight className="h-3 w-3" style={{ opacity: 0.8 }} />
+            <span style={{ opacity: currentScope === 'business' ? 1 : 0.55 }}>PJ</span>
+          </Link>
+        )}
+      </div>
 
       {/* Center: month navigation — absolutely centered */}
       <div className="absolute left-1/2 -translate-x-1/2">
-      <div className="relative flex items-center gap-0.5">
-        <button
-          onClick={prevMonth}
-          className="rounded-[6px] p-1.5 transition-colors"
-          style={{ color: 'rgba(255,255,255,0.65)' }}
-          onMouseEnter={e => (e.currentTarget.style.color = '#fff', e.currentTarget.style.background = 'rgba(255,255,255,0.10)')}
-          onMouseLeave={e => (e.currentTarget.style.color = 'rgba(255,255,255,0.65)', e.currentTarget.style.background = 'transparent')}
-          aria-label="Mês anterior"
-        >
-          <ChevronLeft className="h-4 w-4" />
-        </button>
-
-        <button
-          onClick={() => setPickerOpen((v) => !v)}
-          className="flex flex-col items-center rounded-[8px] px-3 py-1 transition-colors"
-          onMouseEnter={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.10)')}
-          onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
-          aria-label="Selecionar mês"
-        >
-          <span
-            className="text-sm font-semibold capitalize"
-            style={{ minWidth: 90, textAlign: 'center', color: '#ffffff' }}
+        <div className="relative flex items-center gap-0.5">
+          {/* Arrows: hidden on mobile to avoid overlap, visible md+ */}
+          <button
+            onClick={prevMonth}
+            className="hidden md:flex rounded-[6px] p-1.5 transition-colors"
+            style={{ color: 'rgba(255,255,255,0.65)' }}
+            onMouseEnter={e => (e.currentTarget.style.color = '#fff', e.currentTarget.style.background = 'rgba(255,255,255,0.10)')}
+            onMouseLeave={e => (e.currentTarget.style.color = 'rgba(255,255,255,0.65)', e.currentTarget.style.background = 'transparent')}
+            aria-label="Mês anterior"
           >
-            {formatMonth(currentMonth)}
-          </span>
-          {isFutureMonth && (
-            <span className="text-[9px] font-bold uppercase tracking-widest leading-none" style={{ color: '#fcd34d' }}>
-              previsão
+            <ChevronLeft className="h-4 w-4" />
+          </button>
+
+          <button
+            onClick={() => setPickerOpen((v) => !v)}
+            className="flex flex-col items-center rounded-[8px] px-3 py-1 transition-colors"
+            onMouseEnter={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.10)')}
+            onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+            aria-label="Selecionar mês"
+          >
+            <span
+              className="text-sm font-semibold capitalize"
+              style={{ minWidth: 80, textAlign: 'center', color: '#ffffff' }}
+            >
+              {formatMonth(currentMonth)}
             </span>
+            {isFutureMonth && (
+              <span className="text-[9px] font-bold uppercase tracking-widest leading-none" style={{ color: '#fcd34d' }}>
+                previsão
+              </span>
+            )}
+          </button>
+
+          <button
+            onClick={nextMonth}
+            disabled={isMaxFutureMonth}
+            className="hidden md:flex rounded-[6px] p-1.5 transition-colors disabled:cursor-not-allowed disabled:opacity-30"
+            style={{ color: 'rgba(255,255,255,0.65)' }}
+            onMouseEnter={e => (e.currentTarget.style.color = '#fff', e.currentTarget.style.background = 'rgba(255,255,255,0.10)')}
+            onMouseLeave={e => (e.currentTarget.style.color = 'rgba(255,255,255,0.65)', e.currentTarget.style.background = 'transparent')}
+            aria-label="Próximo mês"
+          >
+            <ChevronRight className="h-4 w-4" />
+          </button>
+
+          {pickerOpen && (
+            <MonthPicker
+              currentMonth={currentMonth}
+              onSelect={setMonth}
+              onClose={() => setPickerOpen(false)}
+            />
           )}
-        </button>
-
-        <button
-          onClick={nextMonth}
-          disabled={isMaxFutureMonth}
-          className="rounded-[6px] p-1.5 transition-colors disabled:cursor-not-allowed disabled:opacity-30"
-          style={{ color: 'rgba(255,255,255,0.65)' }}
-          onMouseEnter={e => (e.currentTarget.style.color = '#fff', e.currentTarget.style.background = 'rgba(255,255,255,0.10)')}
-          onMouseLeave={e => (e.currentTarget.style.color = 'rgba(255,255,255,0.65)', e.currentTarget.style.background = 'transparent')}
-          aria-label="Próximo mês"
-        >
-          <ChevronRight className="h-4 w-4" />
-        </button>
-
-        {pickerOpen && (
-          <MonthPicker
-            currentMonth={currentMonth}
-            onSelect={setMonth}
-            onClose={() => setPickerOpen(false)}
-          />
-        )}
-      </div>
+        </div>
       </div>
 
-      {/* Right: notifications + theme + user */}
+      {/* Right: theme + user */}
       <div className="flex-1 flex items-center justify-end gap-1.5">
-        {/* Notification bell (decorative for now) */}
-        <button
-          className="flex h-8 w-8 items-center justify-center rounded-[8px] transition-colors"
-          style={{ color: 'rgba(255,255,255,0.65)' }}
-          onMouseEnter={e => (e.currentTarget.style.color = '#fff', e.currentTarget.style.background = 'rgba(255,255,255,0.10)')}
-          onMouseLeave={e => (e.currentTarget.style.color = 'rgba(255,255,255,0.65)', e.currentTarget.style.background = 'transparent')}
-          aria-label="Notificações"
-        >
-          <Bell className="h-4 w-4" />
-        </button>
-
         <ThemeToggle onDark />
 
         {/* User avatar + dropdown */}

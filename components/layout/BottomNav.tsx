@@ -38,12 +38,14 @@ export function BottomNav() {
 
   return (
     <nav
-      className="fixed bottom-0 left-0 right-0 z-30 flex items-center justify-around px-2 md:hidden"
+      className="fixed bottom-0 left-0 right-0 z-30 flex items-center justify-around px-1 md:hidden"
       style={{
-        background: 'var(--surface-bg)',
+        background: 'color-mix(in oklab, var(--surface-bg) 94%, transparent)',
+        backdropFilter: 'blur(16px)',
+        WebkitBackdropFilter: 'blur(16px)',
         borderTop: '1px solid var(--panel-border)',
-        paddingBottom: 'max(10px, env(safe-area-inset-bottom))',
-        paddingTop: '8px',
+        paddingBottom: 'max(12px, env(safe-area-inset-bottom))',
+        paddingTop: '6px',
       }}
     >
       {items.map(({ href, label, icon: Icon }) => {
@@ -56,14 +58,44 @@ export function BottomNav() {
           <Link
             key={href}
             href={href}
-            className="min-w-0 flex flex-col items-center gap-1 px-3 py-1 rounded-[10px] transition-all active:scale-95"
+            className="relative min-w-0 flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-[12px] transition-all duration-200 active:scale-90"
             style={{
-              color: isActive ? 'var(--accent-blue)' : 'var(--text-soft)',
-              background: isActive ? 'color-mix(in oklab, var(--accent-blue) 10%, transparent)' : 'transparent',
+              color: isActive ? '#026648' : 'var(--text-soft)',
+              background: isActive ? 'rgba(2,102,72,0.10)' : 'transparent',
+              minWidth: 52,
             }}
           >
-            <Icon className="h-5 w-5 shrink-0" aria-hidden />
-            <span className="truncate text-[10px] font-medium">{label}</span>
+            {/* Active indicator line */}
+            {isActive && (
+              <span
+                className="absolute -top-[7px] left-1/2 -translate-x-1/2 rounded-b-full"
+                style={{
+                  width: 24,
+                  height: 3,
+                  background: 'linear-gradient(90deg, #026648, #04a372)',
+                  boxShadow: '0 0 6px rgba(2,102,72,0.55)',
+                }}
+              />
+            )}
+            <Icon
+              className="shrink-0 transition-all duration-200"
+              style={{
+                width: isActive ? 22 : 20,
+                height: isActive ? 22 : 20,
+                strokeWidth: isActive ? 2.2 : 1.8,
+              }}
+              aria-hidden
+            />
+            <span
+              className="truncate transition-all duration-200"
+              style={{
+                fontSize: isActive ? 10.5 : 10,
+                fontWeight: isActive ? 700 : 500,
+                letterSpacing: isActive ? '-0.01em' : '0',
+              }}
+            >
+              {label}
+            </span>
           </Link>
         )
       })}

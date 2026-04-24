@@ -279,7 +279,7 @@ export function SaoozAIPJ({ userId }: { userId: string }) {
 
   return (
     <>
-      <style>{`
+      <style dangerouslySetInnerHTML={{ __html: `
         @keyframes ai-pulse {
           0%, 100% { box-shadow: 0 0 0 0 rgba(2,102,72,0.55), 0 4px 20px rgba(2,102,72,0.35); }
           50%       { box-shadow: 0 0 0 10px rgba(2,102,72,0), 0 4px 20px rgba(2,102,72,0.35); }
@@ -289,17 +289,34 @@ export function SaoozAIPJ({ userId }: { userId: string }) {
           to   { opacity: 1; transform: translateY(0)    scale(1); }
         }
         .ai-panel-enter { animation: ai-panel-in 0.22s cubic-bezier(0.34,1.4,0.64,1) forwards; }
-      `}</style>
+
+        /* FAB: above BottomNav on mobile, fixed bottom-right on desktop */
+        .ai-fab {
+          bottom: calc(64px + env(safe-area-inset-bottom, 0px) + 14px);
+          right: 16px;
+        }
+        @media (min-width: 768px) {
+          .ai-fab { bottom: 24px; right: 24px; }
+        }
+
+        /* Panel: full-width on mobile, fixed size on desktop */
+        .ai-panel {
+          left: 12px;
+          right: 12px;
+          bottom: calc(64px + env(safe-area-inset-bottom, 0px) + 14px + 56px + 10px);
+          width: auto;
+          height: min(520px, calc(100dvh - 160px));
+        }
+        @media (min-width: 768px) {
+          .ai-panel { left: auto; right: 24px; bottom: 88px; width: 380px; height: 520px; }
+        }
+      ` }} />
 
       {/* ── Floating chat panel ── */}
       {open && (
         <div
-          className="ai-panel-enter fixed z-50 flex flex-col rounded-[16px] overflow-hidden"
+          className="ai-panel ai-panel-enter fixed z-50 flex flex-col rounded-[16px] overflow-hidden"
           style={{
-            bottom: 88,
-            right: 24,
-            width: 380,
-            height: 520,
             background: 'var(--surface-bg)',
             border: '1px solid var(--panel-border)',
             boxShadow: '0 24px 64px rgba(0,0,0,0.35), 0 4px 16px rgba(2,102,72,0.12)',
@@ -541,10 +558,8 @@ export function SaoozAIPJ({ userId }: { userId: string }) {
       <button
         onClick={() => setOpen((v) => !v)}
         aria-label={open ? 'Fechar assistente empresarial' : 'Abrir assistente Pearfy IA Empresarial'}
-        className="fixed z-50 flex items-center justify-center rounded-full transition-transform duration-200 hover:scale-105 active:scale-95"
+        className="ai-fab fixed z-50 flex items-center justify-center rounded-full transition-transform duration-200 hover:scale-105 active:scale-95"
         style={{
-          bottom: 24,
-          right: 24,
           width: 56,
           height: 56,
           background: 'linear-gradient(135deg, #026648 0%, #013d2c 100%)',
