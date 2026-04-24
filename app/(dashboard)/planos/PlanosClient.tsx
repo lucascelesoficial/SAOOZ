@@ -482,19 +482,20 @@ export function PlanosClient({ snapshot }: PlanosClientProps) {
             <article
               key={plan.code}
               className="panel-card relative overflow-hidden p-5"
-              style={
-                isActiveCurrentPlan
+              style={{
+                isolation: 'isolate',
+                ...(isActiveCurrentPlan
                   ? {
-                      borderColor: 'color-mix(in oklab, #026648 50%, transparent)',
-                      boxShadow: '0 8px 32px color-mix(in oklab, #026648 10%, transparent)',
+                      borderColor: 'color-mix(in oklab, #026648 40%, transparent)',
+                      boxShadow: '0 2px 10px color-mix(in oklab, #026648 8%, transparent)',
                     }
                   : plan.highlight
                     ? {
-                        borderColor: 'color-mix(in oklab, var(--accent-blue) 45%, transparent)',
-                        boxShadow: '0 12px 40px color-mix(in oklab, var(--accent-blue) 12%, transparent)',
+                        borderColor: 'color-mix(in oklab, var(--accent-blue) 35%, transparent)',
+                        boxShadow: '0 2px 10px color-mix(in oklab, var(--accent-blue) 8%, transparent)',
                       }
-                    : {}
-              }
+                    : {}),
+              }}
             >
               {/* Current plan badge */}
               {isActiveCurrentPlan && (
