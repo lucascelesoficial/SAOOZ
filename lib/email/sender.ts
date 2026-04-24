@@ -154,15 +154,15 @@ export async function sendTeamInviteEmail(
   to: string,
   businessName: string,
   ownerName: string,
-  directAccessLink: string | null,
-  appUrl: string,
+  inviteUrl: string,
+  isNewUser: boolean,
 ) {
   const subject = `Você foi convidado para acessar ${businessName} — PearFy`
   return send(
     to,
     subject,
-    teamInviteEmail(businessName, ownerName, directAccessLink, appUrl),
-    teamInviteEmailText(businessName, ownerName, directAccessLink, appUrl),
+    teamInviteEmail(businessName, ownerName, inviteUrl, isNewUser),
+    teamInviteEmailText(businessName, ownerName, inviteUrl, isNewUser),
   )
 }
 

@@ -87,8 +87,15 @@ export default async function DashboardLayout({
     ? ownedBusinesses
     : teamBusinesses
 
+  // A user is "team member only" when they have active team memberships and no owned
+  // businesses. We check the actual business_team_members rows (already queried above)
+  // rather than the is_team_member flag alone, so this stays accurate even if the
+  // profile flag was not yet updated.
   const isTeamMemberOnly =
-    !!(profileData as { is_team_member?: boolean } | null)?.is_team_member &&
+    (
+      !!(profileData as { is_team_member?: boolean } | null)?.is_team_member ||
+      (teamMemberships ?? []).length > 0
+    ) &&
     (ownedBusinesses?.length ?? 0) === 0
 
   const businessCount = ownedBusinesses?.length ?? 0
@@ -118,19 +125,47 @@ export default async function DashboardLayout({
   } as ProfileRow : null)
 
   // ── Layer 2 guard (middleware é layer 1) ──────────────────────────────────
-  if (!profile?.mode) {
-    if (isDev) {
-      // em dev nunca chega aqui porque profile foi garantido acima,
-      // mas TS precisa da narrowing
-      redirect('/onboarding')
-    }
+  // Team members bypass the onboarding redirect: they have no subscription/mode
+  // but are legitimately here via an owner's invitation.
+  const isTeamMemberLayout = isTeamMemberOnly
+
+  if (!profile && !isTeamMemberLayout) {
     redirect('/onboarding')
+  }
+  if (!profile?.mode && !isTeamMemberLayout) {
+    redirect('/onboarding')
+  }
+
+  // Ensure team members always have a valid profile object so downstream
+  // components don't receive null. Fall back to a minimal profile if needed.
+  if (isTeamMemberLayout) {
+    if (!profile) {
+      profile = {
+        id: user.id,
+        mode: 'both' as const,
+        name: user.email?.split('@')[0] ?? 'Membro',
+        email: user.email ?? '',
+        avatar_url: null,
+        active_business_id: teamBusinesses[0]?.id ?? null,
+        created_at: new Date().toISOString(),
+        cpf: null,
+        phone: null,
+        birth_date: null,
+        city: null,
+        state: null,
+        onboarding_completed_at: null,
+      } as ProfileRow
+    } else if (!profile.mode) {
+      profile = { ...profile, mode: 'both' }
+    }
   }
 
   // onboarding_completed_at check removed until migration 023 is applied.
   // profile.mode (checked above) is the gate for now.
 
-  if (profile.mode === 'pf' && (businesses?.length ?? 0) > 0) {
+  // profile is guaranteed non-null by the guards above (null → redirect or team member fallback)
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+  if (profile!.mode === 'pf' && (businesses?.length ?? 0) > 0) {
     const nextActiveBusinessId =
       (profile as { active_business_id?: string | null }).active_business_id ??
       businesses?.[0]?.id ??
@@ -180,7 +215,8 @@ export default async function DashboardLayout({
   const onboardingRequired = rawCompleted !== undefined && rawCompleted === null
 
   const onboardingNext =
-    profile.mode === 'pf' ? '/onboarding/pf' : '/onboarding/empresa'
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    profile!.mode === 'pf' ? '/onboarding/pf' : '/onboarding/empresa'
 
   // Team members only have access to the PJ module of the business they were invited to.
   // Override the billing policy so the sidebar/topbar reflect that correctly.

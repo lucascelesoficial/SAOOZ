@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { sendTeamInviteEmail } from '@/lib/email/sender'
 
+
 const isDev = process.env.NODE_ENV === 'development'
 
 export async function GET() {
@@ -121,35 +122,42 @@ export async function POST(req: Request) {
   const { data: business } = await supabase
     .from('business_profiles').select('name').eq('id', profile.active_business_id).single()
 
-  // ── Generate a direct access link via Supabase Admin API ────────────────────
-  // This avoids the user needing to enter their email on /acesso-equipe.
-  // type='invite' creates the user if they don't exist; type='magiclink' for existing.
-  let directAccessLink: string | null = null
-  try {
-    const admin = createAdminClient()
-    const linkType = memberProfile ? 'magiclink' : 'invite'
-    const { data: linkData, error: linkError } = await admin.auth.admin.generateLink({
-      type: linkType,
-      email,
-    })
-    if (linkError) {
-      console.error('[team invite] generateLink error:', linkError)
-    } else {
-      directAccessLink = linkData?.properties?.action_link ?? null
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://pearfy.com.br'
+
+  // ── Immediately update profile for EXISTING users ───────────────────────────
+  // New users will be handled by /auth/callback (accept_pending_team_invites RPC).
+  // Existing users never go through the callback again, so we must update them now.
+  if (memberProfile) {
+    try {
+      const admin = createAdminClient()
+      await admin
+        .from('profiles')
+        .update({
+          is_team_member: true,
+          mode: 'both',
+          active_business_id: profile.active_business_id,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        } as any)
+        .eq('id', memberProfile.id)
+    } catch (err) {
+      console.error('[team invite] profile update for existing user failed:', err)
     }
-  } catch (err) {
-    console.error('[team invite] admin generateLink failed:', err)
   }
 
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://pearfy.com.br'
+  // ── Build invite URL ────────────────────────────────────────────────────────
+  // New users → /cadastro (standard signup; callback will accept the invite)
+  // Existing users → /login (they already have an account)
+  const inviteUrl = memberProfile
+    ? `${appUrl}/login`
+    : `${appUrl}/cadastro`
 
   // Send email (non-blocking)
   sendTeamInviteEmail(
     email,
     business?.name ?? 'sua empresa',
     ownerProfile?.name ?? 'Um usuário',
-    directAccessLink,
-    appUrl,
+    inviteUrl,
+    !memberProfile, // isNewUser
   ).catch(err => console.error('[team invite email]', err))
 
   return NextResponse.json({ member, hasAccount: !!memberProfile })

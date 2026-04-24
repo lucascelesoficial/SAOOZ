@@ -66,25 +66,22 @@ export async function GET(request: NextRequest) {
     if (memberships && memberships.length > 0) {
       const firstBusinessId = memberships[0].business_id
 
-      // Use the admin client to update the profile — this bypasses RLS entirely
-      // so the update always succeeds regardless of whether INSERT or UPDATE policy exists.
+      // Use the admin client to update the profile — this bypasses RLS entirely.
+      // We use UPDATE (not upsert) to avoid overwriting existing profile fields
+      // (name, CPF, etc.) that were set during signup.
       try {
         const admin = createAdminClient()
         await admin
           .from('profiles')
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          .upsert(
-            {
-              id:                 userId,
-              email:              userEmail,
-              is_team_member:     true,
-              mode:               'both',
-              active_business_id: firstBusinessId,
-            } as never,
-            { onConflict: 'id' }
-          )
+          .update({
+            is_team_member:     true,
+            mode:               'both',
+            active_business_id: firstBusinessId,
+          } as any)
+          .eq('id', userId)
       } catch (adminErr) {
-        console.error('[callback] admin profile upsert error:', adminErr)
+        console.error('[callback] admin profile update error:', adminErr)
       }
 
       // Land team member directly in the PJ module
