@@ -18,7 +18,7 @@ export function SidebarOffset({ children }: { children: React.ReactNode }) {
       // Tailwind so the transition works smoothly.
       data-sidebar-collapsed={collapsed ? 'true' : 'false'}
     >
-      <style>{`
+      <style dangerouslySetInnerHTML={{ __html: `
         @media (min-width: 768px) {
           [data-sidebar-collapsed="false"] {
             margin-left: 240px;
@@ -27,7 +27,7 @@ export function SidebarOffset({ children }: { children: React.ReactNode }) {
             margin-left: 64px;
           }
         }
-      `}</style>
+      ` }} />
       {children}
     </div>
   )
