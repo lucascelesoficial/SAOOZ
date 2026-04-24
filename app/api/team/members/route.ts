@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { sendTeamInviteEmail } from '@/lib/email/sender'
 
 export async function GET() {
   const supabase = await createClient()
@@ -114,5 +115,18 @@ export async function POST(req: Request) {
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
 
-  return NextResponse.json({ member, hasAccount: !!memberProfile })
+  // Fetch owner name and business name for the email
+  const { data: ownerProfile } = await supabase.from('profiles').select('name').eq('id', user.id).single()
+  const { data: business } = await supabase.from('business_profiles').select('name').eq('id', profile.active_business_id).single()
+
+  const hasAccount = !!memberProfile
+  // Send email (non-blocking — don't fail the request if email fails)
+  sendTeamInviteEmail(
+    email,
+    business?.name ?? 'sua empresa',
+    ownerProfile?.name ?? 'Um usuário',
+    hasAccount,
+  ).catch(err => console.error('[team invite email]', err))
+
+  return NextResponse.json({ member, hasAccount })
 }

@@ -8,6 +8,7 @@ import {
   dueDateReminderEmail,  dueDateReminderEmailText,
   overdueAlertEmail,     overdueAlertEmailText,
   monthlyDigestEmail,    monthlyDigestEmailText,
+  teamInviteEmail,       teamInviteEmailText,
   type DueItem,
   type MonthlyDigestData,
 } from './templates'
@@ -146,6 +147,24 @@ export async function sendMonthlyDigestEmail(
     `Fechamento de ${data.month} disponível — SAOOZ`,
     monthlyDigestEmail(name, data),
     monthlyDigestEmailText(name, data),
+  )
+}
+
+export async function sendTeamInviteEmail(
+  to: string,
+  businessName: string,
+  ownerName: string,
+  hasAccount: boolean,
+) {
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://pearfy.com.br'
+  const subject = hasAccount
+    ? `Você foi adicionado à equipe de ${businessName} — PearFy`
+    : `Convite para a equipe de ${businessName} no PearFy`
+  return send(
+    to,
+    subject,
+    teamInviteEmail(businessName, ownerName, hasAccount, appUrl),
+    teamInviteEmailText(businessName, ownerName, hasAccount, appUrl),
   )
 }
 

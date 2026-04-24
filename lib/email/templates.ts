@@ -467,3 +467,53 @@ Ver análise completa: ${dashUrl}
 — Equipe SAOOZ
 saooz.com`
 }
+
+// ─── Team Invite ──────────────────────────────────────────────────────────────
+
+export function teamInviteEmail(businessName: string, ownerName: string, hasAccount: boolean, appUrl: string) {
+  const targetUrl = hasAccount ? `${appUrl}/login` : `${appUrl}/cadastro`
+  const btnLabel = hasAccount ? 'Acessar o PearFy →' : 'Criar minha conta →'
+
+  return wrapper(
+    `
+    <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:28px;">
+      <tr>
+        <td align="center">
+          <div style="display:inline-block;background:#0a1f10;border:1px solid #02664840;border-radius:50%;width:56px;height:56px;line-height:56px;text-align:center;font-size:24px;">👥</div>
+        </td>
+      </tr>
+    </table>
+    ${h1('Você foi convidado para uma equipe')}
+    ${p(`<strong style="color:#e2e8f0;">${ownerName}</strong> convidou você para acessar o módulo empresarial de <strong style="color:#4ade80;">${businessName}</strong> no PearFy.`)}
+    ${hasAccount
+      ? p('Sua conta já está vinculada. Faça login para começar a colaborar.')
+      : p('Para aceitar, crie sua conta gratuita no PearFy. Não é necessário plano pago para participar como membro.')
+    }
+    ${infoBox(`
+      <p style="margin:0 0 4px;font-size:12px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:#4ade80;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif;">Empresa</p>
+      <p style="margin:0;font-size:16px;font-weight:700;color:#f1f5f9;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif;">${businessName}</p>
+    `)}
+    <div style="text-align:center;margin:32px 0;">
+      ${btn(targetUrl, btnLabel)}
+    </div>
+    ${divider()}
+    ${small('Se você não esperava este convite, pode ignorar este e-mail com segurança.')}
+    `,
+    `${ownerName} convidou você para a equipe de ${businessName} no PearFy`
+  )
+}
+
+export function teamInviteEmailText(businessName: string, ownerName: string, hasAccount: boolean, appUrl: string) {
+  const url = hasAccount ? `${appUrl}/login` : `${appUrl}/cadastro`
+  return `Você foi convidado para uma equipe no PearFy
+
+${ownerName} convidou você para acessar o módulo empresarial de "${businessName}".
+
+${hasAccount ? 'Sua conta já está vinculada. Faça login:' : 'Crie sua conta gratuita para aceitar:'}
+${url}
+
+Se você não esperava este convite, ignore este e-mail.
+
+— Equipe PearFy
+pearfy.com.br`
+}
