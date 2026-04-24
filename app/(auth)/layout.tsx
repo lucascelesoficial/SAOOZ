@@ -59,8 +59,8 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
           inset: 0;
           width: 100%;
           height: 100%;
-          object-fit: cover;
-          object-position: center;
+          object-fit: contain;
+          object-position: center center;
           display: block;
           pointer-events: none;
           user-select: none;
