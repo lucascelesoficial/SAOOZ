@@ -54,7 +54,7 @@ export default function OnboardingLayout({ children }: { children: React.ReactNo
       </div>
 
       {/* Card */}
-      <div className="relative z-10 w-full max-w-lg">
+      <div className="relative z-10 w-full max-w-3xl">
         {children}
       </div>
     </div>

@@ -329,231 +329,244 @@ export function OnboardingEmpresaClient({
   }
 
   return (
-    <div className="panel-card rounded-2xl p-8">
-      {/* Back button */}
-      <button
-        type="button"
-        onClick={() => router.back()}
-        className="mb-5 flex items-center gap-1.5 text-xs font-medium text-app-soft transition-colors hover:text-app"
-      >
-        <ArrowLeft className="h-3.5 w-3.5" />
-        Voltar
-      </button>
+    <div className="panel-card rounded-2xl overflow-hidden">
 
-      <div className="mb-7 flex items-center gap-3">
-        <div
-          className="flex h-10 w-10 items-center justify-center rounded-xl"
-          style={{ background: '#02664815', border: '1px solid #02664830' }}
+      {/* ── Header banner ── */}
+      <div className="px-8 pt-7 pb-6"
+        style={{ background: 'linear-gradient(135deg, #0A1D13 0%, #163424 100%)', borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
+        <button
+          type="button"
+          onClick={() => router.back()}
+          className="mb-5 flex items-center gap-1.5 text-xs font-medium transition-colors"
+          style={{ color: 'rgba(255,255,255,0.5)' }}
+          onMouseEnter={e => (e.currentTarget.style.color = '#fff')}
+          onMouseLeave={e => (e.currentTarget.style.color = 'rgba(255,255,255,0.5)')}
         >
-          <Building2 className="h-5 w-5" style={{ color: '#026648' }} />
-        </div>
-        <div>
-          <h1 className="text-xl font-extrabold text-app">
-            {isEditing ? 'Editar empresa' : 'Nova empresa'}
-          </h1>
-          <p className="text-xs text-app-soft">
-            Cadastre ou atualize sua empresa sem perder o acesso ao módulo pessoal.
-          </p>
+          <ArrowLeft className="h-3.5 w-3.5" />
+          Voltar
+        </button>
+
+        <div className="flex items-center gap-4">
+          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-[14px]"
+            style={{ background: 'rgba(255,255,255,0.10)', border: '1px solid rgba(255,255,255,0.15)' }}>
+            <Building2 className="h-6 w-6 text-white" />
+          </div>
+          <div>
+            <h1 className="text-xl font-extrabold text-white" style={{ letterSpacing: '-0.03em' }}>
+              {isEditing ? 'Editar empresa' : 'Cadastrar empresa'}
+            </h1>
+            <p className="mt-0.5 text-sm" style={{ color: 'rgba(255,255,255,0.55)' }}>
+              Preencha os dados e ative o módulo empresarial completo.
+            </p>
+          </div>
         </div>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-5">
-        <FieldWrap label="Nome da empresa" error={errors.name}>
-          <input
-            type="text"
-            placeholder="Ex: Studio Criativo LTDA"
-            value={name}
-            onChange={(event) => setName(event.target.value)}
-            className="h-11 w-full rounded-[10px] px-4 text-sm placeholder:text-app-soft"
-            style={INPUT_STYLE}
-            onFocus={focusStyle}
-            onBlur={blurStyle}
-          />
-        </FieldWrap>
+      {/* ── Form body ── */}
+      <form onSubmit={handleSubmit}>
+        <div className="grid grid-cols-1 md:grid-cols-2 md:divide-x" style={{ '--tw-divide-opacity': 1, borderColor: 'var(--panel-border)' } as React.CSSProperties}>
 
-        <FieldWrap label="CNPJ *" error={errors.cnpj}>
-          <input
-            type="text"
-            placeholder="00.000.000/0001-00"
-            value={cnpj}
-            onChange={(event) => setCnpj(maskCNPJ(event.target.value))}
-            className="h-11 w-full rounded-[10px] px-4 text-sm placeholder:text-app-soft font-mono tracking-wide"
-            style={cnpj && !validateCNPJ(cnpj) ? { ...INPUT_STYLE, border: '1.5px solid #f87171' } : INPUT_STYLE}
-            onFocus={focusStyle}
-            onBlur={blurStyle}
-          />
-          {cnpj && validateCNPJ(cnpj) && (
-            <p className="text-xs mt-1" style={{ color: '#026648' }}>CNPJ válido ✓</p>
-          )}
-        </FieldWrap>
-
-        <FieldWrap label="Regime tributário">
-          <div className="grid grid-cols-2 gap-2">
-            {TAX_REGIMES.map((taxRegime) => (
-              <button
-                key={taxRegime.id}
-                type="button"
-                title={taxRegime.tooltip}
-                onClick={() => setRegime(taxRegime.id)}
-                className="rounded-[10px] p-3 text-left transition-all"
-                style={{
-                  background: regime === taxRegime.id ? '#02664812' : 'var(--panel-bg-soft)',
-                  border: regime === taxRegime.id ? '1.5px solid #026648' : '1.5px solid var(--panel-border)',
-                  boxShadow: regime === taxRegime.id ? '0 0 12px #02664825' : 'none',
-                }}
-              >
-                <p className="text-sm font-semibold" style={{ color: regime === taxRegime.id ? '#026648' : 'var(--text-base)' }}>
-                  {taxRegime.label}
-                </p>
-                <p className="mt-0.5 text-[11px] leading-tight text-app-soft">{taxRegime.desc}</p>
-                <p className="mt-0.5 text-[10px] leading-tight" style={{ color: regime === taxRegime.id ? '#02664870' : 'var(--text-soft)' }}>{taxRegime.porte}</p>
-              </button>
-            ))}
-          </div>
-          <p className="text-[10px] text-app-soft px-0.5">Passe o mouse sobre cada opção para mais detalhes</p>
-        </FieldWrap>
-
-        <FieldWrap label="Atividade principal">
-          <div className="grid grid-cols-4 gap-2">
-            {ACTIVITIES.map((item) => (
-              <button
-                key={item.id}
-                type="button"
-                onClick={() => setActivity(item.id)}
-                className="rounded-[10px] py-2.5 text-xs font-semibold transition-all"
-                style={{
-                  background:
-                    activity === item.id
-                      ? 'color-mix(in oklab, var(--accent-blue) 12%, transparent)'
-                      : 'var(--panel-bg-soft)',
-                  border:
-                    activity === item.id
-                      ? '1.5px solid var(--accent-blue)'
-                      : '1.5px solid var(--panel-border)',
-                  color: activity === item.id ? 'var(--accent-blue)' : 'var(--text-soft)',
-                }}
-              >
-                {item.label}
-              </button>
-            ))}
-          </div>
-        </FieldWrap>
-
-        {/* Sócio responsável */}
-        <div className="pt-2 space-y-4" style={{ borderTop: '1px solid var(--panel-border)' }}>
-          <div className="flex items-center gap-2">
-            <div className="h-7 w-7 rounded-[8px] flex items-center justify-center shrink-0" style={{ background: '#8b5cf615', border: '1px solid #8b5cf630' }}>
-              <User className="h-3.5 w-3.5 text-[#8b5cf6]" />
+          {/* ── Left: Dados da empresa ── */}
+          <div className="p-8 space-y-6">
+            <div className="flex items-center gap-2 mb-2">
+              <div className="h-6 w-6 rounded-[6px] flex items-center justify-center" style={{ background: '#02664815', border: '1px solid #02664828' }}>
+                <Building2 className="h-3.5 w-3.5" style={{ color: '#026648' }} />
+              </div>
+              <span className="text-xs font-bold uppercase tracking-widest" style={{ color: '#026648' }}>Dados da empresa</span>
             </div>
-            <span className="text-sm font-bold text-app">Sócio responsável</span>
-          </div>
 
-          <FieldWrap label="CPF do sócio *" error={errors.socioCpf}>
-            <input
-              type="text"
-              placeholder="000.000.000-00"
-              value={socioCpf}
-              onChange={(e) => setSocioCpf(maskCPF(e.target.value))}
-              className="h-11 w-full rounded-[10px] px-4 text-sm placeholder:text-app-soft font-mono tracking-wide"
-              style={socioCpf && !validateCPF(socioCpf) ? { ...INPUT_STYLE, border: '1.5px solid #f87171' } : INPUT_STYLE}
-              onFocus={focusStyle}
-              onBlur={blurStyle}
-            />
-            {socioCpf && validateCPF(socioCpf) && (
-              <p className="text-xs mt-1" style={{ color: '#026648' }}>CPF válido ✓</p>
-            )}
-          </FieldWrap>
-
-          <FieldWrap label="Telefone *" error={errors.socioPhone}>
-            <input
-              type="text"
-              placeholder="(11) 99999-9999"
-              value={socioPhone}
-              onChange={(e) => setSocioPhone(maskPhone(e.target.value))}
-              className="h-11 w-full rounded-[10px] px-4 text-sm placeholder:text-app-soft font-mono tracking-wide"
-              style={errors.socioPhone ? { ...INPUT_STYLE, border: '1.5px solid #f87171' } : INPUT_STYLE}
-              onFocus={focusStyle}
-              onBlur={blurStyle}
-            />
-          </FieldWrap>
-
-          <FieldWrap label="Data de nascimento *" error={errors.socioBirthDate}>
-            <input
-              type="date"
-              value={socioBirthDate}
-              onChange={(e) => setSocioBirthDate(e.target.value)}
-              className="h-11 w-full rounded-[10px] px-4 text-sm"
-              style={errors.socioBirthDate ? { ...INPUT_STYLE, border: '1.5px solid #f87171' } : INPUT_STYLE}
-              onFocus={focusStyle}
-              onBlur={blurStyle}
-            />
-          </FieldWrap>
-
-          <div className="grid grid-cols-2 gap-3">
-            <FieldWrap label="Cidade">
+            <FieldWrap label="Nome da empresa" error={errors.name}>
               <input
                 type="text"
-                placeholder="São Paulo"
-                value={socioCity}
-                onChange={(e) => setSocioCity(e.target.value)}
-                className="h-11 w-full rounded-[10px] px-4 text-sm placeholder:text-app-soft"
+                placeholder="Ex: Studio Criativo LTDA"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                className="h-12 w-full rounded-[10px] px-4 text-sm placeholder:text-app-soft"
                 style={INPUT_STYLE}
                 onFocus={focusStyle}
                 onBlur={blurStyle}
               />
             </FieldWrap>
-            <FieldWrap label="Estado (UF)">
-              <select
-                value={socioBrazilState}
-                onChange={(e) => setSocioBrazilState(e.target.value)}
-                className="h-11 w-full rounded-[10px] px-4 text-sm outline-none"
-                style={INPUT_STYLE}
-              >
-                <option value="">--</option>
-                {BR_STATES.map((uf) => (
-                  <option key={uf} value={uf}>{uf}</option>
-                ))}
-              </select>
+
+            <FieldWrap label="CNPJ *" error={errors.cnpj}>
+              <input
+                type="text"
+                placeholder="00.000.000/0001-00"
+                value={cnpj}
+                onChange={(e) => setCnpj(maskCNPJ(e.target.value))}
+                className="h-12 w-full rounded-[10px] px-4 text-sm placeholder:text-app-soft font-mono tracking-wide"
+                style={cnpj && !validateCNPJ(cnpj) ? { ...INPUT_STYLE, border: '1.5px solid #f87171' } : INPUT_STYLE}
+                onFocus={focusStyle}
+                onBlur={blurStyle}
+              />
+              {cnpj && validateCNPJ(cnpj) && (
+                <p className="text-xs mt-1" style={{ color: '#026648' }}>CNPJ válido ✓</p>
+              )}
             </FieldWrap>
+
+            <FieldWrap label="Regime tributário">
+              <div className="grid grid-cols-2 gap-2">
+                {TAX_REGIMES.map((taxRegime) => (
+                  <button
+                    key={taxRegime.id}
+                    type="button"
+                    title={taxRegime.tooltip}
+                    onClick={() => setRegime(taxRegime.id)}
+                    className="rounded-[10px] p-3.5 text-left transition-all"
+                    style={{
+                      background: regime === taxRegime.id ? '#02664810' : 'var(--panel-bg-soft)',
+                      border: regime === taxRegime.id ? '1.5px solid #026648' : '1.5px solid var(--panel-border)',
+                      boxShadow: regime === taxRegime.id ? '0 0 14px #02664820' : 'none',
+                    }}
+                  >
+                    <p className="text-sm font-bold" style={{ color: regime === taxRegime.id ? '#026648' : 'var(--text-base)' }}>
+                      {taxRegime.label}
+                    </p>
+                    <p className="mt-1 text-[11px] leading-tight text-app-soft">{taxRegime.desc}</p>
+                    <p className="mt-0.5 text-[10px]" style={{ color: regime === taxRegime.id ? '#02664870' : 'var(--text-soft)' }}>{taxRegime.porte}</p>
+                  </button>
+                ))}
+              </div>
+            </FieldWrap>
+
+            <FieldWrap label="Atividade principal">
+              <div className="grid grid-cols-2 gap-2">
+                {ACTIVITIES.map((item) => (
+                  <button
+                    key={item.id}
+                    type="button"
+                    onClick={() => setActivity(item.id)}
+                    className="rounded-[10px] py-3 text-sm font-semibold transition-all"
+                    style={{
+                      background: activity === item.id ? '#02664810' : 'var(--panel-bg-soft)',
+                      border: activity === item.id ? '1.5px solid #026648' : '1.5px solid var(--panel-border)',
+                      color: activity === item.id ? '#026648' : 'var(--text-soft)',
+                    }}
+                  >
+                    {item.label}
+                  </button>
+                ))}
+              </div>
+            </FieldWrap>
+          </div>
+
+          {/* ── Right: Sócio responsável ── */}
+          <div className="p-8 space-y-6" style={{ borderTop: 'none' }}>
+            <div className="flex items-center gap-2 mb-2">
+              <div className="h-6 w-6 rounded-[6px] flex items-center justify-center" style={{ background: '#8b5cf615', border: '1px solid #8b5cf628' }}>
+                <User className="h-3.5 w-3.5 text-[#8b5cf6]" />
+              </div>
+              <span className="text-xs font-bold uppercase tracking-widest text-[#8b5cf6]">Sócio responsável</span>
+            </div>
+
+            <FieldWrap label="CPF *" error={errors.socioCpf}>
+              <input
+                type="text"
+                placeholder="000.000.000-00"
+                value={socioCpf}
+                onChange={(e) => setSocioCpf(maskCPF(e.target.value))}
+                className="h-12 w-full rounded-[10px] px-4 text-sm placeholder:text-app-soft font-mono tracking-wide"
+                style={socioCpf && !validateCPF(socioCpf) ? { ...INPUT_STYLE, border: '1.5px solid #f87171' } : INPUT_STYLE}
+                onFocus={focusStyle}
+                onBlur={blurStyle}
+              />
+              {socioCpf && validateCPF(socioCpf) && (
+                <p className="text-xs mt-1" style={{ color: '#026648' }}>CPF válido ✓</p>
+              )}
+            </FieldWrap>
+
+            <FieldWrap label="Telefone *" error={errors.socioPhone}>
+              <input
+                type="text"
+                placeholder="(11) 99999-9999"
+                value={socioPhone}
+                onChange={(e) => setSocioPhone(maskPhone(e.target.value))}
+                className="h-12 w-full rounded-[10px] px-4 text-sm placeholder:text-app-soft font-mono tracking-wide"
+                style={errors.socioPhone ? { ...INPUT_STYLE, border: '1.5px solid #f87171' } : INPUT_STYLE}
+                onFocus={focusStyle}
+                onBlur={blurStyle}
+              />
+            </FieldWrap>
+
+            <FieldWrap label="Data de nascimento *" error={errors.socioBirthDate}>
+              <input
+                type="date"
+                value={socioBirthDate}
+                onChange={(e) => setSocioBirthDate(e.target.value)}
+                className="h-12 w-full rounded-[10px] px-4 text-sm"
+                style={errors.socioBirthDate ? { ...INPUT_STYLE, border: '1.5px solid #f87171' } : INPUT_STYLE}
+                onFocus={focusStyle}
+                onBlur={blurStyle}
+              />
+            </FieldWrap>
+
+            <div className="grid grid-cols-2 gap-3">
+              <FieldWrap label="Cidade">
+                <input
+                  type="text"
+                  placeholder="São Paulo"
+                  value={socioCity}
+                  onChange={(e) => setSocioCity(e.target.value)}
+                  className="h-12 w-full rounded-[10px] px-4 text-sm placeholder:text-app-soft"
+                  style={INPUT_STYLE}
+                  onFocus={focusStyle}
+                  onBlur={blurStyle}
+                />
+              </FieldWrap>
+              <FieldWrap label="Estado (UF)">
+                <select
+                  value={socioBrazilState}
+                  onChange={(e) => setSocioBrazilState(e.target.value)}
+                  className="h-12 w-full rounded-[10px] px-4 text-sm outline-none"
+                  style={INPUT_STYLE}
+                >
+                  <option value="">--</option>
+                  {BR_STATES.map((uf) => (
+                    <option key={uf} value={uf}>{uf}</option>
+                  ))}
+                </select>
+              </FieldWrap>
+            </div>
+
+            <p className="text-[11px] text-app-soft">
+              Campos com <span className="text-[#f87171]">*</span> são obrigatórios.
+            </p>
           </div>
         </div>
 
-        <p className="text-[11px] text-app-soft pt-1">
-          Campos marcados com <span className="text-[#f87171]">*</span> são obrigatórios.
-        </p>
-
-        <button
-          type="submit"
-          disabled={loading || loadingBusiness || skipping}
-          className="mt-2 flex h-12 w-full items-center justify-center gap-2 rounded-[12px] text-sm font-bold text-white transition-all disabled:opacity-60"
-          style={{
-            background: 'linear-gradient(135deg, #026648, #013d2c)',
-            boxShadow: '0 4px 20px rgba(2,102,72,0.30)',
-          }}
-        >
-          {loading || loadingBusiness ? (
-            <Loader2 className="h-4 w-4 animate-spin" />
-          ) : (
-            <>
-              {submitLabel}
-              <ChevronRight className="h-4 w-4" />
-            </>
-          )}
-        </button>
-
-        {/* Skip link — only during initial onboarding flow (not when editing) */}
-        {!isEditing && (
+        {/* ── Footer actions ── */}
+        <div className="px-8 py-6 space-y-3" style={{ borderTop: '1px solid var(--panel-border)', background: 'var(--panel-bg-soft)' }}>
           <button
-            type="button"
-            onClick={handleSkip}
-            disabled={loading || skipping}
-            className="w-full text-center text-xs text-app-soft hover:text-app transition-colors disabled:opacity-50"
+            type="submit"
+            disabled={loading || loadingBusiness || skipping}
+            className="flex h-13 w-full items-center justify-center gap-2 rounded-[12px] text-base font-bold text-white transition-all disabled:opacity-60 hover:opacity-90 active:scale-[0.99]"
+            style={{
+              height: 52,
+              background: 'linear-gradient(135deg, #026648, #013d2c)',
+              boxShadow: '0 4px 24px rgba(2,102,72,0.30)',
+            }}
           >
-            {skipping
-              ? 'Redirecionando…'
-              : 'Pular por agora · finalizo depois'}
+            {loading || loadingBusiness ? (
+              <Loader2 className="h-5 w-5 animate-spin" />
+            ) : (
+              <>
+                {submitLabel}
+                <ChevronRight className="h-5 w-5" />
+              </>
+            )}
           </button>
-        )}
+
+          {!isEditing && (
+            <button
+              type="button"
+              onClick={handleSkip}
+              disabled={loading || skipping}
+              className="w-full text-center text-sm text-app-soft hover:text-app transition-colors disabled:opacity-50"
+            >
+              {skipping ? 'Redirecionando…' : 'Pular por agora · finalizo depois'}
+            </button>
+          )}
+        </div>
       </form>
     </div>
   )
