@@ -45,8 +45,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.redirect(`${origin}/login?error=auth_callback_failed`)
   }
 
-  const userId    = sessionData.user.id
-  const userEmail = sessionData.user.email ?? ''
+  const userId = sessionData.user.id
 
   // ── Check for pending team invites ─────────────────────────────────────────
   // accept_pending_team_invites() is SECURITY DEFINER and reads auth.uid(),
@@ -71,14 +70,15 @@ export async function GET(request: NextRequest) {
       // (name, CPF, etc.) that were set during signup.
       try {
         const admin = createAdminClient()
-        await admin
-          .from('profiles')
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        // is_team_member is not in generated types yet (migration 028) — cast needed
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const profilesTable = admin.from('profiles') as any
+        await profilesTable
           .update({
             is_team_member:     true,
             mode:               'both',
             active_business_id: firstBusinessId,
-          } as any)
+          })
           .eq('id', userId)
       } catch (adminErr) {
         console.error('[callback] admin profile update error:', adminErr)
