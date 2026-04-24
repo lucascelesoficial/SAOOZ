@@ -4,15 +4,17 @@ import { SaoozAIPJ } from '@/components/dashboard/SaoozAIPJ'
 
 export default function EmpresaAssistentePage() {
   return (
-    <div className="mx-auto max-w-4xl space-y-4 pb-6">
-      <div className="panel-card p-5">
-        <h1 className="text-xl font-bold text-app">Assistente Empresarial</h1>
-        <p className="mt-1 text-sm text-app-soft">
-          IA para operacao financeira da empresa com confirmacao antes de executar.
+    <div className="flex flex-col gap-4 pb-4" style={{ height: 'calc(100dvh - 100px)' }}>
+      <div>
+        <h1 className="text-2xl font-bold text-app">Assistente Empresarial</h1>
+        <p className="mt-0.5 text-sm text-app-soft">
+          IA para operação financeira da empresa — sugere e executa com sua confirmação.
         </p>
       </div>
 
-      <SaoozAIPJ userId="self" />
+      <div className="flex-1 min-h-0">
+        <SaoozAIPJ userId="self" mode="page" />
+      </div>
     </div>
   )
 }

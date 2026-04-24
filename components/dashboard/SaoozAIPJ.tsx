@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
+import { usePathname } from 'next/navigation'
 import Link from 'next/link'
 import { CheckCircle2, Loader2, Minus, Send, ShieldCheck, X } from 'lucide-react'
 import { SaoozIcon } from '@/components/ui/SaoozLogo'
@@ -39,10 +40,13 @@ const STATE_HINT: Record<OrbState, string> = {
   speaking: 'Falando...',
 }
 
-export function SaoozAIPJ({ userId }: { userId: string }) {
+export function SaoozAIPJ({ userId, mode = 'fab' }: { userId: string; mode?: 'fab' | 'page' }) {
   void userId
   const { business, totals, taxEstimate, currentMonth, refresh } = useBusinessData()
-  const [open, setOpen] = useState(false)
+  const pathname = usePathname()
+  const isPage = mode === 'page'
+  const isAssistentePage = pathname === '/empresa/assistente'
+  const [open, setOpen] = useState(isPage)
   const [messages, setMessages] = useState<Message[]>([
     {
       role: 'ai',
@@ -312,14 +316,15 @@ export function SaoozAIPJ({ userId }: { userId: string }) {
         }
       ` }} />
 
-      {/* ── Floating chat panel ── */}
+      {/* ── Chat panel ── */}
       {open && (
         <div
-          className="ai-panel ai-panel-enter fixed z-50 flex flex-col rounded-[16px] overflow-hidden"
+          className={isPage ? 'flex flex-col rounded-[16px] overflow-hidden w-full' : 'ai-panel ai-panel-enter fixed z-50 flex flex-col rounded-[16px] overflow-hidden'}
           style={{
             background: 'var(--surface-bg)',
             border: '1px solid var(--panel-border)',
             boxShadow: '0 24px 64px rgba(0,0,0,0.35), 0 4px 16px rgba(2,102,72,0.12)',
+            ...(isPage ? { height: 'calc(100dvh - 180px)', minHeight: 480 } : {}),
           }}
         >
           {/* Header */}
@@ -359,21 +364,23 @@ export function SaoozAIPJ({ userId }: { userId: string }) {
               <ShieldCheck className="h-3 w-3" />
               confirmação
             </span>
-            <button
-              onClick={() => setOpen(false)}
-              className="flex h-7 w-7 items-center justify-center rounded-full transition-colors"
-              style={{ color: 'rgba(255,255,255,0.55)' }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.background = 'rgba(255,255,255,0.10)'
-                e.currentTarget.style.color = '#fff'
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.background = 'transparent'
-                e.currentTarget.style.color = 'rgba(255,255,255,0.55)'
-              }}
-            >
-              <Minus className="h-4 w-4" />
-            </button>
+            {!isPage && (
+              <button
+                onClick={() => setOpen(false)}
+                className="flex h-7 w-7 items-center justify-center rounded-full transition-colors"
+                style={{ color: 'rgba(255,255,255,0.55)' }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = 'rgba(255,255,255,0.10)'
+                  e.currentTarget.style.color = '#fff'
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = 'transparent'
+                  e.currentTarget.style.color = 'rgba(255,255,255,0.55)'
+                }}
+              >
+                <Minus className="h-4 w-4" />
+              </button>
+            )}
           </div>
 
           {/* Messages */}
@@ -554,8 +561,8 @@ export function SaoozAIPJ({ userId }: { userId: string }) {
         </div>
       )}
 
-      {/* ── FAB ── */}
-      <button
+      {/* ── FAB — oculto na página do assistente e em mode=page ── */}
+      {!isPage && !isAssistentePage && <button
         onClick={() => setOpen((v) => !v)}
         aria-label={open ? 'Fechar assistente empresarial' : 'Abrir assistente Pearfy IA Empresarial'}
         className="ai-fab fixed z-50 flex items-center justify-center rounded-full transition-transform duration-200 hover:scale-105 active:scale-95"
@@ -582,7 +589,7 @@ export function SaoozAIPJ({ userId }: { userId: string }) {
             {unread}
           </span>
         )}
-      </button>
+      </button>}
     </>
   )
 }
