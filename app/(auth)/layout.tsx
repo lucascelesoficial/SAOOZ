@@ -59,11 +59,23 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
           inset: 0;
           width: 100%;
           height: 100%;
-          object-fit: contain;
+          object-fit: cover;
           object-position: center center;
           display: block;
           pointer-events: none;
           user-select: none;
+        }
+        /* overlay escuro que funde a imagem com o painel em qualquer resolução */
+        .al-right::after {
+          content: '';
+          position: absolute;
+          inset: 0;
+          z-index: 1;
+          pointer-events: none;
+          background:
+            radial-gradient(ellipse at 50% 50%, transparent 40%, rgba(6,13,7,0.55) 100%),
+            linear-gradient(to right, rgba(6,13,7,0.45) 0%, transparent 18%, transparent 82%, rgba(6,13,7,0.45) 100%),
+            linear-gradient(to bottom, rgba(6,13,7,0.35) 0%, transparent 15%, transparent 85%, rgba(6,13,7,0.40) 100%);
         }
 
         @media (max-width: 480px) {
