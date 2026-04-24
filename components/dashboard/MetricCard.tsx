@@ -53,31 +53,31 @@ export function MetricCard({
 
   if (loading) {
     return (
-      <div className="panel-card rounded-[14px] p-5">
-        <Skeleton className="mb-3 h-3.5 w-28" style={{ background: 'var(--panel-border)' }} />
-        <Skeleton className="mb-4 h-9 w-36" style={{ background: 'var(--panel-border)' }} />
-        <Skeleton className="h-3.5 w-40" style={{ background: 'var(--panel-border)' }} />
+      <div className="panel-card rounded-[14px] p-3 sm:p-4 lg:p-5">
+        <Skeleton className="mb-3 h-3.5 w-20 sm:w-28" style={{ background: 'var(--panel-border)' }} />
+        <Skeleton className="mb-4 h-7 sm:h-9 w-28 sm:w-36" style={{ background: 'var(--panel-border)' }} />
+        <Skeleton className="h-3.5 w-24 sm:w-40" style={{ background: 'var(--panel-border)' }} />
       </div>
     )
   }
 
   return (
-    <div className="panel-card rounded-[14px] p-5 flex flex-col gap-2 transition-all hover:border-[var(--panel-border-strong)]">
+    <div className="panel-card rounded-[14px] p-3 sm:p-4 lg:p-5 flex flex-col gap-2 transition-all hover:border-[var(--panel-border-strong)]">
       {/* Title + icon */}
       <div className="flex items-center justify-between">
         <span className="text-xs font-medium uppercase tracking-wider text-app-soft">
           {title}
         </span>
         <span
-          className="flex h-7 w-7 items-center justify-center rounded-[8px]"
+          className="flex h-6 w-6 sm:h-7 sm:w-7 items-center justify-center rounded-[7px] sm:rounded-[8px]"
           style={{ background: palette.surface, color: palette.strong }}
         >
-          <TrendIcon className="h-3.5 w-3.5" aria-hidden />
+          <TrendIcon className="h-3 w-3 sm:h-3.5 sm:w-3.5" aria-hidden />
         </span>
       </div>
 
       {/* Value */}
-      <p className="text-[1.75rem] font-extrabold tabular-nums leading-none text-app">
+      <p className="text-[1.05rem] sm:text-[1.35rem] lg:text-[1.75rem] font-extrabold tabular-nums leading-none text-app break-all">
         {formatCurrency(value)}
       </p>
 
