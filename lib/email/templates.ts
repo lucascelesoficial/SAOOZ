@@ -470,9 +470,10 @@ saooz.com`
 
 // ─── Team Invite ──────────────────────────────────────────────────────────────
 
-export function teamInviteEmail(businessName: string, ownerName: string, _hasAccount: boolean, appUrl: string) {
-  // All team members access via /acesso-equipe — OTP flow, no account creation needed.
-  const targetUrl = `${appUrl}/acesso-equipe`
+export function teamInviteEmail(businessName: string, ownerName: string, directAccessLink: string | null, appUrl: string) {
+  // Use the server-generated direct link if available, otherwise fallback to /acesso-equipe
+  const targetUrl = directAccessLink ?? `${appUrl}/acesso-equipe`
+  const hasDirectLink = !!directAccessLink
 
   return wrapper(
     `
@@ -485,7 +486,10 @@ export function teamInviteEmail(businessName: string, ownerName: string, _hasAcc
     </table>
     ${h1('Você foi convidado para uma equipe')}
     ${p(`<strong style="color:#e2e8f0;">${ownerName}</strong> liberou seu acesso ao módulo empresarial de <strong style="color:#4ade80;">${businessName}</strong> no PearFy.`)}
-    ${p('Para entrar, clique no botão abaixo e confirme com o <strong style="color:#e2e8f0;">código que enviaremos para este e-mail</strong>. Não é necessário criar conta ou assinar um plano.')}
+    ${hasDirectLink
+      ? p('Clique no botão abaixo para acessar a empresa diretamente. <strong style="color:#e2e8f0;">Não é necessário criar conta ou assinar um plano.</strong>')
+      : p('Clique no botão abaixo, acesse com seu e-mail e entre na empresa. Não é necessário assinar um plano.')
+    }
     ${infoBox(`
       <p style="margin:0 0 4px;font-size:12px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:#4ade80;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif;">Empresa</p>
       <p style="margin:0;font-size:16px;font-weight:700;color:#f1f5f9;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif;">${businessName}</p>
@@ -493,6 +497,7 @@ export function teamInviteEmail(businessName: string, ownerName: string, _hasAcc
     <div style="text-align:center;margin:32px 0;">
       ${btn(targetUrl, 'Acessar empresa →')}
     </div>
+    ${hasDirectLink ? small('Este link é válido por 24 horas e é de uso único.') : ''}
     ${divider()}
     ${small('Se você não esperava este convite, pode ignorar este e-mail com segurança.')}
     `,
@@ -500,16 +505,17 @@ export function teamInviteEmail(businessName: string, ownerName: string, _hasAcc
   )
 }
 
-export function teamInviteEmailText(businessName: string, ownerName: string, _hasAccount: boolean, appUrl: string) {
+export function teamInviteEmailText(businessName: string, ownerName: string, directAccessLink: string | null, appUrl: string) {
+  const url = directAccessLink ?? `${appUrl}/acesso-equipe`
   return `Você foi convidado para uma equipe no PearFy
 
 ${ownerName} liberou seu acesso ao módulo empresarial de "${businessName}".
 
-Para entrar, acesse:
-${appUrl}/acesso-equipe
+Clique no link abaixo para acessar a empresa:
+${url}
 
-Digite seu e-mail, confirme o código recebido e acesse a empresa diretamente.
 Não é necessário criar conta ou assinar um plano.
+${directAccessLink ? 'Este link é válido por 24 horas.' : ''}
 
 Se você não esperava este convite, ignore este e-mail.
 

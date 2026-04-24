@@ -154,17 +154,15 @@ export async function sendTeamInviteEmail(
   to: string,
   businessName: string,
   ownerName: string,
-  hasAccount: boolean,
+  directAccessLink: string | null,
+  appUrl: string,
 ) {
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://pearfy.com.br'
-  const subject = hasAccount
-    ? `Você foi adicionado à equipe de ${businessName} — PearFy`
-    : `Convite para a equipe de ${businessName} no PearFy`
+  const subject = `Você foi convidado para acessar ${businessName} — PearFy`
   return send(
     to,
     subject,
-    teamInviteEmail(businessName, ownerName, hasAccount, appUrl),
-    teamInviteEmailText(businessName, ownerName, hasAccount, appUrl),
+    teamInviteEmail(businessName, ownerName, directAccessLink, appUrl),
+    teamInviteEmailText(businessName, ownerName, directAccessLink, appUrl),
   )
 }
 
