@@ -28,8 +28,8 @@ export default function AcessoEquipePage() {
         email,
         options: {
           shouldCreateUser: true,
-          // After clicking the link, callback will accept the invite and redirect to /empresa
-          emailRedirectTo: `${window.location.origin}/auth/callback?next=/empresa`,
+          // No emailRedirectTo — use the site URL configured in Supabase dashboard.
+          // The /auth/callback route automatically accepts team invites and redirects to /empresa.
         },
       })
       if (otpError) {
