@@ -77,15 +77,15 @@ export interface FinancialReportData {
 // ─── Styles ───────────────────────────────────────────────────────────────────
 
 const C = {
-  green: '#16a34a',
+  green: '#249833',
   red: '#dc2626',
   yellow: '#d97706',
-  blue: '#0ea5e9',
+  blue: '#249833',
   gray: '#666',
-  bg: '#f8faff',
-  border: '#e5eeff',
+  bg: '#f4faf5',
+  border: '#d6eeda',
   line: '#f0f0f0',
-  text: '#1a1a2e',
+  text: '#0f1f10',
   muted: '#888',
 }
 
@@ -278,7 +278,7 @@ function ProLaboreSection({ data }: { data: PDFProLabore }) {
       <View style={styles.proLaboreGrid}>
         {[
           { label: 'Conservador', value: data.conservative, color: C.blue, desc: 'Mais seguro para o caixa' },
-          { label: 'Equilibrado', value: data.balanced, color: C.green, desc: 'Recomendado pelo SAOOZ' },
+          { label: 'Equilibrado', value: data.balanced, color: C.green, desc: 'Recomendado pela PearFy' },
           { label: 'Agressivo', value: data.aggressive, color: C.yellow, desc: 'Menos reserva operacional' },
         ].map((s) => (
           <View key={s.label} style={[styles.proLaboreCard, { borderColor: s.color + '40', backgroundColor: s.color + '08' }]}>
@@ -288,7 +288,7 @@ function ProLaboreSection({ data }: { data: PDFProLabore }) {
           </View>
         ))}
       </View>
-      <Text style={styles.sectionTitle}>Como o SAOOZ calcula</Text>
+      <Text style={styles.sectionTitle}>Como a PearFy calcula</Text>
       {[
         { label: 'Lucro disponível', value: fmt(data.operationalProfit), color: data.operationalProfit >= 0 ? 'blue' as const : 'red' as const, bold: true, divider: true },
         { label: 'Reserva operacional (30%)', value: fmt(data.operationalReserve), color: 'gray' as const, note: 'Mantida antes da retirada' },
@@ -322,8 +322,8 @@ export function FinancialReportPDF({ data }: { data: FinancialReportData }) {
         {/* Header */}
         <View style={styles.header}>
           <View>
-            <Text style={styles.brandName}>SAOOZ</Text>
-            <Text style={styles.brandTagline}>Sistema Financeiro Operacional</Text>
+            <Text style={styles.brandName}>PearFy</Text>
+            <Text style={styles.brandTagline}>Gestão Financeira PF e PJ com IA</Text>
           </View>
           <View style={styles.headerRight}>
             <Text style={styles.reportTitle}>{data.title}</Text>
@@ -451,8 +451,8 @@ export function FinancialReportPDF({ data }: { data: FinancialReportData }) {
 
         {/* Footer */}
         <View style={styles.footer} fixed>
-          <Text style={styles.footerText}>Gerado por SAOOZ em {now} · Apenas para fins informativos</Text>
-          <Text style={styles.footerBrand}>saooz.com</Text>
+          <Text style={styles.footerText}>Gerado por PearFy em {now} · Apenas para fins informativos</Text>
+          <Text style={styles.footerBrand}>pearfy.com.br</Text>
         </View>
       </Page>
     </Document>

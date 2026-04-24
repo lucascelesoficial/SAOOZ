@@ -28,7 +28,7 @@ export function ExportPDFButton({ data, fileName, className }: ExportPDFButtonPr
       const url = URL.createObjectURL(blob)
       const a = document.createElement('a')
       a.href = url
-      a.download = fileName ?? `saooz-relatorio-${new Date().toISOString().slice(0, 7)}.pdf`
+      a.download = fileName ?? `pearfy-relatorio-${new Date().toISOString().slice(0, 7)}.pdf`
       document.body.appendChild(a)
       a.click()
       // Delay revoke so browser can initiate the download
