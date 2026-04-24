@@ -32,8 +32,39 @@ export async function GET(request: NextRequest) {
       }
     )
 
-    const { error } = await supabase.auth.exchangeCodeForSession(code)
-    if (!error) {
+    const { data: sessionData, error } = await supabase.auth.exchangeCodeForSession(code)
+    if (!error && sessionData?.user) {
+      const userId = sessionData.user.id
+
+      // ── Auto-accept pending team invites ────────────────────────────────────
+      // Calls a SECURITY DEFINER function that matches pending invites by email
+      // and promotes them to 'active', returning the accepted business IDs.
+      const { data: memberships } = await supabase
+        .rpc('accept_pending_team_invites') as {
+          data: Array<{ business_id: string; owner_user_id: string }> | null
+        }
+
+      if (memberships && memberships.length > 0) {
+        const firstBusinessId = memberships[0].business_id
+
+        // Mark user as team member and set their active business context.
+        // mode='both' is needed so the dashboard layout allows PJ access.
+        await supabase
+          .from('profiles')
+          .update({
+            is_team_member: true,
+            mode: 'both',
+            active_business_id: firstBusinessId,
+          })
+          .eq('id', userId)
+
+        // Send team members directly to the business module they were invited to.
+        return NextResponse.redirect(`${origin}/empresa`)
+      }
+
+      // ── No pending invites → standard redirect ──────────────────────────────
+      // If the user is already a team member (returning login via magic link),
+      // the middleware will handle the /central → /empresa redirect.
       return NextResponse.redirect(`${origin}${next}`)
     }
   }

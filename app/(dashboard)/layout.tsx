@@ -56,16 +56,42 @@ export default async function DashboardLayout({
     redirect('/login')
   }
 
-  const [{ data: profileData }, { data: businesses }] = await Promise.all([
+  const [{ data: profileData }, { data: ownedBusinesses }, { data: teamMemberships }] = await Promise.all([
     supabase.from('profiles').select('*').eq('id', user.id).single(),
     supabase
       .from('business_profiles')
       .select('id, name')
       .eq('user_id', user.id)
       .order('created_at', { ascending: false }),
+    // Fetch business IDs this user is a team member of (not owner).
+    // Used when the user was invited and has no businesses of their own.
+    supabase
+      .from('business_team_members')
+      .select('business_id')
+      .eq('member_user_id', user.id)
+      .eq('status', 'active'),
   ])
 
-  const businessCount = businesses?.length ?? 0
+  // If team member has no owned business, resolve business names separately.
+  const memberBusinessIds = (teamMemberships ?? []).map(m => m.business_id)
+  let teamBusinesses: { id: string; name: string }[] = []
+  if (memberBusinessIds.length > 0 && (ownedBusinesses?.length ?? 0) === 0) {
+    const { data: teamBizData } = await supabase
+      .from('business_profiles')
+      .select('id, name')
+      .in('id', memberBusinessIds)
+    teamBusinesses = teamBizData ?? []
+  }
+
+  const businesses = (ownedBusinesses?.length ?? 0) > 0
+    ? ownedBusinesses
+    : teamBusinesses
+
+  const isTeamMemberOnly =
+    !!(profileData as { is_team_member?: boolean } | null)?.is_team_member &&
+    (ownedBusinesses?.length ?? 0) === 0
+
+  const businessCount = ownedBusinesses?.length ?? 0
   const policy = await resolveUserAccessPolicy(user.id, { businessCount })
   const snapshot = policy.snapshot
   const businessLimitReached = policy.businessLimitReached
@@ -156,6 +182,12 @@ export default async function DashboardLayout({
   const onboardingNext =
     profile.mode === 'pf' ? '/onboarding/pf' : '/onboarding/empresa'
 
+  // Team members only have access to the PJ module of the business they were invited to.
+  // Override the billing policy so the sidebar/topbar reflect that correctly.
+  const effectiveModules = isTeamMemberOnly
+    ? { personal: false, business: true }
+    : policy.modules
+
   return (
     <SidebarProvider>
       <OnboardingGateProvider required={onboardingRequired} nextHref={onboardingNext}>
@@ -166,25 +198,27 @@ export default async function DashboardLayout({
           <Sidebar
             profile={profile}
             planLabel={
-              snapshot.paidAccess
-                ? snapshot.subscription.plan_type.toUpperCase()
-                : snapshot.trialDaysRemaining > 0
-                  ? 'TRIAL'
-                  : 'GRATIS'
+              isTeamMemberOnly
+                ? 'EQUIPE'
+                : snapshot.paidAccess
+                  ? snapshot.subscription.plan_type.toUpperCase()
+                  : snapshot.trialDaysRemaining > 0
+                    ? 'TRIAL'
+                    : 'GRATIS'
             }
-            planStatusLabel={formatPlanStatusLabel(snapshot.lifecycleStatus, snapshot.trialDaysRemaining)}
-            canAccessPersonalModule={policy.modules.personal}
-            canAccessBusinessModule={policy.modules.business}
+            planStatusLabel={isTeamMemberOnly ? 'Membro' : formatPlanStatusLabel(snapshot.lifecycleStatus, snapshot.trialDaysRemaining)}
+            canAccessPersonalModule={effectiveModules.personal}
+            canAccessBusinessModule={effectiveModules.business}
           />
           <SidebarOffset>
             <Topbar
               profile={profile}
               businesses={businesses ?? []}
-              canAccessPersonalModule={policy.modules.personal}
-              canAccessBusinessModule={policy.modules.business}
-              canCreateBusiness={canCreateBusiness}
-              businessLimitReached={businessLimitReached}
-              isTrial={snapshot.trialAccess}
+              canAccessPersonalModule={effectiveModules.personal}
+              canAccessBusinessModule={effectiveModules.business}
+              canCreateBusiness={isTeamMemberOnly ? false : canCreateBusiness}
+              businessLimitReached={isTeamMemberOnly ? true : businessLimitReached}
+              isTrial={isTeamMemberOnly ? false : snapshot.trialAccess}
               planType={snapshot.subscription.plan_type as 'pf' | 'pj' | 'pro'}
             />
             <main className="flex-1 p-4 pb-24 md:p-6 md:pb-6">

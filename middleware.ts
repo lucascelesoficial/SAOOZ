@@ -157,7 +157,7 @@ export async function middleware(request: NextRequest) {
         .maybeSingle(),
       supabase
         .from('profiles')
-        .select('mode')
+        .select('mode, is_team_member')
         .eq('id', user.id)
         .maybeSingle(),
     ])
@@ -171,8 +171,40 @@ export async function middleware(request: NextRequest) {
       (sub.payment_method !== null && sub.payment_method !== 'none')
     )
 
+    // Team members were invited by an owner and don't need their own subscription.
+    // They bypass the payment gate entirely; the owner's plan controls team access.
+    const isTeamMember = !!(profile as { is_team_member?: boolean } | null)?.is_team_member
+
     // mode being set means the user completed the mode-selection onboarding step.
     const hasCompletedOnboarding = !!profile?.mode
+
+    // ── Team member: redirect /central → /empresa (they have no PF module) ──
+    if (isTeamMember) {
+      const isPersonalRoute =
+        pathname === '/central' ||
+        pathname.startsWith('/central/') ||
+        pathname === '/financas' ||
+        pathname.startsWith('/financas/') ||
+        pathname.startsWith('/despesas') ||
+        pathname.startsWith('/investimentos') ||
+        pathname.startsWith('/reserva-emergencia') ||
+        pathname.startsWith('/perfil-financeiro') ||
+        pathname.startsWith('/inteligencia') ||
+        pathname.startsWith('/analise')
+      if (isPersonalRoute) {
+        return applySecurityHeaders(
+          NextResponse.redirect(new URL('/empresa', request.url))
+        )
+      }
+      // Auth routes (login/cadastro) → send to empresa
+      if (isAuthRoute) {
+        return applySecurityHeaders(
+          NextResponse.redirect(new URL('/empresa', request.url))
+        )
+      }
+      // Allow all other routes (PJ routes, settings, etc.)
+      return applySecurityHeaders(supabaseResponse)
+    }
 
     // ── No real subscription → force plan selection ──────────────────────
     // Em desenvolvimento, bypass para facilitar testes locais

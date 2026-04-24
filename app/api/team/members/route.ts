@@ -2,19 +2,22 @@ import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { sendTeamInviteEmail } from '@/lib/email/sender'
 
+const isDev = process.env.NODE_ENV === 'development'
+
 export async function GET() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   // Check plan from subscriptions table
+  // In development, bypass the plan check so the feature can be tested locally.
   const { data: sub } = await supabase
     .from('subscriptions')
     .select('plan_type, status')
     .eq('user_id', user.id)
     .maybeSingle()
 
-  if (sub?.plan_type !== 'pro') {
+  if (!isDev && sub?.plan_type !== 'pro') {
     return NextResponse.json({ error: 'Plano Comando necessário para gerenciar equipe' }, { status: 403 })
   }
 
@@ -45,13 +48,14 @@ export async function POST(req: Request) {
   if (!email) return NextResponse.json({ error: 'Email obrigatório' }, { status: 400 })
 
   // Check plan from subscriptions table
+  // In development, bypass the plan check so the feature can be tested locally.
   const { data: sub } = await supabase
     .from('subscriptions')
     .select('plan_type, status')
     .eq('user_id', user.id)
     .maybeSingle()
 
-  if (sub?.plan_type !== 'pro') {
+  if (!isDev && sub?.plan_type !== 'pro') {
     return NextResponse.json({ error: 'Plano Comando necessário para adicionar membros' }, { status: 403 })
   }
 
